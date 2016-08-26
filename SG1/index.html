@@ -8,8 +8,16 @@
 
         var canvas, ctx;
 
+        function backingScale(){
+            return window.devicePixelRatio || 1;
+        }
+
         function init(){
             canvas = document.querySelector("canvas");
+
+            canvas.width *= backingScale();
+            canvas.height *= backingScale();
+
             ctx = canvas.getContext("2d");
 
             drawRandomRect();
