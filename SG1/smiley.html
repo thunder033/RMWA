@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>HW Scene for SG 1</title>
+    <script>
+        "use strict";
+        var canvas, ctx;
+
+        //from: http://clrs.cc/
+        var Color = {
+            "BLACK": "#111111",
+            "YELLOW": "#FFDC00",
+            "GREEN": "#2ECC40",
+            "BROWN": "brown",
+            "GREY": "#AAAAAA",
+            "AQUA": "#7FDBFF",
+            "OLIVE": "#3D9970",
+            "DEFAULT": "#111111"
+        };
+
+        var TWO_PI = Math.PI * 2;
+
+        /**
+         * Draws a path
+         * @param options
+         * @param draw
+         */
+        function drawPath(options, draw){
+            options.path = true;
+            drawShape(options, draw);
+        }
+
+        /**
+         * Saves context, applies options, draws, and restores context
+         * @param options
+         * @param draw
+         */
+        function drawShape(options, draw){
+            ctx.save();
+
+            ctx.fillStyle = options.fill || ctx.fillStyle;
+            ctx.strokeStyle = options.stroke || ctx.strokeStyle;
+            ctx.lineWidth = options.strokeWidth || ctx.lineWidth;
+
+            if(draw instanceof Function){
+
+                if(options.path)
+                    ctx.beginPath();
+
+                draw();
+
+                if(options.path) {
+                    ctx.closePath();
+
+                    if (options.fill)
+                        ctx.fill();
+
+                    if (options.stroke)
+                        ctx.stroke();
+                }
+            }
+
+            ctx.restore();
+        }
+
+        /**
+         * Draws Ground, Sky, And Sun
+         */
+        function drawBackground() {
+            drawPath({ //Horizon
+                stroke: Color.GREY,
+                strokeWidth: 3
+            }, () => {
+                ctx.moveTo(0, 425);
+                ctx.lineTo(canvas.width, 425);
+            });
+
+            drawShape({ //Sky
+                fill: Color.AQUA
+            }, () => ctx.fillRect(0, 0, canvas.width, 425));
+
+            drawShape({ //Ground
+                fill: Color.OLIVE
+            }, () => ctx.fillRect(0, 425, canvas.width, canvas.height - 425));
+
+            drawPath({ //Sun
+                fill: Color.YELLOW
+            }, () => ctx.arc(canvas.width - 75, 50, 100, 0, TWO_PI));
+        }
+
+        /**
+         * Draws the Tree
+         */
+        function drawTree() {
+            drawPath({ //Tree
+                fill: Color.GREEN,
+                stroke: Color.GREEN
+            }, () => {
+                ctx.moveTo(100, 240);
+                ctx.lineTo(140, 380);
+                ctx.lineTo(60, 380);
+            });
+
+            drawShape({ //Trunk
+                fill: Color.BROWN
+            }, () => ctx.fillRect(95, 380, 10, 45));
+        }
+
+        /**
+         * Draws the shadow of the smiley
+         * @param smileyX X position of smiley
+         * @param smileyY Y position of smiley
+         * @param phi position in animation
+         */
+        function drawShadow(smileyX, smileyY, phi) {
+            drawPath({
+                fill: "rgba(0,0,0,.5)"
+            }, () => ctx.ellipse(smileyX, smileyY + 150, 140 - (140 * phi), 20 - (20 * phi), 0, 0, TWO_PI, false));
+        }
+
+        /**
+         * Draws the smiley at the given position
+         * @param x
+         * @param y
+         */
+        function drawSmiley(x, y){
+            //Gradient for the head
+            var gradient = ctx.createRadialGradient(x + 35, y - 85, 20, x, y, 150);
+            gradient.addColorStop(0, "#fff8cc");
+            gradient.addColorStop(.35, "#ffdc00");
+            gradient.addColorStop(1, "#998500");
+
+            drawPath({ //Head
+                fill: gradient,
+                stroke: Color.BLACK,
+                strokeWidth: 1
+            }, () => ctx.arc(x, y, 150, 0, TWO_PI));
+
+            drawPath({ //Left Eye
+                fill: Color.BLACK
+            }, () => ctx.arc(x - 60, y - 50, 35, 0, TWO_PI));
+
+            drawPath({ //Right Eye
+                fill: Color.BLACK
+            }, () => ctx.arc(x + 60, y - 50, 35, 0, TWO_PI));
+
+            drawPath({ //Mouth
+                fill: Color.BLACK
+            }, () => ctx.arc(x, y + 40, 100, 0, Math.PI));
+        }
+
+        var elapsed = 0;
+        var startTime = new Date();
+
+        function drawScene() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            drawBackground();
+
+            drawShape({ //Clock
+                fill: Color.BLACK
+            }, () => ctx.fillText(elapsed, 20, 20));
+
+            //Get phi for animation
+            elapsed = (new Date()).getTime() - startTime.getTime();
+            var phi = Math.abs(Math.sin(elapsed / 150));
+
+            drawShadow(300, 300, phi);
+            drawSmiley(300, 300 - phi * 80);
+
+            drawTree();
+
+            requestAnimationFrame(drawScene);
+        }
+
+        function init(){
+            canvas = document.querySelector("canvas");
+            ctx = canvas.getContext("2d");
+            requestAnimationFrame(drawScene);
+        }
+
+        window.onload = init;
+    </script>
+</head>
+<body>
+<canvas width="750" height="500">
+    YOU DONT HAVE CANVAS - GET REKT
+</canvas>
+</body>
+</html>
