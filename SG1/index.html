@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SG-1</title>
+    <script>
+        "use strict";
+
+        var canvas, ctx;
+
+        function init(){
+            canvas = document.querySelector("canvas");
+            ctx = canvas.getContext("2d");
+
+            drawRandomRect();
+
+            requestAnimationFrame(drawRects);
+        }
+
+        function drawRects(){
+            cls();
+            drawRandomRect();
+            requestAnimationFrame(drawRects)
+        }
+
+        function cls(){
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function randomByte() {
+            var minByte = 55;
+            var maxByte = 255;
+            return minByte + Math.round(Math.random() * (maxByte - minByte))
+        }
+
+        function randomColor(){
+            return "rgba(" + randomByte() + "," + randomByte() + "," + randomByte() + ",1)";
+        }
+
+        function drawRandomRect() {
+            ctx.fillStyle = randomColor();
+            var
+                    x = Math.random() * canvas.width,
+                    y = Math.random() * canvas.height,
+                    width = 10  + Math.random() * 90,
+                    height = 10  + Math.random() * 90;
+            ctx.fillRect(x, y, width, height);
+        }
+
+        window.onload = init;
+    </script>
+</head>
+<body>
+    <canvas width="800" height="600">
+        Your browsers sucks
+    </canvas>
+</body>
+</html>
