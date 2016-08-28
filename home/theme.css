@@ -1,0 +1,38 @@
+@import url(https://fonts.googleapis.com/css?family=Play);
+
+html,
+body {
+    margin: 0;
+    font-size: 100%;
+    padding: 0;
+    text-align: center;
+    font-family: "Play, sans-serif";
+}
+
+header {
+    background: #ddd;
+    margin-bottom: .4em;
+    border-bottom: .5em #333 solid;
+    text-align: center;
+}
+
+canvas, main {
+    width: 60em;
+    height: 13em;
+    border-left: .5em #333 solid;
+    border-right: .5em #333 solid;
+    display: inline-block;
+}
+
+main {
+    text-align: left;
+    padding: 1em;
+    box-sizing: border-box;
+    margin: .4em 0 1em;
+    height: auto;
+}
+
+#portrait {
+    float: left;
+    padding: 0 1em 0 0;
+}
