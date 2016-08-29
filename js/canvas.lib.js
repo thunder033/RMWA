@@ -22,13 +22,16 @@ var CT = {
             var oldWidth = canvas.width,
                 oldHeight = canvas.height;
 
-            canvas.width = canvas.clientWidth * ratio;
-            canvas.height = canvas.clientHeight * ratio;
+            //canvas.width = oldWidth * ratio;
+            //canvas.height = oldHeight * ratio;
 
-            canvas.style.width = oldWidth;
-            canvas.style.height = oldHeight;
+            //canvas.style.width = oldWidth + "px";
+            //canvas.style.height = oldHeight + "px";
 
-            this.ctx.scale(ratio, ratio);
+            //this.ctx.scale(ratio, ratio);
+
+            //this.ctx = canvas.getContext("2d");
+
         }
     },
 
