@@ -45,3 +45,9 @@ footer {
 footer a {
     color: #ffffff;
 }
+
+footer img {
+    vertical-align: middle;
+    max-height: 1.5em;
+    margin-right: .3em;
+}
