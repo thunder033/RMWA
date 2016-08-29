@@ -60,7 +60,7 @@ var CT = {
             if (options.path)
                 this.ctx.beginPath();
 
-            draw();
+            draw(this.ctx);
 
             if (options.path) {
                 if(options.closePath !== false)
