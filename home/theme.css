@@ -7,6 +7,7 @@ body {
     padding: 0;
     text-align: center;
     font-family: "Play", sans-serif;
+    overflow-x: hidden;
 }
 
 header {
@@ -19,8 +20,6 @@ header {
 canvas, main {
     width: 60em;
     height: 13em;
-    border-left: .5em #333 solid;
-    border-right: .5em #333 solid;
     display: inline-block;
 }
 
@@ -35,4 +34,14 @@ main {
 #portrait {
     float: left;
     padding: 0 1em 0 0;
+}
+
+footer {
+    background: #333333;
+    padding: 1em;
+    color: #ffffff;
+}
+
+footer a {
+    color: #ffffff;
 }

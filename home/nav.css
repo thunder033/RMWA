@@ -55,7 +55,7 @@ nav:after {
 .link:first-child:hover:before {
     border-radius: 3.5em;
     border: .25em transparent solid;
-    border-left-color: #DB0000;
+    border-left-color: #CC0000;
     width: 6em;
     height: 6em;
     transition: all .5s;
@@ -79,7 +79,7 @@ nav:after {
 .link:last-child:hover:after {
     border-radius: 3.5em;
     border: .25em transparent solid;
-    border-right-color: #DB0000;
+    border-right-color: #CC0000;
     width: 6em;
     height: 6em;
     transition: all .5s;
@@ -162,14 +162,14 @@ nav:after {
     transition: .5s all;
     background: #500;
     border-width: 5px;
-    border-top-color: #DB0000;
+    border-top-color: #CC0000;
     text-shadow: none;
 }
 
 .link:hover .transformer:after {
     opacity: 1;
     border-width: .35em;
-    border-bottom-color: #DB0000;
+    border-bottom-color: #CC0000;
     transition: .75s all;
     -webkit-backface-visibility: hidden;
     transform: rotateZ(135deg);
@@ -178,7 +178,7 @@ nav:after {
 .link:hover .transformer:before {
     opacity: 1;
     border-width: .25em;
-    border-bottom-color: #DB0000;
+    border-bottom-color: #CC0000;
     transition: .75s all;
     -webkit-backface-visibility: hidden;
     transform: rotateZ(-55deg);
