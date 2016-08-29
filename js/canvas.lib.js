@@ -25,6 +25,9 @@ var CT = {
             canvas.width = canvas.clientWidth * ratio;
             canvas.height = canvas.clientHeight * ratio;
 
+            canvas.style.width = oldWidth;
+            canvas.style.height = oldHeight;
+
             this.ctx.scale(ratio, ratio);
         }
     },
