@@ -35,7 +35,7 @@ nav:after {
     padding: .5em;
     color: #ddd;
     width: 5em;
-    font-family: 'Play, sans-serif';
+    font-family: 'Play', sans-serif;
     transition: all .5s;
 }
 
@@ -50,7 +50,6 @@ nav:after {
     left: -.45em;
     display: block;
     transition: all .5s;
-    box-sizing: border-box;
 }
 
 .link:first-child:hover:before {
@@ -74,7 +73,6 @@ nav:after {
     top: -.45em;
     right: -.45em;
     display: block;
-    box-sizng: border-box;
     transition: all .5s;
 }
 
