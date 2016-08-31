@@ -56,6 +56,17 @@ var CT = {
     drawShape(options, draw) {
         this.ctx.save();
 
+        var transform = [
+            parseFloat((options.scale || {}).x),
+            parseFloat((options.skew || {}).x),
+            parseFloat((options.skew || {}).y),
+            parseFloat((options.scale || {}).y),
+            parseFloat((options.translate || {}).x),
+            parseFloat((options.translate || {}).y)
+        ];
+
+        this.ctx.transform.apply(null, transform);
+
         this.ctx.fillStyle = options.fill || this.ctx.fillStyle;
         this.ctx.font = options.font || this.ctx.font;
         this.ctx.strokeStyle = options.stroke || this.ctx.strokeStyle;
