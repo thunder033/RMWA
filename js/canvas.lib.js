@@ -65,7 +65,7 @@ var CT = {
             parseFloat((options.translate || {}).y)
         ];
 
-        this.ctx.transform.apply(null, transform);
+        this.ctx.transform.apply(this.ctx, transform);
 
         this.ctx.fillStyle = options.fill || this.ctx.fillStyle;
         this.ctx.font = options.font || this.ctx.font;
