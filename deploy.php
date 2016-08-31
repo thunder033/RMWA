@@ -21,7 +21,8 @@ $commands = array(
 );
 // Run the commands for output
 $output = '';
-if($_POST['ref'] == 'refs/head/prod') {
+$payload = json_decode($_REQUEST['payload'], true);
+if($payload['ref'] == 'refs/heads/prod') {
     foreach($commands AS $command){
         // Run it
         $tmp = shell_exec($command);
@@ -30,6 +31,7 @@ if($_POST['ref'] == 'refs/head/prod') {
         $output .= htmlentities(trim($tmp)) . "\n";
     }
 }
+$output .= serialize(getcwd());
 
 // Make it pretty for manual user access (and why not?)
 ?>
