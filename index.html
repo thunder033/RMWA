@@ -2,10 +2,15 @@
 <html>
 <head>
     <title>Greg Rozmarynowycz - IGME 330</title>
-    <script src="js/canvas.lib.js"></script>
-    <script src="home/header.js"></script>
+
     <link href="home/theme.css" rel="stylesheet" type="text/css">
     <link href="home/nav.css" rel="stylesheet" type="text/css">
+
+    <script src="http://momentjs.com/downloads/moment.min.js"></script>
+    <script src="http://code.jquery.com/jquery.min.js"></script>
+    <script src="js/canvas.lib.js"></script>
+    <script src="home/header.js"></script>
+    <script src="js/gitStatus.js"></script>
 </head>
 <body>
 <header>
@@ -26,6 +31,12 @@
         I recently completed a Software Engineering internship with Target, supporting Target.com, and previously worked at EnerNOC developing and testing MEAN web applications.
         I'm currently searching for full-time employment as a software engineer starting in summer 2017.
     </p>
+    <div id="lastCommit">
+        <a class="commit-link" href="#" target="_blank">
+            Last Update: <span class="date"></span>
+            <p class="message"></p>
+        </a>
+    </div>
 </main>
 <footer>
     &copy; 2016 Greg Rozmarynowycz | <a href="http://thunderlab.net">ThunderLab</a> | <a target="_blank" href="https://github.com/thunder033/RMWA"><img src="http://thunderlab.net/images/github.png" alt="GitHub">Site GitHub Repo</a>
