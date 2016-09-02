@@ -34,6 +34,7 @@ main {
 #portrait {
     float: left;
     padding: 0 1em 0 0;
+    margin-bottom: 1em;
 }
 
 footer {
@@ -50,4 +51,21 @@ footer img {
     vertical-align: middle;
     max-height: 1.5em;
     margin-right: .3em;
+}
+
+#lastCommit {
+    clear: both;
+    background: #ddd;
+    padding: .5em;
+}
+
+#lastCommit a {
+    text-decoration: none;
+    color: #333;
+}
+
+#lastCommit .date {
+    font-weight: bold;
+    color: #111;
+    font-size: 1.1em;
 }
