@@ -25,6 +25,7 @@
 	Create a new style rule that will increase the vertical space between <li> tags 
 	on the page - try setting the margin-bottom property.
 	*/
+		margin-bottom: .5em;
 	}
 	
 	
@@ -58,28 +59,63 @@
 			ctx.fillRect(0,0,500,300); 
 			
 			// #3 Hook up buttons
-			var redButton = document.querySelector('#red')
+			var redButton = document.querySelector('#red');
 			redButton.onclick = drawRed;
 			
 			// or do it as a 1-liner
 			document.querySelector('#green').onclick = drawGreen;
-			
-		
+			document.querySelector('#blue').onclick = drawBlue;
+			document.querySelector('#triangle').onclick = drawTriangle;
+			document.querySelector('#circle').onclick = drawCircle;
 		}
-		
-		function drawRed(){
+
+		function drawBox(color) {
+			clear();
 			// all fill operations are now in red
-			ctx.fillStyle = 'red';  
-			
+			ctx.fillStyle = color;
+
 			// fill a rectangle with the current fill color
-			ctx.fillRect(20,20,460,260); 
+			ctx.fillRect(20,20,460,260);
 		}
-		
-		function drawGreen(){
-			console.log("drawGreen called!");
-			
+
+		var drawBlue = drawBox.bind(null, '#0022aa');
+		var drawGreen = drawBox.bind(null, '#00aa00');
+		var drawRed = drawBox.bind(null, 'red');
+
+		function drawTriangle() {
+			clear();
+			ctx.strokeStyle = "#00bb22";
+			ctx.fillStyle = "#cc0099";
+			ctx.lineWidth = 10;
+
+			ctx.beginPath();
+			ctx.moveTo(250, 20);
+			ctx.lineTo(50, 280);
+			ctx.lineTo(450, 280);
+			ctx.closePath();
+
+			ctx.fill();
+			ctx.stroke();
 		}
-		
+
+		function drawCircle() {
+			clear();
+			ctx.fillStyle = "#880055";
+			ctx.strokeStyle = "#ffffff";
+			ctx.lineWidth = 5;
+
+			ctx.beginPath();
+			ctx.arc(250, 150, 125, 0, 2 * Math.PI);
+
+			ctx.fill();
+			ctx.stroke();
+		}
+
+		function clear() {
+			ctx.fillStyle = "#ffff00";
+			ctx.fillRect(0, 0, 500, 300);
+		}
+
 	</script>
 </head>
 <body>
@@ -90,6 +126,9 @@
 	<section id="controls">
 		<button id="red">Fill Red</button>
 		<button id="green">Fill Green</button>
+		<button id="blue">Fill Blue</button>
+		<button id="triangle">Triangle</button>
+		<button id="circle">Circle</button>
 	</section>
 	
 	
