@@ -20,9 +20,10 @@
 
         var ctrlX = 5;
         var ctrlY = 150;
-        var speed = 0;
+        var speed = .05;
         var vector = null;
         var elasped = 0;
+        var deltaTime = 0;
         var start = new Date();
 
         function init() {
@@ -32,10 +33,16 @@
         }
 
         function drawCurves() {
+
+            var prevElapsed = elasped;
             elasped = (new Date().getTime() - start.getTime());
+            deltaTime = elasped - prevElapsed;
 
             ctx.clearRect(0, 0, 600, 400);
-            //ctrlX = 8 + Math.sin(elasped * (1 / speed)) * 2;
+            ctrlX = 8 + Math.sin(elasped * (speed)) * 100;
+            //ctrlX = 10;
+            document.querySelector("#ctrlX").innerHTML = ctrlX;
+            document.querySelector("#ctrlY").innerHTML = ctrlY;
 
             ctx.lineWidth = "3";
             ctx.strokeStyle = "black";
@@ -61,5 +68,7 @@
 <body onload="init()" style="background-color:#e0e0e0">
 <canvas height="400" width="600">
 </canvas>
+<label id="ctrlX"></label>
+<label id="ctrlY"></label>
 </body>
 </html>
