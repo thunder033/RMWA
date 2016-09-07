@@ -36,6 +36,7 @@
 		var gLineCap = "butt";
 		var gLineJoin = "bevel";
 		var gLineDash = [];
+		var gStrokeColor = "black";
 		
 		// #1 - wait for page to load
 		window.onload = init; 
@@ -67,8 +68,37 @@
 				}
 				drawLines();
 			};
-		
 			
+			function createPattern() {
+				return ctx.createPattern(document.querySelector("#emoji"), "repeat");
+			}
+		
+			document.querySelector('#colorChooser').onchange = function(e){
+				var grad;
+				switch (e.target.value) {
+					case 'radialGradient':
+						grad = ctx.createRadialGradient(150, 150, 25, 175, 175, 150);
+						grad.addColorStop(0, "#00f");
+						grad.addColorStop(.65, "#0f5");
+						grad.addColorStop(1, "#000");
+						gStrokeColor = grad;
+						break;
+					case 'linearGradient':
+						grad = ctx.createLinearGradient(0, 0, 300, 300);
+						grad.addColorStop(0, "#f00");
+						grad.addColorStop(.5, "#ff0");
+						grad.addColorStop(1, "#000");
+						gStrokeColor = grad;
+						break;
+					case 'emojiPattern':
+						gStrokeColor = createPattern();
+						break;
+					default:
+						gStrokeColor = e.target.value;
+				}
+
+				drawLines();
+			};
 			
 			drawLines();
 		}
@@ -79,6 +109,30 @@
 			ctx.clearRect(0,0,300,300);
 			
 			// See SG-2 for rest of code
+			ctx.clearRect(0, 0, 300, 300);
+
+			//left line subpath
+			ctx.beginPath();
+			ctx.moveTo(50, 50);
+			ctx.lineTo(50, 250);
+
+			//middle line subpath
+			ctx.moveTo(100, 250);
+			ctx.lineTo(100, 50);
+			ctx.lineTo(250, 50);
+
+			//right line subpath
+			ctx.moveTo(150, 250);
+			ctx.lineTo(200, 100);
+			ctx.lineTo(250, 250);
+
+			ctx.strokeStyle = gStrokeColor;
+			ctx.lineCap = gLineCap;
+			ctx.lineJoin = gLineJoin;
+			ctx.setLineDash(gLineDash);
+			ctx.lineWidth = 16;
+
+			ctx.stroke();
 		}
 		
 		
@@ -116,7 +170,21 @@
 				<option value="dashed">dashed</option>
     		</select>
     	</label>
-    	
+
+	  	<label>strokeWidth:
+			<select id="colorChooser">
+				<option value="black">black</option>
+				<option value="blue">blue</option>
+				<option value="green">green</option>
+				<option value="orange">orange</option>
+				<option value="linearGradient">linear gradient</option>
+				<option value="radialGradient">radial gradient</option>
+				<option value="emojiPattern">emoji pattern</option>
+			</select>
+		</label>
+
+		  <img id="emoji" src="../line-cap-and-join-files-start/grimacing-face-emoji-small.png" style="visibility: hidden" alt="smiley">
+
     	</section>
 </body>
 </html>
