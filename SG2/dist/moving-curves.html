@@ -1,0 +1,76 @@
+<html>
+<head>
+    <!--
+        A canvas example from:
+        https://developer.apple.com/library/safari/documentation/AudioVideo/Conceptual/HTML-canvas-guide/DrawingLinesandShapes/DrawingLinesandShapes.html
+        Their coding style is different from what we'll be using in class - use our style, not theirs.
+    -->
+    <title>Simple curve example</title>
+    <style>
+        canvas {
+            background: #ffffff;
+            cursor: pointer;
+            margin-left: 10px;
+            margin-top: 10px;
+            box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5);
+        }
+    </style>
+    <script type="text/javascript">
+        var canvas, ctx;
+
+        var speed = 10;
+        var elapsed = 0;
+        var start = new Date();
+
+        function init() {
+            canvas = document.querySelector("canvas");
+            ctx = canvas.getContext("2d");
+            drawCurves();
+        }
+
+        function drawCurves() {
+            elapsed = (new Date().getTime() - start.getTime());
+
+            ctx.clearRect(0, 0, 600, 400);
+            var theta = Math.sin((elapsed / 1000) * (speed));
+            //ctrlX = 100 + Math.sin((elapsed / 1000) * (speed)) * 100;
+
+            ctx.lineWidth = "3";
+            ctx.strokeStyle = "black";
+
+            var ctrlY = 150 + theta * 150;
+            var ctrlX = canvas.width / 2;
+            var ctrlXa = 2 * canvas.width / 3;
+            var ctrlYa = 300;
+            ctx.beginPath();
+            ctx.moveTo(0, canvas.height/2);
+            ctx.quadraticCurveTo(ctrlX, ctrlY, canvas.width, canvas.height/2);
+            ctx.stroke();
+
+            ctx.strokeStyle = "red";
+            ctx.beginPath();
+            ctx.moveTo(0, canvas.height/2);
+            ctx.bezierCurveTo(ctrlX, ctrlY, ctrlXa, ctrlYa, canvas.width, canvas.height/2);
+            ctx.stroke();
+
+            ctx.strokeStyle = "blue";
+            ctx.beginPath();
+            var ballY = 130 + (theta < 0 ? theta * 2 * 80 : theta * 100);
+            ctx.arc(canvas.width / 2, ballY, 20, 0, 2 * Math.PI);
+            ctx.stroke();
+
+            document.querySelector("#ctrlX").innerHTML = ctrlX;
+            document.querySelector("#ctrlY").innerHTML = ctrlY;
+
+            requestAnimationFrame(drawCurves);
+        }
+
+    </script>
+</head>
+<body onload="init()" style="background-color:#e0e0e0">
+<canvas height="400" width="600">
+</canvas>
+<label id="ctrlX"></label>
+<label id="ctrlY"></label>
+</body>
+</html>
