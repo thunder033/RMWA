@@ -42,7 +42,8 @@
         var canvas,ctx,dragging=false,lineWidth,strokeStyle;
 
         // CONSTANTS
-
+        var DEFAULT_LINE_WIDTH = 3;
+        var DEFAULT_STROKE_STYLE = "red";
 
         // FUNCTIONS
         function init(){
@@ -50,27 +51,84 @@
             canvas = document.querySelector('#mainCanvas');
             ctx = canvas.getContext('2d');
 
-
-
+            lineWidth = DEFAULT_LINE_WIDTH;
+            strokeStyle = DEFAULT_STROKE_STYLE;
+            
+            //set initial properties of hte graphics context
+            ctx.lineWidth = lineWidth;
+            ctx.strokeStyle = strokeStyle;
+            ctx.lineCap = "round";
+            ctx.lineJoin = "round";
+            
+            //Set up event handlers
+            canvas.onmousedown = doMousedown;
+            canvas.onmousemove = doMousemove;
+            canvas.onmouseup = doMouseup;
+            canvas.onmouseout = doMouseout;
+            
+            document.querySelector('#lineWidthChooser').onchange = doLineWidthChange;
+            document.querySelector('#strokeStyleChooser').onchange = doStrokeStyleChange;
+            
+            document.querySelector('#clearButton').onclick = doClear;
+            document.querySelector('#exportButton').onclick = doExport;
         }
 
-
         // EVENT CALLBACK FUNCTIONS
+        function doLineWidthChange(e){
+            lineWidth = e.target.value;
+        }
+        
+        function doStrokeStyleChange(e){
+            strokeStyle = e.target.value;
+        }
+        
         function doMousedown(e){
             console.log(e.type);
+            
+            dragging = true;
+            
+            //get location of mouse in canvas coordinates
+            var mouse = getMouse(e);
+            
+            //Pencil Tool
+            ctx.beginPath();
+            
+            //move pen to x,y of mouse
+            ctx.moveTo(mouse.x, mouse.y)
         }
 
         function doMousemove(e) {
-
+            if(!dragging) {
+                return;
+            }
+            
+            var mouse = getMouse(e);
+            
+            //Pencil tool
+            //set ctx.strokeStyle and ctx.lineWidth to correct global values
+            ctx.strokeStyle = strokeStyle;
+            ctx.lineWidth = lineWidth;
+            
+            //draw a line to x,y of mouse
+            ctx.lineTo(mouse.x, mouse.y);
+            
+            //stroke the line
+            ctx.stroke();
         }
 
         function doMouseup(e) {
             console.log(e.type);
+            
+            //End pencil tool
+            dragging = false;
         }
 
         // if the user drags out of the canvas
         function doMouseout(e) {
             console.log(e.type);
+            
+            //End pencil tool
+            dragging = false;
         }
 
         function doClear(){
@@ -134,6 +192,12 @@
              Need horizontal lines!
              You write it!
              */
+             for (var y = cellWidth + 0.5; y < ctx.canvas.height; y += cellHeight) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(ctx.canvas.width, y);
+                ctx.stroke();
+            }
 
 
             // restore the drawing state
@@ -167,6 +231,15 @@
             <option value="8">8</option>
             <option value="9">9</option>
             <option value="10">10</option>
+        </select>
+    </label>
+    
+    <label>Stroke Style:
+        <select id="strokeStyleChooser">
+            <option value="red">Red</option>
+            <option value="blue">Blue</option>
+            <option value="green">Green</option>
+            <option value="yellow">Yellow</option>
         </select>
     </label>
 
