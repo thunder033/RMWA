@@ -1,0 +1,9 @@
+.control-panel {
+    float: left;
+    width: 25em;
+    background: #333333;
+    height: 100%;
+    color: #eee;
+    padding: 1em;
+    box-sizing: border-box;
+}

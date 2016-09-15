@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/thunder033/RMWA/issues"
   },
-  "homepage": "https://github.com/thunder033/RMWA#readme"
+  "homepage": "https://github.com/thunder033/RMWA#readme",
+  "dependencies": {
+    "angular": "^1.5.8"
+  }
 }

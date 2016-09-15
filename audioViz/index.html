@@ -4,10 +4,26 @@
     <meta charset="UTF-8">
     <title>Audio Visualizer</title>
 
+    <link rel="stylesheet" href="css/theme.css" type="text/css">
+    <link rel="stylesheet" href="css/easel.css" type="text/css">
+    <link rel="stylesheet" href="css/control-panel.css" type="text/css">
+
     <script src="../node_modules/angular/angular.min.js"></script>
     <script src="audioViz.js"></script>
+
+    <script src="services/easel.svc.js"></script>
+
+    <script src="controllers/control-panel.ctrl.js"></script>
+    <script src="controllers/easel.ctrl.js"></script>
+
+    <script src="directives/control-panel.directive.js"></script>
+    <script src="directives/easel.directive.js"></script>
+
 </head>
 <body>
-    <div ng-app="audio-vz"></div>
+    <div class="wrapper" ng-app="audio-viz">
+        <control-panel></control-panel>
+        <easel id="visualizer"></easel>
+    </div>
 </body>
 </html>
