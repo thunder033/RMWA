@@ -179,6 +179,7 @@
                     topCtx.lineWidth = lineWidth;
                     
                     clearTopCanvas();
+                    topCtx.beginPath();
                     topCtx.moveTo(origin.x, origin.y);
                     topCtx.lineTo(mouse.x, mouse.y);
                     topCtx.stroke();
