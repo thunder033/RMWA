@@ -2,7 +2,7 @@
  * Created by gjrwcs on 9/15/2016.
  */
 "use strict";
-app.directive('easel', function(EaselService){
+app.directive('easel', function(EaselService, Scheduler){
 
     var canvas, ctx;
 
@@ -20,11 +20,22 @@ app.directive('easel', function(EaselService){
             window.addEventListener('resize', ()=>EaselService.resizeCanvas(canvas, ctx));
             EaselService.resizeCanvas(canvas, ctx);
 
-            ctx.fillStyle = '#f00';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            Scheduler.schedule(()=>{
+                Scheduler.draw(()=>EaselService.clearCanvas(ctx));
+                Scheduler.draw((deltaTime, elapsedTime) => {
 
-            ctx.fillStyle = "#fff";
-            ctx.fillText("AUDIO VISUALIZER", 100, 100);
+                    ctx.fillStyle = '#f00';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                    ctx.fillStyle = "#fff";
+                    ctx.fillText("AUDIO VISUALIZER", 100, 100);
+
+                    ctx.fillText(elapsedTime, 100, 120);
+                    ctx.fillText(deltaTime, 100, 140);
+                    ctx.fillText(Scheduler.FPS, 100, 160)
+                });
+            });
+
         }
     }
 });

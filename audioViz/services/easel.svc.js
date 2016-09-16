@@ -4,6 +4,9 @@
 "use strict";
 app.service('EaselService', function () {
     return {
+        clearCanvas(ctx){
+            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        },
         resizeCanvas(canvas, ctx){
             // finally query the various pixel ratios
             var devicePixelRatio = window.devicePixelRatio || 1,

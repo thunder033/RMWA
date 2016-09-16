@@ -11,12 +11,15 @@
     <script src="../node_modules/angular/angular.min.js"></script>
     <script src="audioViz.js"></script>
 
-    <script src="services/soundclip.svc.js"></script>
+    <script src="services/scheduler.service.js"></script>
+    <script src="services/audio-player.svc.js"></script>
+    <script src="services/audio-clip.svc.js"></script>
     <script src="services/easel.svc.js"></script>
 
     <script src="controllers/control-panel.ctrl.js"></script>
     <script src="controllers/easel.ctrl.js"></script>
 
+    <script src="directives/es6-warning-banner.directive.js"></script>
     <script src="directives/audio-player.directive.js"></script>
     <script src="directives/control-panel.directive.js"></script>
     <script src="directives/easel.directive.js"></script>
@@ -24,6 +27,7 @@
 </head>
 <body>
     <div class="wrapper" ng-app="audio-viz">
+        <div class="es6-warning-banner">This app utilizes ES6 features that your browser does not appear to support</div>
         <control-panel></control-panel>
         <easel id="visualizer"></easel>
     </div>
