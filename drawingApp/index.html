@@ -20,7 +20,7 @@
         }
 
         #topCanvas {
-            background: #000;
+            background: rgba(0,0,0,0);
             position: absolute;
             top: 10px;
             left: 10px;
@@ -190,7 +190,7 @@
         function doMouseup(e) {
             console.log(e.type);
             
-            switch(current){
+            switch(currentTool){
                 case TOOL_PENCIL:
                     ctx.closePath();
                     break;
