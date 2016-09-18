@@ -3,7 +3,17 @@
  */
 "use strict";
 app.service('EaselService', function () {
+
+    var canvas = null,
+        ctx = null;
+
     return {
+        get context() {
+            return ctx;
+        },
+        setActiveContext(newContext){
+            ctx = newContext;
+        },
         clearCanvas(ctx){
             ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
         },

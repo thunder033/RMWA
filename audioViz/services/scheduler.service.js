@@ -18,6 +18,9 @@ app.constant('MaxFrameRate', 60)
             lastFrameTime = 0;
 
         function update(deltaTime, elapsedTime) {
+            //reset draw commands to prevent duplicate frames being rendered
+            drawCommands.length = 0;
+
             for(var i = 0; i < updateOperations.length; i++){
                 updateOperations[i].call(null, deltaTime, elapsedTime);
             }
@@ -25,7 +28,7 @@ app.constant('MaxFrameRate', 60)
 
         function draw(deltaTime, elapsedTime) {
             for(var i = 0; i < drawCommands.length; i++){
-                drawCommands[i].call(null, deltaTime, elapsedTime);
+                drawCommands[i].command.call(null, deltaTime, elapsedTime);
             }
         }
 
@@ -63,8 +66,16 @@ app.constant('MaxFrameRate', 60)
             }
 
             draw(deltaTime, elapsedTime);
-            drawCommands.length = 0;
             requestAnimationFrame(mainLoop);
+        }
+
+        function getDrawIndex(zIndex){
+            var index = drawCommands.length;
+            //Find the next index to draw at
+            while(index > 0 && drawCommands[index - 1].zIndex > zIndex){
+                index--;
+            }
+            return index;
         }
 
         return {
@@ -86,9 +97,11 @@ app.constant('MaxFrameRate', 60)
                 }
             },
 
-            draw(operation) {
+            draw(operation, zIndex) {
                 if(operation instanceof Function){
-                    drawCommands.push(operation);
+                    zIndex = zIndex || 0;
+                    var index  = getDrawIndex(zIndex);
+                    drawCommands.splice(index, 0, {command: operation, zIndex: zIndex});
                 }
                 else {
                     throw new TypeError("Operation must be a function");

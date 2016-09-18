@@ -3,9 +3,35 @@
  */
 "use strict";
 app.constant('SAMPLE_COUNT', 256)
-    .service('AudioPlayerService', function(SAMPLE_COUNT){
+    .service('AudioPlayerService', function(SAMPLE_COUNT, AudioClipService){
 
-        return {
+        var playing = null,
+            analyzerNode = null,
+            player;
+
+        var audioPlayerService = {
+            get playing(){
+                return playing;
+            },
+
+            registerPlayer(newPlayer){
+                player = newPlayer;
+            },
+
+            playClip(clipId){
+                playing = AudioClipService.getAudioClip(clipId);
+                player.src = playing.uri;
+                player.play();
+            },
+
+            getAnalyzerNode(){
+                if(!analyzerNode && player){
+                    analyzerNode = audioPlayerService.createAnalyzerNode(player);
+                }
+
+                return analyzerNode;
+            },
+
             createAnalyzerNode(audioElement){
                 var audioCtx, analyserNode, sourceNode;
                 // create new AudioContext
@@ -36,5 +62,7 @@ app.constant('SAMPLE_COUNT', 256)
                 analyserNode.connect(audioCtx.destination);
                 return analyserNode;
             }
-        }
+        };
+
+        return audioPlayerService;
     });

@@ -2,33 +2,51 @@
  * Created by gjr8050 on 9/16/2016.
  */
 "use strict";
-app.service('AudioClipService', function($http, $q){
+app.constant('MediaPath', 'assets/audio/')
+    .service('AudioClipService', function($http, $q, MediaPath){
 
         var clips = {},
+            clipList = [],
             autoIncrementID = 0;
 
         var audioClipService = {
             loadAudioClips(uriList){
                 uriList = uriList instanceof Array ? uriList : [uriList];
-                $q.all(uriList.map(audioClipService.loadAudioClip));
+                return $q.all(uriList.map(audioClipService.loadAudioClip));
             },
-            loadAudioClip(uri){
-                $http.get(uri, {headers: {'Content-Type': 'arraybuffer'}}).then(function(clip){
+            getNiceName(fileName){
+                var pcs =  fileName.split('.');
+                pcs.pop();
+                return pcs.join('.');
+            },
+            loadAudioClip(fileName){
+                var uri = MediaPath + fileName;
+
+                //Were going to preload the audio clips so there's no delay in playing
+                return $http.get(uri, {headers: {'Content-Type': 'arraybuffer'}}).then(function(clip){
                     var id = autoIncrementID++;
 
                     clips[id] = {
                         id: id,
-                        name: null,
+                        name: audioClipService.getNiceName(fileName),
+                        uri: uri,
                         clip: clip
                     };
+
+                    clipList.push(clips[id]);
+                    clipList.sort((a, b) => a.clip.id > b.clip.id);
 
                     return clip;
                 }, function(err){
                     console.log(err);
+                    return {name: null};
                 });
             },
-            getAudioClip(id){
+            getAudioClip(id) {
                 return clips[id];
+            },
+            getAudioClips() {
+                return clipList;
             }
         };
 

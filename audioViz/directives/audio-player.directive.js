@@ -8,8 +8,8 @@ app.directive('audioPlayer', function(AudioPlayerService, AudioClipService){
         restrict: 'E',
         replace: true,
         template: '<audio controls loop></audio>',
-        link: function(scope, elem, attr){
-            var analyzerNode = AudioPlayerService.createAnalyzerNode(elem[0]);
+        link: function(scope, elem){
+            AudioPlayerService.registerPlayer(elem[0]);
         }
     }
 });

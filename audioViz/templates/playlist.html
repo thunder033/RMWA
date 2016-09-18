@@ -1,0 +1,7 @@
+<div class="playlist">
+    <ul>
+        <li ng-class="{playing: isPlaying(clip.id)}" ng-repeat="clip in clips" ng-click="playClip(clip.id)">
+            {{clip.name}}
+        </li>
+    </ul>
+</div>

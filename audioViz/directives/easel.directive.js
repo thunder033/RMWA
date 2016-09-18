@@ -19,9 +19,10 @@ app.directive('easel', function(EaselService, Scheduler){
 
             window.addEventListener('resize', ()=>EaselService.resizeCanvas(canvas, ctx));
             EaselService.resizeCanvas(canvas, ctx);
+            EaselService.setActiveContext(ctx);
 
             Scheduler.schedule(()=>{
-                Scheduler.draw(()=>EaselService.clearCanvas(ctx));
+                Scheduler.draw(()=>EaselService.clearCanvas(ctx), -1);
                 Scheduler.draw((deltaTime, elapsedTime) => {
 
                     ctx.fillStyle = '#f00';
