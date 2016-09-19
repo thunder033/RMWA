@@ -28,6 +28,21 @@ app.service('Visualizer', function(Scheduler, AudioPlayerService, EaselService, 
         maxRadius: 200
     };
 
+    function manipulatePixels(ctx){
+        // i) get all of the rgba pixel data of the canvas by grabbing the imageData Object
+        var imgData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+        var data = imgData.data,
+            length = data.length,
+            width = imgData.width;
+
+        for(var i = 0; i < length; i += 4){
+            data[i + 1] += 100;
+        }
+
+        ctx.putImageData(imgData, 0, 0);
+    }
+
     function update() {
         var analyzerNode = AudioPlayerService.getAnalyzerNode();
 
@@ -104,6 +119,8 @@ app.service('Visualizer', function(Scheduler, AudioPlayerService, EaselService, 
             //store the average for the next frame
             lastFrameAvg = frameAvg;
         }, 100);
+
+        Scheduler.postProcess(()=>manipulatePixels(EaselService.context));
     }
 
     return visualizer;

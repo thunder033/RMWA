@@ -6,6 +6,7 @@ app.constant('MaxFrameRate', 60)
     .service("Scheduler", function(MaxFrameRate){
         var updateOperations = [],
             drawCommands = [],
+            postDrawCommands = [],
 
             timestep = 1000 / MaxFrameRate,
             fps = MaxFrameRate,
@@ -20,15 +21,20 @@ app.constant('MaxFrameRate', 60)
         function update(deltaTime, elapsedTime) {
             //reset draw commands to prevent duplicate frames being rendered
             drawCommands.length = 0;
+            postDrawCommands.length = 0;
 
             for(var i = 0; i < updateOperations.length; i++){
-                updateOperations[i].call(null, deltaTime, elapsedTime);
+                updateOperations[i].command.call(null, deltaTime, elapsedTime);
             }
         }
 
         function draw(deltaTime, elapsedTime) {
             for(var i = 0; i < drawCommands.length; i++){
                 drawCommands[i].command.call(null, deltaTime, elapsedTime);
+            }
+
+            for(var j = 0; j < postDrawCommands.length; j++) {
+                postDrawCommands[j].command.call(null, deltaTime, elapsedTime);
             }
         }
 
@@ -69,13 +75,24 @@ app.constant('MaxFrameRate', 60)
             requestAnimationFrame(mainLoop);
         }
 
-        function getDrawIndex(zIndex){
-            var index = drawCommands.length;
+        function getPriorityIndex(priority, queue){
+            var index = queue.length;
             //Find the next index to draw at
-            while(index > 0 && drawCommands[index - 1].zIndex > zIndex){
+            while(index > 0 && queue[index - 1].priority > priority){
                 index--;
             }
             return index;
+        }
+
+        function scheduleCommand(command, priority, queue) {
+            if(command instanceof Function){
+                priority = priority || 0;
+                var index  = getPriorityIndex(priority, queue);
+                queue.splice(index, 0, {command: command, priority: priority});
+            }
+            else {
+                throw new TypeError("Operation must be a function");
+            }
         }
 
         return {
@@ -88,24 +105,16 @@ app.constant('MaxFrameRate', 60)
                 requestAnimationFrame(mainLoop);
             },
 
-            schedule(operation) {
-                if(operation instanceof Function){
-                    updateOperations.push(operation);
-                }
-                else {
-                    throw new TypeError("Operation must be a function");
-                }
+            schedule(operation, order) {
+               scheduleCommand(operation, order, updateOperations);
             },
 
             draw(operation, zIndex) {
-                if(operation instanceof Function){
-                    zIndex = zIndex || 0;
-                    var index  = getDrawIndex(zIndex);
-                    drawCommands.splice(index, 0, {command: operation, zIndex: zIndex});
-                }
-                else {
-                    throw new TypeError("Operation must be a function");
-                }
+                scheduleCommand(operation, zIndex, drawCommands);
+            },
+
+            postProcess(operation, zIndex) {
+                scheduleCommand(operation, zIndex, postDrawCommands);
             }
         }
 });
