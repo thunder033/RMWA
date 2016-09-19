@@ -7,3 +7,24 @@
     padding: 1em;
     box-sizing: border-box;
 }
+
+.playing {
+    font-weight: bold;
+    color: #ccffcc;
+    border-left: 3px #ccffcc solid;
+}
+
+.playlist ul {
+
+}
+
+.playlist li {
+    list-style: none;
+    padding: .3em;
+    border-bottom: 1px #333 solid;
+}
+
+.playlist li:hover {
+    cursor: pointer;
+    background: #555;
+}
