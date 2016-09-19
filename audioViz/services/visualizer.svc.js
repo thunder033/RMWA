@@ -9,17 +9,26 @@ app.service('Visualizer', function(Scheduler, AudioPlayerService, EaselService, 
         return 'rgba('+red+','+green+','+blue+', '+alpha+')';
     }
 
+    //The average of the frequency values from the last frame
+    var lastFrameAvg = 0;
+    //The maximum range of values with valid data present in the clip
+    var dataLimit = 0;
+
     var visualizer = {
         init(){
             Scheduler.schedule(update);
+            AudioPlayerService.addPlayEventListener(visualizer.reset);
         },
+        reset(){
+            console.log(dataLimit);
+            dataLimit = 0;
+        },
+        //This value is data bound to the slider
+        //See templates/control-panel.html
         maxRadius: 200
     };
 
-    var lastFrameAvg = 0;
-    var dataLimit = 0;
-
-    function update(deltaTime, elapseTime) {
+    function update() {
         var analyzerNode = AudioPlayerService.getAnalyzerNode();
 
         if (!analyzerNode) {
@@ -38,10 +47,7 @@ app.service('Visualizer', function(Scheduler, AudioPlayerService, EaselService, 
                 canvas = ctx.canvas,
                 origin = {x: canvas.width / 2, y: canvas.height / 2};
 
-            var barSpacing = 1;
-            var barWidth = (canvas.width / data.length) - barSpacing;
-            var barHeight = 100;
-
+            //The length of each arc
             var arcLength = (2 * Math.PI) / dataLimit;
 
             var frameAvg = 0;
@@ -52,22 +58,17 @@ app.service('Visualizer', function(Scheduler, AudioPlayerService, EaselService, 
                     ctx.beginPath();
                     ctx.fillStyle = "#55aaff";
                     ctx.moveTo(origin.x, origin.y);
+                    //Fudge the radius of the arcs based on the overall average of the previous range to the whole set of arcs is fuller
                     ctx.arc(canvas.width / 2, canvas.height / 2, (canvas.width / 2) * ((data[i] + lastFrameAvg) / 512), i * arcLength, (i + 1) * arcLength);
                     ctx.closePath();
                     ctx.fill();
 
+                    //keep track of how many indices in the data array actually have values
+                    //This prevents a large slice of the visualizer from being empty early in the song or for songs that smaller range of data
                     if(i > dataLimit){
                         dataLimit = i;
                     }
                 }
-
-
-                // the higher the amplitude of the sample (bin) the taller the bar
-                // remember we have to draw our bars left-to-right and top-down
-                //ctx.fillRect(i * (barWidth + barSpacing), origin.y + 256 - data[i], barWidth, barHeight);
-
-                //draw inverted bars
-                //ctx.fillRect(canvas.width - (i + 1) * (barWidth + barSpacing), origin.y + 256 - data[i], barWidth, barHeight);
 
                 //red-ishcircles
                 var percent = data[i] / 255;
@@ -96,9 +97,11 @@ app.service('Visualizer', function(Scheduler, AudioPlayerService, EaselService, 
                 ctx.closePath();
                 ctx.restore();
 
+                //Add the current value to the average
                 frameAvg += data[i] / data.length;
             }
 
+            //store the average for the next frame
             lastFrameAvg = frameAvg;
         }, 100);
     }
