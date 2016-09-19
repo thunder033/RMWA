@@ -50,7 +50,7 @@ app.service('Visualizer', function(Scheduler, AudioPlayerService, EaselService, 
 
                 if(data[i] > 0){
                     ctx.beginPath();
-                    ctx.fillStyle = "white";
+                    ctx.fillStyle = "#55aaff";
                     ctx.moveTo(origin.x, origin.y);
                     ctx.arc(canvas.width / 2, canvas.height / 2, (canvas.width / 2) * ((data[i] + lastFrameAvg) / 512), i * arcLength, (i + 1) * arcLength);
                     ctx.closePath();
