@@ -43,7 +43,15 @@ app.constant('MediaPath', 'assets/audio/')
                 });
             },
             getAudioClip(id) {
-                return clips[id];
+                if(typeof id == "number"){
+                    return clips[id];
+                }
+                else if(typeof id == "string"){
+                    return clipList.reduce((clip, curClip) => {
+                        return !clip && curClip.name == id ? curClip : clip;
+                    }, null);
+                }
+
             },
             getAudioClips() {
                 return clipList;

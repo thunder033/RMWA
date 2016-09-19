@@ -25,15 +25,15 @@ app.directive('easel', function(EaselService, Scheduler){
                 Scheduler.draw(()=>EaselService.clearCanvas(ctx), -1);
                 Scheduler.draw((deltaTime, elapsedTime) => {
 
-                    ctx.fillStyle = '#f00';
+                    ctx.fillStyle = '#220022';
                     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
                     ctx.fillStyle = "#fff";
-                    ctx.fillText("AUDIO VISUALIZER", 100, 100);
+                    ctx.fillText("AUDIO VISUALIZER", 25, 25);
 
-                    ctx.fillText(elapsedTime, 100, 120);
-                    ctx.fillText(deltaTime, 100, 140);
-                    ctx.fillText(Scheduler.FPS, 100, 160)
+                    ctx.fillText(elapsedTime, 25, 45);
+                    ctx.fillText(deltaTime, 25, 65);
+                    ctx.fillText(Scheduler.FPS, 25, 85)
                 });
             });
 

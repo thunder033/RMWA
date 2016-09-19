@@ -1,4 +1,11 @@
 <div class="control-panel">
     <audio-player></audio-player>
+
+    <label>Circle Radius:
+        <input type="range" min="50" max="400" ng-model="visualizer.maxRadius">
+    </label>
+
+    <span>{{ visualizer.maxRadius }}</span>
+
     <playlist></playlist>
 </div>
