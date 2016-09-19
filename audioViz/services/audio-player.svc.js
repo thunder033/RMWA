@@ -9,6 +9,8 @@ app.constant('SAMPLE_COUNT', 256)
             analyzerNode = null,
             player;
 
+        var playHooks = [];
+
         var audioPlayerService = {
             get playing(){
                 return playing;
@@ -18,10 +20,18 @@ app.constant('SAMPLE_COUNT', 256)
                 player = newPlayer;
             },
 
+            addPlayEventListener(callback){
+                if(callback instanceof Function){
+                    playHooks.push(callback);
+                }
+            },
+
             playClip(clipId){
                 playing = AudioClipService.getAudioClip(clipId);
                 player.src = playing.uri;
                 player.play();
+
+                playHooks.forEach(callback => callback.call(null, playing));
             },
 
             getAnalyzerNode(){
