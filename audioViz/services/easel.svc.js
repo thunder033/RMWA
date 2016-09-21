@@ -17,7 +17,8 @@ app.service('EaselService', function () {
         clearCanvas(ctx){
             ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
         },
-        resizeCanvas(canvas, ctx){
+        resizeCanvas(canvas, ctx, scale){
+            scale = scale || 1;
             // finally query the various pixel ratios
             var devicePixelRatio = window.devicePixelRatio || 1,
                 backingStoreRatio = ctx.webkitBackingStorePixelRatio ||
@@ -28,8 +29,8 @@ app.service('EaselService', function () {
 
                 ratio = devicePixelRatio / backingStoreRatio;
 
-            canvas.width = canvas.clientWidth;
-            canvas.height = canvas.clientHeight;
+            canvas.width = canvas.clientWidth * scale;
+            canvas.height = canvas.clientHeight * scale;
 
             if(devicePixelRatio !== backingStoreRatio) {
 
