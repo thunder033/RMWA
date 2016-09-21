@@ -3,7 +3,7 @@
  */
 "use strict";
 var app = angular.module('audio-viz', [])
-    .run(function(Scheduler, AudioClipService, Visualizer, AudioPlayerService){
+    .run(function(Scheduler, AudioClipService, Visualizer, AudioPlayerService, MediaStates){
 
         AudioClipService.loadAudioClips([
             'Be Concerned.mp3',
@@ -15,9 +15,12 @@ var app = angular.module('audio-viz', [])
             'New Adventure Theme.mp3',
             'Peanuts Theme.mp3',
             'The Picard Song.mp3'
-        ]).then(function(){
+            //Were using the progress event so we don't wait for everything to load
+        ]).then(null, null, function(clip){
+            console.log(clip);
+            //Play Trees when it finishes loading
+            if(clip.name == "Trees" && clip.state == MediaStates.READY)
             AudioPlayerService.playClip("Trees");
-            console.log(AudioClipService.getAudioClips());
         });
 
         Visualizer.init();

@@ -3,7 +3,12 @@
  */
 "use strict";
 app.constant('MediaPath', 'assets/audio/')
-    .service('AudioClipService', function($http, $q, MediaPath){
+    .constant('MediaStates', Object.freeze({
+        READY: 'READY',
+        LOADING: 'LOADING',
+        ERROR: 'ERROR'
+    }))
+    .service('AudioClipService', function($http, $q, MediaPath, MediaStates){
 
         var clips = {},
             clipList = [],
@@ -12,7 +17,13 @@ app.constant('MediaPath', 'assets/audio/')
         var audioClipService = {
             loadAudioClips(uriList){
                 uriList = uriList instanceof Array ? uriList : [uriList];
-                return $q.all(uriList.map(audioClipService.loadAudioClip));
+                var defer = $q.defer();
+
+                $q.all(uriList.map(fileName=>{
+                    return audioClipService.loadAudioClip(fileName).then(defer.notify);
+                })).then(defer.resolve, defer.reject);
+
+                return defer.promise;
             },
             getNiceName(fileName){
                 var pcs =  fileName.split('.');
@@ -20,26 +31,27 @@ app.constant('MediaPath', 'assets/audio/')
                 return pcs.join('.');
             },
             loadAudioClip(fileName){
-                var uri = MediaPath + fileName;
+                var uri = MediaPath + fileName,
+                    id = autoIncrementID++;
+
+                clips[id] = {
+                    id: id,
+                    name: audioClipService.getNiceName(fileName),
+                    uri: uri,
+                    state: MediaStates.LOADING,
+                    clip: null
+                };
+
+                clipList.push(clips[id]);
+                clipList.sort((a, b) => a.id > b.id);
 
                 //Were going to preload the audio clips so there's no delay in playing
                 return $http.get(uri, {headers: {'Content-Type': 'arraybuffer'}}).then(function(clip){
-                    var id = autoIncrementID++;
-
-                    clips[id] = {
-                        id: id,
-                        name: audioClipService.getNiceName(fileName),
-                        uri: uri,
-                        clip: clip
-                    };
-
-                    clipList.push(clips[id]);
-                    clipList.sort((a, b) => a.clip.id > b.clip.id);
-
-                    return clip;
+                    clips[id].state = MediaStates.READY;
+                    return clips[id];
                 }, function(err){
                     console.log(err);
-                    return {name: null};
+                    return clips[id];
                 });
             },
             getAudioClip(id) {
