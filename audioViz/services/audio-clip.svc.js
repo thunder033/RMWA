@@ -51,6 +51,7 @@ app.constant('MediaPath', 'assets/audio/')
                     return clips[id];
                 }, function(err){
                     console.log(err);
+                    clips[id].state = MediaStates.ERROR;
                     return clips[id];
                 });
             },
