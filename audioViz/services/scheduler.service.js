@@ -12,7 +12,7 @@ app.constant('MaxFrameRate', 60)
             fps = MaxFrameRate,
             lastFPSUpdate = 0,
             framesThisSecond = 0,
-
+            
             startTime = 0,
             deltaTime = 0,
             elapsedTime = 0,

@@ -2,11 +2,20 @@
     <audio-player></audio-player>
 
     <br>
+    <h4>Effects</h4>
+    <label ng-repeat="(name, effect) in effects" class="effectOption">
+        <label>{{ effect | capitalize }} <input type="checkbox" checklist-value="effect" checklist-model="visualizer.effects" ></label>
+    </label>
+
+    <!--<span>{{ visualizer.effects.join(' ') }}</span>-->
+
+    <br>
     <label>Circle Radius:
         <input type="range" min="50" max="400" ng-model="visualizer.maxRadius">
     </label>
 
     <span>{{ visualizer.maxRadius }}</span>
 
+    <h4>Songs</h4>
     <playlist></playlist>
 </div>
