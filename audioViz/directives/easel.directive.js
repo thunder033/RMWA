@@ -4,7 +4,7 @@
 "use strict";
 app.directive('easel', function(EaselService, Scheduler){
 
-    var canvas, ctx;
+    var canvas, ctx, scale = 1;
 
     return {
         restrict: 'E',
@@ -14,6 +14,7 @@ app.directive('easel', function(EaselService, Scheduler){
         replace: true,
         template: '<div class="easel"><canvas>Your browser does not support canvas</canvas></div>',
         link: function(scope, elem, attr){
+            console.log('link func');
             canvas = elem[0].querySelector('canvas');
             ctx = canvas.getContext(attr.context || '2d');
 
@@ -22,6 +23,15 @@ app.directive('easel', function(EaselService, Scheduler){
             EaselService.setActiveContext(ctx);
 
             Scheduler.schedule(()=>{
+                if(Scheduler.FPS < 30 && scale == 1){
+                    scale = .75;
+                    EaselService.resizeCanvas(canvas, ctx, scale);
+                }
+                else if(Scheduler.FPS > 40 && scale == .75){
+                    scale = 1;
+                    EaselService.resizeCanvas(canvas, ctx, scale);
+                }
+
                 Scheduler.draw(()=>EaselService.clearCanvas(ctx), -1);
                 Scheduler.draw((deltaTime, elapsedTime) => {
 

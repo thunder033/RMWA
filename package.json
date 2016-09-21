@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/thunder033/RMWA#readme",
   "dependencies": {
-    "angular": "^1.5.8"
+    "angular": "^1.5.8",
+    "checklist-model": "^0.10.0"
   }
 }

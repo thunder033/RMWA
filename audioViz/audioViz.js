@@ -2,10 +2,11 @@
  * Created by gjr8050 on 9/14/2016.
  */
 "use strict";
-var app = angular.module('audio-viz', [])
-    .run(function(Scheduler, AudioClipService, Visualizer, AudioPlayerService){
+var app = angular.module('audio-viz', ["checklist-model"])
+    .run(function(Scheduler, AudioClipService, Visualizer, AudioPlayerService, MediaStates){
 
         AudioClipService.loadAudioClips([
+            'Hallelujah.wav',
             'Be Concerned.mp3',
             'Trees.mp3',
             'Panic Station.mp3',
@@ -15,9 +16,12 @@ var app = angular.module('audio-viz', [])
             'New Adventure Theme.mp3',
             'Peanuts Theme.mp3',
             'The Picard Song.mp3'
-        ]).then(function(){
-            AudioPlayerService.playClip("Trees");
-            console.log(AudioClipService.getAudioClips());
+            //Were using the progress event so we don't wait for everything to load
+        ]).then(null, null, function(clip){
+            console.log(clip);
+            //Play Trees when it finishes loading
+            if(clip.name == "Trees" && clip.state == MediaStates.READY)
+                AudioPlayerService.playClip("Trees");
         });
 
         Visualizer.init();
