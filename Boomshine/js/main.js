@@ -23,7 +23,13 @@ app.main = {
     ctx: undefined,
    	lastTime: 0, // used by calculateDeltaTime() 
     debug: true,
-    
+
+	x: 100,
+	y: 100,
+	radius: 40,
+	xSpeed: 200, //px per second
+	ySpeed: 160, //px per second
+	fillStyle: 'red',
     
     // methods
 	init : function() {
@@ -37,11 +43,19 @@ app.main = {
 		// start the game loop
 		this.update();
 	},
+
+	circleHitLeftRight: function(x, y, radius){
+		return (x < radius || x > this.WIDTH - radius);
+	},
+
+	circleHitTopBottom: function(x, y, radius){
+		return (y < radius || y > this.HEIGHT - radius);
+	},
 	
 	update: function(){
 		// 1) LOOP
 		// schedule a call to update()
-	 	requestAnimationFrame(function(){app.main.update()});
+	 	requestAnimationFrame(this.update.bind(this));
 	 	
 	 	// 2) PAUSED?
 	 	// if so, bail out of loop
@@ -51,14 +65,29 @@ app.main = {
 	 	 
 	 	// 4) UPDATE
 	 	// move circles
+		this.x += this.xSpeed * dt; // px per second * approx. 1/60
+		this.y += this.ySpeed * dt; // px per second * approx. 1/60
+
+		//did the circle go out of bounds? the bounce
+		if(this.circleHitLeftRight(this.x, this.y, this.radius)){
+			this.xSpeed *= -1;
+		}
+
+		if(this.circleHitTopBottom(this.x, this.y, this.radius)){
+			this.ySpeed *= -1;
+		}
 	 	
-		// 5) DRAW	
+		// 5) DRAW	but
 		// i) draw background
 		this.ctx.fillStyle = "black"; 
 		this.ctx.fillRect(0,0,this.WIDTH,this.HEIGHT); 
 	
 		// ii) draw circles
-		
+		this.ctx.beginPath();
+		this.ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+		this.ctx.closePath();
+		this.ctx.fillStyle = this.fillStyle;
+		this.ctx.fill();
 	
 		// iii) draw HUD
 		
