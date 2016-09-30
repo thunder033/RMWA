@@ -22,6 +22,9 @@ app.constant('Effects', Object.freeze({
         var dataLimit = 0,
             angle = 0;
 
+        //pulse values
+        var pulses = new PriorityQueue();
+
         var visualizer = {
             init(){
                 Scheduler.schedule(update);
@@ -35,7 +38,9 @@ app.constant('Effects', Object.freeze({
             //See templates/control-panel.html
             maxRadius: 200,
             brightness: 1,
-            effects: []
+            effects: [],
+            waveform: {},
+            velocity: 0
         };
 
         function getActiveEffects() {
@@ -96,6 +101,41 @@ app.constant('Effects', Object.freeze({
             ctx.putImageData(imgData, 0, 0);
         }
 
+        function analyzeWaveform(waveform){
+            var peakMax = -Number.MAX_VALUE,
+                troughMin = Number.MAX_VALUE,
+                peakDistance = 0;
+
+            //Find the peek value of the wave
+            var i = 0;
+            while(waveform[i] > peakMax){
+                peakMax = waveform[i++];
+            }
+
+            while(waveform[++i] < peakMax || troughMin >= peakMax){
+                peakDistance++;
+                if(waveform[i] < troughMin){
+                    troughMin = waveform[i];
+                }
+
+                if(i > waveform.length){
+                    break;
+                }
+            }
+
+            // return {
+            //     peak: peakMax,
+            //     peakDistance: i,
+            //     trough: troughMin,
+            //     period: peakDistance / SampleCount * 2
+            // }
+
+            visualizer.waveform.peak = peakMax;
+            visualizer.waveform.peakDistance = peakDistance;
+            visualizer.waveform.trough = troughMin;
+            visualizer.waveform.period = peakDistance / SampleCount * 2
+        }
+
         function getDataLimit(data, start){
             var limit = start || 0;
             for(var i = start; i < data.length; i++){
@@ -110,6 +150,40 @@ app.constant('Effects', Object.freeze({
             var canvas = ctx.canvas,
                 origin = {x: canvas.width / 2, y: canvas.height / 2};
 
+            //PULSES
+            var vel = (1 / visualizer.waveform.period) / 20000;
+            if(vel > visualizer.velocity){
+                var energy = Math.min((visualizer.waveform.peak - visualizer.waveform.trough) / 10, 1);
+                pulses.enqueue(0, {pos: 0, energy: energy});
+            }
+            visualizer.velocity = vel > visualizer.velocity ? vel : visualizer.velocity * .97;
+
+            var gradient2 = ctx.createRadialGradient(origin.x, origin.y, lastFrameAvg / 10, origin.x, origin.y, canvas.width / 2);
+
+            var it = pulses.getIterator(), pulse;
+            while(!it.isEnd()){
+                pulse = it.next();
+                pulse.pos += .008;
+
+                var stopPos = Math.min(pulse.pos, 1),
+                    stopEnd = Math.min(pulse.pos + .05, 1),
+                    //I'm sure there's a name for this, but this math makes the opacity fall off after reaching a stop value of .5
+                    a = stopPos > .5 ? (1 - (stopPos - .5) * 2) : 1,
+                    opacity = a * a * pulse.energy;
+                gradient2.addColorStop(stopPos, 'rgba(125,100,20,' + opacity + ')');
+                gradient2.addColorStop(stopEnd, 'rgba(125,100,20,0)');
+            }
+
+            while(pulses.peek() && pulses.peek().pos > 1){
+                pulses.dequeue();
+            }
+
+            ctx.fillStyle = gradient2;
+            ctx.beginPath();
+            ctx.moveTo(origin.x, origin.y);
+            ctx.arc(origin.x, origin.y, canvas.width / 2, 0, 2 * Math.PI);
+            ctx.fill();
+
             //keep track of how many indices in the data array actually have values
             //This prevents a large slice of the visualizer from being empty early in the song or for songs that smaller range of data
             dataLimit = getDataLimit(data, dataLimit);
@@ -118,7 +192,8 @@ app.constant('Effects', Object.freeze({
             var arcLength = (4 * Math.PI) / dataLimit;
 
             var frameAvg = 0;
-            ctx.fillStyle = "#55aaff";
+            //ctx.fillStyle = "#55aaff";
+            ctx.fillStyle = "#000";
             ctx.strokeStyle = "#fc0";
             ctx.beginPath();
             // loop through the data and draw!
@@ -168,7 +243,8 @@ app.constant('Effects', Object.freeze({
             ctx.arc(origin.x, origin.y, frameAvg, 0, 2 * Math.PI);
             ctx.fill();
 
-            angle += frameAvg / 10000;
+            //Make things spin
+            angle += visualizer.velocity;
 
             //store the average for the next frame
             lastFrameAvg = frameAvg;
@@ -181,12 +257,15 @@ app.constant('Effects', Object.freeze({
                 return;
             }
 
-            var data = new Uint8Array(SampleCount / 2);
+            var data = new Uint8Array(SampleCount / 2),
+                waveform = new Uint8Array(SampleCount / 2);
             // populate the array with the frequency data
             analyzerNode.getByteFrequencyData(data);
 
             // OR
-            //analyzerNode.getByteTimeDomainData(data); // waveform data
+            analyzerNode.getByteTimeDomainData(waveform); // waveform data
+
+            analyzeWaveform(waveform);
 
             //Draw visualization
             Scheduler.draw(()=> drawArcs(EaselService.context, data), 100);
