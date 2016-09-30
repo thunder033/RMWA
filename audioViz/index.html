@@ -9,9 +9,46 @@
     <link rel="stylesheet" href="css/control-panel.css" type="text/css">
     <link rel="stylesheet" href="css/loader-icon.css" type="text/css"/>
 
+    <script>
+        var angular = angular;
+
+        window.addEventListener('load', function(){
+            function isES6Supported(){
+                'use strict';
+
+                if(typeof Symbol === 'undefined'){
+                    return false;
+                }
+
+                try {
+                    eval('class Test {}');
+                    eval('(x=>x)()');
+                } catch (e) {
+                    return false;
+                }
+
+                return true;
+            }
+
+            var loadError = document.querySelector('#loadError'),
+                    dependencyErrMsg = 'Dependencies failed to load.',
+                    unexpectedErrMsg = 'An unexpected error was encountered',
+                    es6ErrMsg = 'This app utilizes ES6 features that your browser does not appear to support';
+
+            loadError.innerHTML = angular ? unexpectedErrMsg : dependencyErrMsg;
+
+            if(!isES6Supported()){
+                loadError.innerHTML = es6ErrMsg;
+                //Add to some sort of load error detection script
+                //loadError.className += ' es6-warning-banner';
+            }
+        });
+    </script>
+
     <script src="../node_modules/angular/angular.min.js"></script>
     <script src="../node_modules/checklist-model/checklist-model.js"></script>
     <script src="priorityQueue.js"></script>
+
     <script src="audioViz.js"></script>
 
     <script src="services/scheduler.service.js"></script>
@@ -35,7 +72,7 @@
 </head>
 <body>
     <div class="wrapper" ng-app="audio-viz">
-        <div class="es6-warning-banner">This app utilizes ES6 features that your browser does not appear to support</div>
+        <div id="loadError" class="es6-warning-banner"></div>
         <control-panel></control-panel>
         <easel id="visualizer"></easel>
     </div>
