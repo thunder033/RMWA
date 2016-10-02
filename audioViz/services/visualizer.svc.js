@@ -149,15 +149,22 @@ app.constant('Effects', Object.freeze({
 
         function drawPulses(ctx, canvas, origin){
             //PULSES
+            //Derive new velocity value from the period the waveform
             var vel = (1 / visualizer.waveform.period) / 20000;
+
+            //If the new velocity is greater than current, generate a new pulse
             if(vel > visualizer.velocity){
                 var energy = Math.min((visualizer.waveform.peak - visualizer.waveform.trough) / 10, 1);
                 pulses.enqueue(0, {pos: 0, energy: energy});
             }
+
+            //Either keep the new, higher velocity, or decay the existing velocity
             visualizer.velocity = vel > visualizer.velocity ? vel : visualizer.velocity * .97;
 
+            //Create a gradient that will show the pulses
             var gradient2 = ctx.createRadialGradient(origin.x, origin.y, lastFrameAvg / 10, origin.x, origin.y, canvas.width / 2);
 
+            //Add stops for each pulse
             var it = pulses.getIterator(), pulse;
             while(!it.isEnd()){
                 pulse = it.next();
@@ -172,10 +179,12 @@ app.constant('Effects', Object.freeze({
                 gradient2.addColorStop(stopEnd, 'rgba(255,255,255,0)');
             }
 
+            //Remove pulses that are outside the cirlce
             while(pulses.peek() && pulses.peek().pos > 1){
                 pulses.dequeue();
             }
 
+            //Draw everything
             ctx.fillStyle = gradient2;
             ctx.beginPath();
             ctx.moveTo(origin.x, origin.y);
