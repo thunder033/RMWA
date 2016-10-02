@@ -2,7 +2,7 @@
 /**
  * Created by gjrwcs on 9/15/2016.
  */
-app.directive('controlPanel', function(Visualizer, Effects){
+app.directive('controlPanel', function(Visualizer, Effects, Scheduler){
     return {
         restrict: 'E',
         replace: true,
@@ -13,7 +13,9 @@ app.directive('controlPanel', function(Visualizer, Effects){
             
             scope.setCircleRadius = function(value){
                 Visualizer.setCircleRadius(value);
-            }
+            };
+
+            Scheduler.schedule(()=>scope.$apply());
         }
     }
 });

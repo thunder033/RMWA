@@ -7,6 +7,13 @@
         <label>{{ effect | capitalize }} <input type="checkbox" checklist-value="effect" checklist-model="visualizer.effects" ></label>
     </label>
 
+    <div class="waveform">
+        Peak: <span ng-bind="visualizer.waveform.peak"></span><br>
+        Trough: <span ng-bind="visualizer.waveform.trough"></span><br>
+        Distance: <span> {{ visualizer.waveform.peakDistance }}</span><br>
+        Period: <span ng-bind="visualizer.waveform.period"></span>
+    </div>
+
     <!--<span>{{ visualizer.effects.join(' ') }}</span>-->
 
     <br>

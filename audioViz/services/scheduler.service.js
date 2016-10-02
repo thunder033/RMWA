@@ -4,9 +4,9 @@
 "use strict";
 app.constant('MaxFrameRate', 60)
     .service("Scheduler", function(MaxFrameRate){
-        var updateOperations = [],
-            drawCommands = [],
-            postDrawCommands = [],
+        var updateOperations = new PriorityQueue(),
+            drawCommands = new PriorityQueue(),
+            postDrawCommands = new PriorityQueue(),
 
             timestep = 1000 / MaxFrameRate,
             fps = MaxFrameRate,
@@ -20,21 +20,22 @@ app.constant('MaxFrameRate', 60)
 
         function update(deltaTime, elapsedTime) {
             //reset draw commands to prevent duplicate frames being rendered
-            drawCommands.length = 0;
-            postDrawCommands.length = 0;
+            drawCommands.clear();
+            postDrawCommands.clear();
 
-            for(var i = 0; i < updateOperations.length; i++){
-                updateOperations[i].command.call(null, deltaTime, elapsedTime);
+            var opsIterator = updateOperations.getIterator();
+            while(!opsIterator.isEnd()){
+                opsIterator.next().call(null, deltaTime, elapsedTime);
             }
         }
 
         function draw(deltaTime, elapsedTime) {
-            for(var i = 0; i < drawCommands.length; i++){
-                drawCommands[i].command.call(null, deltaTime, elapsedTime);
+            while(drawCommands.peek() != null){
+                drawCommands.dequeue().call(null, deltaTime, elapsedTime);
             }
 
-            for(var j = 0; j < postDrawCommands.length; j++) {
-                postDrawCommands[j].command.call(null, deltaTime, elapsedTime);
+            while(postDrawCommands.peek() != null){
+                postDrawCommands.dequeue().call(null, deltaTime, elapsedTime);
             }
         }
 
@@ -75,20 +76,10 @@ app.constant('MaxFrameRate', 60)
             requestAnimationFrame(mainLoop);
         }
 
-        function getPriorityIndex(priority, queue){
-            var index = queue.length;
-            //Find the next index to draw at
-            while(index > 0 && queue[index - 1].priority > priority){
-                index--;
-            }
-            return index;
-        }
-
         function scheduleCommand(command, priority, queue) {
             if(command instanceof Function){
                 priority = priority || 0;
-                var index  = getPriorityIndex(priority, queue);
-                queue.splice(index, 0, {command: command, priority: priority});
+                queue.enqueue(priority, command);
             }
             else {
                 throw new TypeError("Operation must be a function");

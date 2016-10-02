@@ -2,8 +2,8 @@
  * Created by gjr8050 on 9/16/2016.
  */
 "use strict";
-app.constant('SAMPLE_COUNT', 256)
-    .service('AudioPlayerService', function(SAMPLE_COUNT, AudioClipService){
+app.constant('SampleCount', 1024)
+    .service('AudioPlayerService', function(SampleCount, AudioClipService){
 
         var playing = null,
             analyzerNode = null,
@@ -62,7 +62,7 @@ app.constant('SAMPLE_COUNT', 256)
                  */
 
                 // fft stands for Fast Fourier Transform
-                analyserNode.fftSize = SAMPLE_COUNT;
+                analyserNode.fftSize = SampleCount;
 
                 // this is where we hook up the <audio> element to the analyserNode
                 sourceNode = audioCtx.createMediaElementSource(audioElement);
