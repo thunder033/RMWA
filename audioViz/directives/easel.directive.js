@@ -35,7 +35,7 @@ app.directive('easel', function(EaselService, Scheduler){
                 Scheduler.draw(()=>EaselService.clearCanvas(ctx), -1);
                 Scheduler.draw((deltaTime, elapsedTime) => {
 
-                    ctx.fillStyle = '#ffc61a';
+                    ctx.fillStyle = '#200';
                     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
                     ctx.fillStyle = "#fff";

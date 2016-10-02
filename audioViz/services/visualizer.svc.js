@@ -17,7 +17,8 @@ app.constant('Effects', Object.freeze({
         }
 
         //The average of the frequency values from the last frame
-        var lastFrameAvg = 0;
+        var lastFrameAvg = 0,
+            frameAvg = 0;
         //The maximum range of values with valid data present in the clip
         var dataLimit = 0,
             angle = 0;
@@ -146,10 +147,7 @@ app.constant('Effects', Object.freeze({
             return limit - limit % 2;
         }
 
-        function drawArcs(ctx, data){
-            var canvas = ctx.canvas,
-                origin = {x: canvas.width / 2, y: canvas.height / 2};
-
+        function drawPulses(ctx, canvas, origin){
             //PULSES
             var vel = (1 / visualizer.waveform.period) / 20000;
             if(vel > visualizer.velocity){
@@ -170,8 +168,8 @@ app.constant('Effects', Object.freeze({
                     //I'm sure there's a name for this, but this math makes the opacity fall off after reaching a stop value of .5
                     a = stopPos > .5 ? (1 - (stopPos - .5) * 2) : 1,
                     opacity = a * a * pulse.energy;
-                gradient2.addColorStop(stopPos, 'rgba(125,100,20,' + opacity + ')');
-                gradient2.addColorStop(stopEnd, 'rgba(125,100,20,0)');
+                gradient2.addColorStop(stopPos, 'rgba(255,255,255,' + opacity + ')');
+                gradient2.addColorStop(stopEnd, 'rgba(255,255,255,0)');
             }
 
             while(pulses.peek() && pulses.peek().pos > 1){
@@ -183,59 +181,58 @@ app.constant('Effects', Object.freeze({
             ctx.moveTo(origin.x, origin.y);
             ctx.arc(origin.x, origin.y, canvas.width / 2, 0, 2 * Math.PI);
             ctx.fill();
+        }
+
+        function drawArcSet(ctx, data, start, end, stroke, fill, interval){
+            interval = interval || 1;
+
+            //The length of each arc
+            var arcLength = (4 * Math.PI) / dataLimit,
+                canvas = ctx.canvas,
+                origin = {x: canvas.width / 2, y: canvas.height / 2};
+
+            //ctx.fillStyle = "#55aaff";
+            ctx.fillStyle = fill;
+            ctx.strokeStyle = stroke;
+            ctx.beginPath();
+            // loop through the data and draw!
+            for (var i = start; i < end; i += interval) {
+
+                if(data[i] > 0){
+                    ctx.moveTo(origin.x, origin.y);
+                    //Fudge the radius of the arcs based on the overall average of the previous range to the whole set of arcs is fuller
+                    var r = (canvas.width / 2) * ((data[i] + lastFrameAvg) / 512);
+                    ctx.arc(origin.x, origin.y, r, angle + i * arcLength, angle + (i + 1) * arcLength);
+                    ctx.closePath();
+                }
+
+                //Add the current value to the average
+                frameAvg += data[i] / dataLimit;
+            }
+
+            ctx.fill();
+            //ctx.stroke();
+        }
+
+        function drawArcs(ctx, data){
+            var canvas = ctx.canvas,
+                origin = {x: canvas.width / 2, y: canvas.height / 2};
+
+            drawPulses(ctx, canvas, origin);
 
             //keep track of how many indices in the data array actually have values
             //This prevents a large slice of the visualizer from being empty early in the song or for songs that smaller range of data
             dataLimit = getDataLimit(data, dataLimit);
 
-            //The length of each arc
-            var arcLength = (4 * Math.PI) / dataLimit;
-
-            var frameAvg = 0;
-            //ctx.fillStyle = "#55aaff";
-            ctx.fillStyle = "#000";
-            ctx.strokeStyle = "#fc0";
-            ctx.beginPath();
-            // loop through the data and draw!
-            for (var i = 0; i < dataLimit / 2; i++) {
-
-                if(data[i] > 0){
-                    ctx.moveTo(origin.x, origin.y);
-                    //Fudge the radius of the arcs based on the overall average of the previous range to the whole set of arcs is fuller
-                    ctx.arc(origin.x, origin.y, (canvas.width / 2) * ((data[i] + lastFrameAvg) / 512), angle + i * arcLength, angle + (i + 1) * arcLength);
-                    ctx.closePath();
-                }
-
-                //Add the current value to the average
-                frameAvg += data[i] / dataLimit;
-            }
-
-            ctx.fill();
-            ctx.stroke();
-
-            ctx.fillStyle = "rgba(100, 50, 200, .5)";
-            ctx.strokeStyle = "rgba(0, 0, 50, .5)";
-            ctx.beginPath();
-
-            for (i; i < dataLimit; i++) {
-
-                if(data[i] > 0){
-                    ctx.moveTo(origin.x, origin.y);
-                    //Fudge the radius of the arcs based on the overall average of the previous range to the whole set of arcs is fuller
-                    ctx.arc(origin.x, origin.y, (canvas.width / 2) * ((data[i] + lastFrameAvg) / 512), -angle + i * arcLength, -angle + (i + 1) * arcLength);
-                    ctx.closePath();
-                }
-
-                //Add the current value to the average
-                frameAvg += data[i] / dataLimit;
-            }
-
-            ctx.fill();
-            ctx.stroke();
+            frameAvg = 0;
+            drawArcSet(ctx, data, 0, dataLimit / 2, '#fc0', 'rgba(210,10,10,.75)', 2);
+            drawArcSet(ctx, data, 1, dataLimit / 2 + 1, '#fc0', 'rgba(120,10,10,.65)', 2);
+            drawArcSet(ctx, data, dataLimit / 2, dataLimit, "rgba(0, 0, 50, .5)", "rgba(230, 120, 120, .5)", 2);
+            drawArcSet(ctx, data, dataLimit / 2 + 1, dataLimit - 1, "rgba(0, 0, 50, .5)", "rgba(255, 170, 170, .5)", 2);
 
             var gradient = ctx.createRadialGradient(origin.x, origin.y, frameAvg / 10, origin.x, origin.y, frameAvg);
-            gradient.addColorStop(0, "#000");
-            gradient.addColorStop(1, "rgba(0,0,0,0)");
+            gradient.addColorStop(0, "#fff");
+            gradient.addColorStop(1, "rgba(255,255,255,0)");
 
             ctx.fillStyle = gradient;
             ctx.beginPath();
