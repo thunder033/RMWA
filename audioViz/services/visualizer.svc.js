@@ -267,15 +267,33 @@ app.constant('Effects', Object.freeze({
 
             var frequencyInterval = MaxFrequency / data.length;
 
+            //Pre-render a single arc so it can be transformed fro each section of the pinwheel
+            var cacheCtx = EaselService.getContext('arcRender');
+            cacheCtx.clearRect(0, 0, cacheCtx.canvas.width, cacheCtx.canvas.height);
+            cacheCtx.canvas.height = Math.sin(arcLength) * canvas.height;
+            cacheCtx.fillStyle = fill;
+            cacheCtx.beginPath();
+            cacheCtx.moveTo(0, 0);
+            cacheCtx.arc(0, 0, canvas.width / 2, 0, arcLength);
+            cacheCtx.closePath();
+            cacheCtx.fill();
+
+            var arcBuffer = cacheCtx.canvas;
+            ctx.save();
+            ctx.translate(origin.x, origin.y);
+            ctx.rotate(angle + start * arcLength);
             // loop through the data and draw!
             for (var i = start; i < end; i += interval) {
 
+                ctx.rotate(arcLength * interval);
                 if (data[i] > 0) {
-                    ctx.moveTo(origin.x, origin.y);
-                    //Fudge the radius of the arcs based on the overall average of the previous range to the whole set of arcs is fuller
-                    var r = (canvas.width / 2) * ((data[i] + lastFrameAvg) / (SampleCount / 2));
-                    ctx.arc(origin.x, origin.y, r, angle + i * arcLength, angle + (i + 1) * arcLength);
-                    ctx.closePath();
+                    var maxLoudness = 256;
+                    // //Fudge the radius of the arcs based on the overall average of the previous range to the whole set of arcs is fuller
+                    var scale = ((data[i] + lastFrameAvg) / (maxLoudness * 2));
+                    ctx.save();
+                    ctx.scale(scale, scale);
+                    ctx.drawImage(arcBuffer, 0, 0);
+                    ctx.restore();
 
                     //Check if this value is a max in it's range
                     var frequency = frequencyInterval * i,
@@ -290,7 +308,7 @@ app.constant('Effects', Object.freeze({
                 frameAvg += data[i] / dataLimit;
             }
 
-            ctx.fill();
+            ctx.restore();
         }
 
         /**
@@ -412,6 +430,8 @@ app.constant('Effects', Object.freeze({
             //reset frequency maxes and average volume of frame
             visualizer.frequencyMaxes.fill(0);
             frameAvg = 0;
+
+            //EaselService.getContext('arcRender').canvas.height = ctx.canvas.height / 10;
 
             //Draw each set of arcs
             var darkBack = hsla(visualizer.hue, '84%', '25%', .65),
