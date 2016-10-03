@@ -1,27 +1,25 @@
 <div class="control-panel">
+    <span>Playing: {{ clip.name }}</span>
     <audio-player></audio-player>
 
     <br>
     <h4>Effects</h4>
-    <label ng-repeat="(name, effect) in effects" class="effectOption">
-        <label>{{ effect | capitalize }} <input type="checkbox" checklist-value="effect" checklist-model="visualizer.effects" ></label>
+    <label ng-repeat="(name, effect) in effects" class="toggleButton effectOption">
+        <input type="checkbox" checklist-value="effect" checklist-model="visualizer.effects" ><span>{{ effect | capitalize }} </span>
     </label>
 
-    <div class="waveform">
-        Peak: <span ng-bind="visualizer.waveform.peak"></span><br>
-        Trough: <span ng-bind="visualizer.waveform.trough"></span><br>
-        Distance: <span> {{ visualizer.waveform.peakDistance }}</span><br>
-        Period: <span ng-bind="visualizer.waveform.period"></span>
-    </div>
-
-    <!--<span>{{ visualizer.effects.join(' ') }}</span>-->
-
-    <br>
-    <label>Circle Radius:
-        <input type="range" min="50" max="400" ng-model="visualizer.maxRadius">
+    <label class="select-box">Noise Amount
+        <input type="range" min="0" max="1" ng-model="visualizer.noiseThreshold" step="0.01">
     </label>
 
-    <span>{{ visualizer.maxRadius }}</span>
+    <label class="color-input"><span>Visualization Color </span>
+        <div class="strip"></div>
+        <input type="range" min="0" max="360" ng-model="visualizer.hue">
+    </label>
+
+    <label class="select-box">Reverb Effect
+        <select ng-model="reverbEffect" ng-options="effect as effect.name for effect in reverbEffects track by effect.id" ng-change="setReverbEffect()"></select>
+    </label>
 
     <h4>Songs</h4>
     <playlist></playlist>

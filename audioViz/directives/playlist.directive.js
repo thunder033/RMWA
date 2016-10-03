@@ -7,8 +7,10 @@ app.directive('playlist', function(AudioClipService, AudioPlayerService){
         restrict: 'E',
         replace: true,
         templateUrl: 'templates/playlist.html',
-        link: function(scope, elem){
-            scope.clips = AudioClipService.getAudioClips();
+        link: function(scope){
+            scope.clips = AudioClipService.getAudioClips('media');
+
+            console.log(scope.clips);
 
             scope.playClip = function(clipId) {
                 AudioPlayerService.playClip(clipId);

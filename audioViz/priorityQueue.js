@@ -48,6 +48,11 @@
         this.iterator = null;
     }
 
+    /**
+     * Add a new item to the queue according to the given priority
+     * @param priority
+     * @param item
+     */
     PriorityQueue.prototype.enqueue = function(priority, item){
 
         var node = new Node(priority, item);
@@ -74,6 +79,10 @@
         }
     };
 
+    /**
+     * Remove the next item from the queue
+     * @returns {*}
+     */
     PriorityQueue.prototype.dequeue = function(){
         if(this.root !== null){
             var node = this.root;
@@ -83,6 +92,10 @@
         return null;
     };
 
+    /**
+     * Get an iterate for the queue
+     * @returns {null|Iterator}
+     */
     PriorityQueue.prototype.getIterator = function () {
         if(this.iterator === null){
             this.iterator = new Iterator(this.root);
@@ -92,10 +105,17 @@
         return this.iterator;
     };
 
+    /**
+     * See the next item in queue
+     * @returns {null}
+     */
     PriorityQueue.prototype.peek = function(){
         return this.root ? this.root.item : null;
     };
 
+    /**
+     * Empty the queue
+     */
     PriorityQueue.prototype.clear = function(){
         this.root = null;
     };

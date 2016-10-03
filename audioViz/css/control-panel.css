@@ -1,3 +1,7 @@
+html, body {
+    overflow: hidden;
+}
+
 .control-panel {
     float: left;
     width: 25em;
@@ -8,11 +12,27 @@
     box-sizing: border-box;
 }
 
-.effectOption {
+.toggleButton span {
     margin: .5em .25em .5em 0;
     padding: .5em;
     border: 1px #aaa solid;
     display: inline-block;
+    cursor: pointer;
+}
+
+.toggleButton span:hover {
+    background: #999;
+}
+
+.toggleButton input {
+    height: 0;
+    width: 0;
+    padding: 0;
+    margin: 0;
+}
+
+.toggleButton input:checked + span {
+    background: #222;
 }
 
 .playing {
@@ -32,6 +52,46 @@
     position: absolute;
     top: 5px;
     left: -2em;
+}
+
+.color-input, .select-box {
+    background: #222;
+    padding: .5em;
+    margin: 0 0 .25em;
+    display: block;
+}
+
+.select-box select, .select-box input {
+    border: 0;
+    padding: .25em;
+    margin: -.25em 0 -.25em .5em;
+    vertical-align: middle;
+}
+
+.color-input .strip {
+    width: 12em;
+    margin: 0 0 -1.5em .4em;
+    height: 2em;
+    background: linear-gradient(to right,
+    rgba(255, 0, 0, 1),
+    rgba(255, 255, 0, 1),
+    rgba(0, 255, 0, 1),
+    rgba(0, 255, 255, 1),
+    rgba(0, 0, 255, 1),
+    rgba(255, 0, 255, 1),
+    rgba(255, 0, 0, 1));
+}
+
+.color-input input {
+    width: 15em;
+    height: 1em;
+    padding: 0;
+    margin-bottom: .5em;
+}
+
+.playlist {
+    overflow-y: scroll;
+    max-height: 13em;
 }
 
 .playlist ul {

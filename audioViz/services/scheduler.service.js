@@ -18,6 +18,11 @@ app.constant('MaxFrameRate', 60)
             elapsedTime = 0,
             lastFrameTime = 0;
 
+        /**
+         * Execute all update opeartions while preserving the queue
+         * @param deltaTime
+         * @param elapsedTime
+         */
         function update(deltaTime, elapsedTime) {
             //reset draw commands to prevent duplicate frames being rendered
             drawCommands.clear();
@@ -29,6 +34,11 @@ app.constant('MaxFrameRate', 60)
             }
         }
 
+        /**
+         * Execute all draw and post-draw commands, emptying each queue
+         * @param deltaTime
+         * @param elapsedTime
+         */
         function draw(deltaTime, elapsedTime) {
             while(drawCommands.peek() != null){
                 drawCommands.dequeue().call(null, deltaTime, elapsedTime);
@@ -39,6 +49,10 @@ app.constant('MaxFrameRate', 60)
             }
         }
 
+        /**
+         * Update the FPS value
+         * @param elapsedTime
+         */
         function updateFPS(elapsedTime) {
             framesThisSecond++;
             if(elapsedTime > lastFPSUpdate + 1000){
@@ -51,6 +65,7 @@ app.constant('MaxFrameRate', 60)
 
         /**
          * Derived From
+         * Isaac Sukin
          * http://www.isaacsukin.com/news/2015/01/detailed-explanation-javascript-game-loops-and-timing
          */
         function mainLoop(){
@@ -90,20 +105,38 @@ app.constant('MaxFrameRate', 60)
             get FPS(){
                 return fps;
             },
+            /**
+             * Initialize the main app loop
+             */
             startMainLoop() {
                 startTime = (new Date()).getTime();
                 lastFrameTime = (new Date()).getTime();
                 requestAnimationFrame(mainLoop);
             },
 
+            /**
+             * Schedule an update command to be executed each frame
+             * @param operation
+             * @param order
+             */
             schedule(operation, order) {
                scheduleCommand(operation, order, updateOperations);
             },
 
+            /**
+             * Queue a draw opeartion to be executed once and discarded
+             * @param operation
+             * @param zIndex
+             */
             draw(operation, zIndex) {
                 scheduleCommand(operation, zIndex, drawCommands);
             },
 
+            /**
+             * Queue a post process operation to be executed one and discarded
+             * @param operation
+             * @param zIndex
+             */
             postProcess(operation, zIndex) {
                 scheduleCommand(operation, zIndex, postDrawCommands);
             }

@@ -14,15 +14,21 @@ app.directive('easel', function(EaselService, Scheduler){
         replace: true,
         template: '<div class="easel"><canvas>Your browser does not support canvas</canvas></div>',
         link: function(scope, elem, attr){
-            console.log('link func');
+
             canvas = elem[0].querySelector('canvas');
+            canvas.style.background = "#200";
             ctx = canvas.getContext(attr.context || '2d');
 
             window.addEventListener('resize', ()=>EaselService.resizeCanvas(canvas, ctx));
             EaselService.resizeCanvas(canvas, ctx);
             EaselService.setActiveContext(ctx);
 
+            //Create a context to hold pre-rendered data
+            var baseCanvas = EaselService.context.canvas;
+            EaselService.createNewCanvas('quarterRender', baseCanvas.width / 2, baseCanvas.height / 2);
+
             Scheduler.schedule(()=>{
+                //Reduce canvas resolution is performance is bad
                 if(Scheduler.FPS < 30 && scale == 1){
                     scale = .75;
                     EaselService.resizeCanvas(canvas, ctx, scale);
@@ -33,17 +39,10 @@ app.directive('easel', function(EaselService, Scheduler){
                 }
 
                 Scheduler.draw(()=>EaselService.clearCanvas(ctx), -1);
-                Scheduler.draw((deltaTime, elapsedTime) => {
-
-                    ctx.fillStyle = '#200';
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
+                Scheduler.draw(()=>EaselService.clearCanvas(EaselService.getContext('quarterRender')), -1);
+                Scheduler.draw(() => {
                     ctx.fillStyle = "#fff";
-                    ctx.fillText("AUDIO VISUALIZER", 25, 25);
-
-                    ctx.fillText(elapsedTime, 25, 45);
-                    ctx.fillText(deltaTime, 25, 65);
-                    ctx.fillText(Scheduler.FPS, 25, 85)
+                    ctx.fillText("FPS: " + (~~Scheduler.FPS), 25, 25);
                 });
             });
 
