@@ -5,6 +5,9 @@
 var app = angular.module('audio-viz', ["checklist-model"])
     .run(function(Scheduler, AudioClipService, Visualizer, AudioPlayerService, MediaStates){
 
+        AudioPlayerService.getAnalyzerNode();
+        AudioPlayerService.getConvolverNode();
+
         AudioClipService.loadAudioClips([
             'Hallelujah.wav',
             'Be Concerned.mp3',
@@ -15,10 +18,12 @@ var app = angular.module('audio-viz', ["checklist-model"])
             'Beam (Orchestral Remix).mp3',
             'New Adventure Theme.mp3',
             'Peanuts Theme.mp3',
-            'The Picard Song.mp3'
+            'The Picard Song.mp3',
+            {name: 'Concert Hall.wav', type: 'reverbImpulse'},
+            {name: 'Arena.wav', type: 'reverbImpulse'},
+            {name: 'Bass Boost.wav', type: 'reverbImpulse'}
             //Were using the progress event so we don't wait for everything to load
         ]).then(null, null, function(clip){
-            console.log(clip);
             //Play Trees when it finishes loading
             if(clip.name == "Trees" && clip.state == MediaStates.READY)
                 AudioPlayerService.playClip("Trees");

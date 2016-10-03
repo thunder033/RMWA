@@ -6,7 +6,10 @@ app.constant('SampleCount', 1024)
     .service('AudioPlayerService', function(SampleCount, AudioClipService){
 
         var playing = null,
+            sourceNode = null,
+            audioCtx = null,
             analyzerNode = null,
+            convolverNode = null,
             player;
 
         var playHooks = [];
@@ -42,12 +45,51 @@ app.constant('SampleCount', 1024)
                 return analyzerNode;
             },
 
-            createAnalyzerNode(audioElement){
-                var audioCtx, analyserNode, sourceNode;
+            setConvolverImpulse(impulseData){
+                audioCtx.decodeAudioData(impulseData, buffer=>{
+                    convolverNode.buffer = buffer;
+                    convolverNode.loop = true;
+                    convolverNode.normalize = true;
+                    convolverNode.connect(audioCtx.destination);
+                });
+            },
+
+            disableConvolverNode(){
+                if(convolverNode){
+                    convolverNode.disconnect();
+                }
+            },
+
+            getConvolverNode(){
+                if(!convolverNode && player){
+                    convolverNode = audioPlayerService.createConvolverNode(player);
+                }
+
+                return convolverNode;
+            },
+
+            createAudioContextAndSource(audioElement){
                 // create new AudioContext
                 // The || is because WebAudio has not been standardized across browsers yet
                 // http://webaudio.github.io/web-audio-api/#the-audiocontext-interface
-                audioCtx = new (window.AudioContext || window.webkitAudioContext);
+                audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext);
+
+                sourceNode = sourceNode || audioCtx.createMediaElementSource(audioElement);
+            },
+
+            createConvolverNode(audioElement){
+                this.createAudioContextAndSource(audioElement);
+
+                var convolver = audioCtx.createConvolver();
+
+                (analyzerNode || sourceNode).connect(convolver);
+
+                return convolver;
+            },
+
+            createAnalyzerNode(audioElement){
+                var analyserNode;
+                this.createAudioContextAndSource(audioElement);
 
                 // create an analyser node
                 analyserNode = audioCtx.createAnalyser();
@@ -65,7 +107,6 @@ app.constant('SampleCount', 1024)
                 analyserNode.fftSize = SampleCount;
 
                 // this is where we hook up the <audio> element to the analyserNode
-                sourceNode = audioCtx.createMediaElementSource(audioElement);
                 sourceNode.connect(analyserNode);
 
                 // here we connect to the destination i.e. speakers
