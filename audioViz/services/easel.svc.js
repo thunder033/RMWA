@@ -4,15 +4,44 @@
 "use strict";
 app.service('EaselService', function () {
 
-    var canvas = null,
-        ctx = null;
+    var contexts = {},
+        defaultKey = 'default';
 
     return {
         get context() {
-            return ctx;
+            return contexts[defaultKey];
+        },
+        createNewCanvas(contextKey, width, height){
+            var canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+
+            contexts[contextKey] = canvas.getContext('2d');
+        },
+        getContext(contextKey){
+            return contexts[contextKey];
+        },
+        /**
+         * Use a symmetric quarter render to fill canvas
+         * @param ctx
+         * @param image
+         * @param origin
+         */
+        drawQuarterRender(ctx, image, origin){
+            ctx.drawImage(image, origin.x, origin.y);
+
+            ctx.save();
+            ctx.translate(origin.x, origin.y);
+            ctx.scale(-1, 1);
+            ctx.drawImage(image, 0, 0);
+            ctx.scale(1, -1);
+            ctx.drawImage(image, 0, 0);
+            ctx.scale(-1, 1);
+            ctx.drawImage(image, 0, 0);
+            ctx.restore();
         },
         setActiveContext(newContext){
-            ctx = newContext;
+            contexts[defaultKey] = newContext;
         },
         clearCanvas(ctx){
             ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);

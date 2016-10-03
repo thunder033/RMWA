@@ -4,16 +4,22 @@
 "use strict";
 app.constant('Effects', Object.freeze({
         NOISE: 'NOISE',
-        TINT_RED: 'TINT_RED',
         INVERT: 'INVERT',
-        LINES: 'LINES',
         DESATURATE: 'DESATURATE'
     }))
-    .service('Visualizer', function(Scheduler, AudioPlayerService, EaselService, SampleCount, Effects){
+    .constant('MaxFrequency', 21050)
+    .constant('FrequencyRanges', [
+        0, 60, 250, 2000, 6000, 21050
+    ])
+    .service('Visualizer', function(Scheduler, AudioPlayerService, EaselService, SampleCount, Effects, FrequencyRanges, MaxFrequency){
 
         // HELPER
-        function makeColor(red, green, blue, alpha){
+        function rgba(red, green, blue, alpha){
             return 'rgba('+red+','+green+','+blue+', '+alpha+')';
+        }
+
+        function hsla(hue, saturation, lightness, alpha){
+            return `hsla(${hue},${saturation},${lightness},${alpha})`;
         }
 
         //The average of the frequency values from the last frame
@@ -23,8 +29,9 @@ app.constant('Effects', Object.freeze({
         var dataLimit = 0,
             angle = 0;
 
-        //pulse values
-        var pulses = new PriorityQueue();
+        //pulse values - these don't strictly need priority queues, but they work
+        var radialPulses = new PriorityQueue(), //pulses generated from waveform - drawn as circles
+            linearPulses = []; //pulses generated from frequency - drawn as bulges across center
 
         var visualizer = {
             init(){
@@ -32,7 +39,6 @@ app.constant('Effects', Object.freeze({
                 AudioPlayerService.addPlayEventListener(visualizer.reset);
             },
             reset(){
-                console.log(dataLimit);
                 dataLimit = 0;
             },
             //This value is data bound to the slider
@@ -41,8 +47,14 @@ app.constant('Effects', Object.freeze({
             brightness: 1,
             effects: [],
             waveform: {},
-            velocity: 0
+            velocity: 0,
+            hue: 0,
+            noiseThreshold: .1,
+            frequencyMaxes: new Uint8Array(FrequencyRanges.length),
+            frequencyAverages: new Array(FrequencyRanges.length)
         };
+
+        visualizer.frequencyAverages.fill(0);
 
         function getActiveEffects() {
             var effects = {};
@@ -63,27 +75,15 @@ app.constant('Effects', Object.freeze({
 
             var data = imgData.data,
                 length = data.length,
-                width = imgData.width,
+                noiseThreshold = parseFloat(visualizer.noiseThreshold),
                 activeEffects = getActiveEffects();
 
+
+
             for(var i = 0; i < length; i += 4){
-                //explicit checks for true are faster
-                if(activeEffects[Effects.TINT_RED] === true){
-                    data[i] += 100;
-                }
 
-                if(activeEffects[Effects.LINES] === true){
-                    var row = ~~(i/4/width);
-                    if(row % 50 == 0){
-                        data[i] = data[i + 1] = data[i + 2] = 255;
-
-                        var nextRow = width * 4;
-                        data[i + nextRow] = data[i + nextRow + 1] = data[i + nextRow + 2] = 255;
-                    }
-                }
-
-                if(activeEffects[Effects.NOISE] === true && Math.random() < .1){
-                    data[i] = data[i + 1] = data[i + 2] = 128;
+                if(activeEffects[Effects.NOISE] === true && Math.random() < noiseThreshold){
+                    data[i] = data[i + 1] = data[i + 2] = 255 * Math.random();
                 }
 
                 if(activeEffects[Effects.INVERT] === true){
@@ -102,17 +102,23 @@ app.constant('Effects', Object.freeze({
             ctx.putImageData(imgData, 0, 0);
         }
 
-        function analyzeWaveform(waveform){
+        /**
+         * Calculate the peak, trough, and period of the waveform
+         * @param {Array} waveform
+         * @param {Object} outResults
+         */
+        function analyzeWaveform(waveform, outResults){
             var peakMax = -Number.MAX_VALUE,
                 troughMin = Number.MAX_VALUE,
                 peakDistance = 0;
 
-            //Find the peek value of the wave
+            //Find the peak value of the wave and position of the first peak
             var i = 0;
             while(waveform[i] > peakMax){
                 peakMax = waveform[i++];
             }
 
+            //Find the trough and the period
             while(waveform[++i] < peakMax || troughMin >= peakMax){
                 peakDistance++;
                 if(waveform[i] < troughMin){
@@ -124,19 +130,20 @@ app.constant('Effects', Object.freeze({
                 }
             }
 
-            // return {
-            //     peak: peakMax,
-            //     peakDistance: i,
-            //     trough: troughMin,
-            //     period: peakDistance / SampleCount * 2
-            // }
-
-            visualizer.waveform.peak = peakMax;
-            visualizer.waveform.peakDistance = peakDistance;
-            visualizer.waveform.trough = troughMin;
-            visualizer.waveform.period = peakDistance / SampleCount * 2
+            //Set the values on the object to maintain object references
+            outResults.peak = peakMax;
+            outResults.peakDistance = peakDistance;
+            outResults.trough = troughMin;
+            outResults.amplitude = peakMax - troughMin;
+            outResults.period = peakDistance / SampleCount * 2
         }
 
+        /**
+         * Find the highest index in the data set that has significant values
+         * @param data
+         * @param start
+         * @returns {number}
+         */
         function getDataLimit(data, start){
             var limit = start || 0;
             for(var i = start; i < data.length; i++){
@@ -144,28 +151,30 @@ app.constant('Effects', Object.freeze({
                     limit = i;
                 }
             }
-            return limit - limit % 2;
+            //make the limit an even number to avoid weird overlaps in the arcs
+            return limit - (limit % 2);
         }
 
-        function drawPulses(ctx, canvas, origin){
+        function drawQuarterRadialPulses(ctx, origin, maxRadius){
             //PULSES
             //Derive new velocity value from the period the waveform
             var vel = (1 / visualizer.waveform.period) / 20000;
 
             //If the new velocity is greater than current, generate a new pulse
             if(vel > visualizer.velocity){
-                var energy = Math.min((visualizer.waveform.peak - visualizer.waveform.trough) / 10, 1);
-                pulses.enqueue(0, {pos: 0, energy: energy});
+                var energy = Math.min((visualizer.waveform.amplitude) / 10, 1);
+                radialPulses.enqueue(0, {pos: 0, energy: energy});
             }
 
             //Either keep the new, higher velocity, or decay the existing velocity
-            visualizer.velocity = vel > visualizer.velocity ? vel : visualizer.velocity * .97;
+            var decayRate = 0.03;
+            visualizer.velocity = vel > visualizer.velocity ? vel : visualizer.velocity * (1 - decayRate);
 
             //Create a gradient that will show the pulses
-            var gradient2 = ctx.createRadialGradient(origin.x, origin.y, lastFrameAvg / 10, origin.x, origin.y, canvas.width / 2);
+            var gradient2 = ctx.createRadialGradient(origin.x, origin.y, lastFrameAvg / 10, origin.x, origin.y, maxRadius);
 
             //Add stops for each pulse
-            var it = pulses.getIterator(), pulse;
+            var it = radialPulses.getIterator(), pulse;
             while(!it.isEnd()){
                 pulse = it.next();
                 pulse.pos += .008;
@@ -175,24 +184,42 @@ app.constant('Effects', Object.freeze({
                     //I'm sure there's a name for this, but this math makes the opacity fall off after reaching a stop value of .5
                     a = stopPos > .5 ? (1 - (stopPos - .5) * 2) : 1,
                     opacity = a * a * pulse.energy;
-                gradient2.addColorStop(stopPos, 'rgba(255,255,255,' + opacity + ')');
-                gradient2.addColorStop(stopEnd, 'rgba(255,255,255,0)');
+
+                gradient2.addColorStop(stopPos, rgba(255, 255, 255, opacity));
+                gradient2.addColorStop(stopEnd, rgba(255, 255, 255, 0));
             }
 
             //Remove pulses that are outside the cirlce
-            while(pulses.peek() && pulses.peek().pos > 1){
-                pulses.dequeue();
+            while(radialPulses.peek() && radialPulses.peek().pos > 1){
+                radialPulses.dequeue();
             }
 
-            //Draw everything
+            //Draw a quarter of of the pulses so we can copy and paste
             ctx.fillStyle = gradient2;
             ctx.beginPath();
             ctx.moveTo(origin.x, origin.y);
-            ctx.arc(origin.x, origin.y, canvas.width / 2, 0, 2 * Math.PI);
+            ctx.arc(origin.x, origin.y, maxRadius, 0, Math.PI / 2);
             ctx.fill();
         }
 
-        function drawArcSet(ctx, data, start, end, stroke, fill, interval){
+        /**
+         * Get the index of the range the frequency falls into
+         * @param frequency
+         * @returns {number}
+         */
+        function getRangeIndex(frequency){
+            var index = 0;
+            while(frequency > FrequencyRanges[index]){
+                index++;
+
+                if(index >= FrequencyRanges.length){
+                    return index;
+                }
+            }
+            return index;
+        }
+
+        function drawArcSet(ctx, data, start, end, fill, interval){
             interval = interval || 1;
 
             //The length of each arc
@@ -200,19 +227,28 @@ app.constant('Effects', Object.freeze({
                 canvas = ctx.canvas,
                 origin = {x: canvas.width / 2, y: canvas.height / 2};
 
-            //ctx.fillStyle = "#55aaff";
             ctx.fillStyle = fill;
-            ctx.strokeStyle = stroke;
             ctx.beginPath();
+
+            var frequencyInterval = MaxFrequency / data.length;
+
             // loop through the data and draw!
             for (var i = start; i < end; i += interval) {
 
                 if(data[i] > 0){
                     ctx.moveTo(origin.x, origin.y);
                     //Fudge the radius of the arcs based on the overall average of the previous range to the whole set of arcs is fuller
-                    var r = (canvas.width / 2) * ((data[i] + lastFrameAvg) / 512);
+                    var r = (canvas.width / 2) * ((data[i] + lastFrameAvg) / (SampleCount / 2));
                     ctx.arc(origin.x, origin.y, r, angle + i * arcLength, angle + (i + 1) * arcLength);
                     ctx.closePath();
+
+                    //Check if this value is a max in it's range
+                    var frequency = frequencyInterval * i,
+                        rangeIndex = getRangeIndex(frequency);
+
+                    if(data[i] > visualizer.frequencyMaxes[rangeIndex]){
+                        visualizer.frequencyMaxes[rangeIndex] = data[i];
+                    }
                 }
 
                 //Add the current value to the average
@@ -220,25 +256,119 @@ app.constant('Effects', Object.freeze({
             }
 
             ctx.fill();
-            //ctx.stroke();
         }
 
-        function drawArcs(ctx, data){
-            var canvas = ctx.canvas,
-                origin = {x: canvas.width / 2, y: canvas.height / 2};
+        function renderPulse(pulse, ctx, origin, width, height){
+            var curveSize = width / 12,
+                curveScale = width / 2 - curveSize,
+                curveStartX = origin.x + curveSize + curveScale * pulse.position - curveSize;
 
-            drawPulses(ctx, canvas, origin);
+            ctx.beginPath();
+            ctx.moveTo(curveStartX, origin.y);
 
+            var cp1x = curveStartX + curveSize / 3;
+            var cp2x = curveStartX + 2 * curveSize / 3;
+            //favor lower end of the frequency spectrum
+            var weight = pulse.energy < .1 ? (pulse.energy) * 10 : 1;
+            var positionWeight = pulse.position < .15 ? pulse.position / .15 : 1;
+            var cp1y = origin.y;
+            var cp2y = origin.y + pulse.magnitude * weight * positionWeight + (Math.random() * height / 100);
+
+            ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, curveStartX + curveSize, origin.y);
+            ctx.closePath();
+
+            var alpha = .5 + .5 * ((1 - pulse.frequencyRange) / FrequencyRanges.length);
+            ctx.fillStyle = rgba(255, 255, 255, alpha);
+            ctx.fill();
+        }
+
+        function drawQuarterLinearPulses(ctx, origin, width, height){
+            //Linear Pulses
+            var pulseDecayRate = .04, //The rate at which the energy pulses decay - how long they persist
+                pulseThreshold = .0001, //The minimum energy value a pulse must have to be rendered
+                pulseVelocity = 0.005 + visualizer.velocity / 1.7, //The speed at which pulses travel from center (0) to edge (1)
+                nextPulses = [], //The pulses that will be rendered next frame
+                largestPulses = new Array(FrequencyRanges.length); //Array of highest energy pulses for each frequency range
+
+            largestPulses.fill(0);
+
+            //Update and render each pulse
+            linearPulses.forEach(function(pulse){
+                //Don't worry about pulses that are too weak to show up
+                if(pulse.energy > pulseThreshold){
+
+                    //Update pulse properties
+                    pulse.energy *= (1 - pulseDecayRate);
+                    pulse.position += pulse.position > .85 ? pulseVelocity * ((1 - pulse.position) / .15) : pulseVelocity;
+
+                    renderPulse(pulse, ctx, origin, width, height);
+
+                    //Record the pulse with the highest remaining energy
+                    if(pulse.energy * pulse.volume > largestPulses[pulse.frequencyRange]){
+                        largestPulses[pulse.frequencyRange] = pulse.energy * pulse.volume;
+                    }
+
+                    //queue the pulse to rendered next round
+                    nextPulses.push(pulse);
+                }
+            });
+
+            //Create new pulses for each frequency range that has a high enough frequency
+            for(var i = 0; i < FrequencyRanges.length; i++){
+                if(visualizer.frequencyMaxes[i] > largestPulses[i] * 2){
+                    nextPulses.push({
+                        //where the pulse is positioned
+                        position: 0,
+                        //how much longer the pulse will be displayed
+                        energy: 0.5 + (FrequencyRanges.length - i) * (0.5 / FrequencyRanges.length),
+                        //how large the pulse appears - derived from frequency, loudness, waveform amplitude
+                        magnitude: (FrequencyRanges.length - i) * (visualizer.waveform.amplitude / 20) * (visualizer.frequencyMaxes[i] / 40),
+                        //how loud the pulse when it was generated
+                        volume: visualizer.frequencyMaxes[i],
+                        //frequency range the pulse was generated for
+                        frequencyRange: i
+                    })
+                }
+            }
+
+            //Set the collection of pulses for the next frame
+            linearPulses = nextPulses;
+        }
+
+        function drawRadialPulses(origin, ctx){
+            var quarterCtx = EaselService.getContext('quarterRender');
+            drawQuarterRadialPulses(quarterCtx, {x: 0, y: 0}, ctx.canvas.width / 2);
+            EaselService.drawQuarterRender(ctx, quarterCtx.canvas, origin);
+        }
+
+        function drawLinearPulses(origin, ctx) {
+            var quarterCtx = EaselService.getContext('quarterRender');
+            EaselService.clearCanvas(quarterCtx);
+            drawQuarterLinearPulses(quarterCtx, {x: 0, y: 0}, ctx.canvas.width, ctx.canvas.height);
+            EaselService.drawQuarterRender(ctx, quarterCtx.canvas, origin);
+        }
+
+        function drawArcs(origin, ctx, data){
             //keep track of how many indices in the data array actually have values
             //This prevents a large slice of the visualizer from being empty early in the song or for songs that smaller range of data
             dataLimit = getDataLimit(data, dataLimit);
 
+            //reset frequency maxes and average volume of frame
+            visualizer.frequencyMaxes.fill(0);
             frameAvg = 0;
-            drawArcSet(ctx, data, 0, dataLimit / 2, '#fc0', 'rgba(210,10,10,.75)', 2);
-            drawArcSet(ctx, data, 1, dataLimit / 2 + 1, '#fc0', 'rgba(120,10,10,.65)', 2);
-            drawArcSet(ctx, data, dataLimit / 2, dataLimit, "rgba(0, 0, 50, .5)", "rgba(230, 120, 120, .5)", 2);
-            drawArcSet(ctx, data, dataLimit / 2 + 1, dataLimit - 1, "rgba(0, 0, 50, .5)", "rgba(255, 170, 170, .5)", 2);
 
+            //Draw each set of arcs
+            var darkBack = hsla(visualizer.hue, '84%', '25%', .65),
+                lightBack = hsla(visualizer.hue, '90%', '43%', .75),
+                darkFront = hsla(visualizer.hue, '70%', '70%', .5),
+                lightFront = hsla(visualizer.hue, '55%', '78%', .5);
+
+            drawArcSet(ctx, data, 0, dataLimit / 2, lightBack, 2); //skip every other
+            drawArcSet(ctx, data, 1, dataLimit / 2 + 1, darkBack, 2); //offset by 1 and skip ever other arc
+            drawArcSet(ctx, data, dataLimit / 2, dataLimit, darkFront, 2); //start at middle, skip every other
+            drawArcSet(ctx, data, dataLimit / 2 + 1, dataLimit - 1, lightFront, 2); //start middle, offset by 1, skip every other
+
+            //Draw circle in center of arcs
             var gradient = ctx.createRadialGradient(origin.x, origin.y, frameAvg / 10, origin.x, origin.y, frameAvg);
             gradient.addColorStop(0, "#fff");
             gradient.addColorStop(1, "rgba(255,255,255,0)");
@@ -258,6 +388,7 @@ app.constant('Effects', Object.freeze({
 
         function update() {
             var analyzerNode = AudioPlayerService.getAnalyzerNode();
+            AudioPlayerService.getConvolverNode();
 
             if (!analyzerNode) {
                 return;
@@ -265,16 +396,24 @@ app.constant('Effects', Object.freeze({
 
             var data = new Uint8Array(SampleCount / 2),
                 waveform = new Uint8Array(SampleCount / 2);
+
             // populate the array with the frequency data
             analyzerNode.getByteFrequencyData(data);
 
-            // OR
             analyzerNode.getByteTimeDomainData(waveform); // waveform data
 
-            analyzeWaveform(waveform);
+            analyzeWaveform(waveform, visualizer.waveform);
+
+            var canvas = EaselService.context.canvas,
+                origin = {x: canvas.width / 2, y: canvas.height / 2};
 
             //Draw visualization
-            Scheduler.draw(()=> drawArcs(EaselService.context, data), 100);
+            Scheduler.draw(()=> {
+                EaselService.context.fillStyle = hsla(visualizer.hue, '90%', '10%', 1);
+                EaselService.context.fillRect(0, 0, canvas.width, canvas.height);});
+            Scheduler.draw(()=> drawRadialPulses(origin, EaselService.context), 99);
+            Scheduler.draw(()=> drawArcs(origin, EaselService.context, data), 100);
+            Scheduler.draw(()=> drawLinearPulses(origin, EaselService.context), 101);
 
             //Apply pixel manipulation effects
             Scheduler.postProcess(()=>manipulatePixels(EaselService.context));
