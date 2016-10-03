@@ -16,6 +16,11 @@ app.constant('MediaPath', 'assets/audio/')
             autoIncrementID = 0;
 
         var audioClipService = {
+            /**
+             * Load a series of clips into the audio clip service
+             * @param clipList
+             * @returns {Promise}
+             */
             loadAudioClips(clipList){
                 clipList = clipList instanceof Array ? clipList : [clipList];
                 var defer = $q.defer();
@@ -26,11 +31,22 @@ app.constant('MediaPath', 'assets/audio/')
 
                 return defer.promise;
             },
+            /**
+             * Derive a more readable name from a file name
+             * @param fileName
+             * @returns {string}
+             */
             getNiceName(fileName){
                 var pcs =  fileName.split('.');
                 pcs.pop();
                 return pcs.join('.');
             },
+            /**
+             * load a given audio clip into the audio clip service
+             * @param fileName
+             * @param type
+             * @returns {Promise.<TResult>|IPromise<TResult>|*}
+             */
             loadAudioClip(fileName, type){
                 var uri = (type == 'reverbImpulse' ? ReverbImpulsePath : MediaPath) + fileName,
                     id = autoIncrementID++;
@@ -58,6 +74,11 @@ app.constant('MediaPath', 'assets/audio/')
                     return clips[id];
                 });
             },
+            /**
+             * Return the audio clip with the given id or name
+             * @param id
+             * @returns {*}
+             */
             getAudioClip(id) {
                 if(typeof id == "number"){
                     return clips[id];
@@ -69,6 +90,11 @@ app.constant('MediaPath', 'assets/audio/')
                 }
 
             },
+            /**
+             * Get all audio clips of one type
+             * @param type
+             * @returns {*}
+             */
             getAudioClips(type) {
                 if(type){
                     return clipList.filter(clip => clip.type == type);

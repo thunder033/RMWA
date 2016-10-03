@@ -19,16 +19,28 @@ app.constant('SampleCount', 1024)
                 return playing;
             },
 
+            /**
+             * Register audio player with the service
+             * @param newPlayer
+             */
             registerPlayer(newPlayer){
                 player = newPlayer;
             },
 
+            /**
+             * Add a callback to be invoked when a new clip is played
+             * @param callback
+             */
             addPlayEventListener(callback){
                 if(callback instanceof Function){
                     playHooks.push(callback);
                 }
             },
 
+            /**
+             * play the clip with the given ID
+             * @param clipId
+             */
             playClip(clipId){
                 playing = AudioClipService.getAudioClip(clipId);
                 player.src = playing.uri;
@@ -37,6 +49,10 @@ app.constant('SampleCount', 1024)
                 playHooks.forEach(callback => callback.call(null, playing));
             },
 
+            /**
+             * Retrieve, and create if necessary, an analyzer node
+             * @returns {*}
+             */
             getAnalyzerNode(){
                 if(!analyzerNode && player){
                     analyzerNode = audioPlayerService.createAnalyzerNode(player);
@@ -45,6 +61,10 @@ app.constant('SampleCount', 1024)
                 return analyzerNode;
             },
 
+            /**
+             * Set the active impulse clip on the convolver node
+             * @param impulseData
+             */
             setConvolverImpulse(impulseData){
                 audioCtx.decodeAudioData(impulseData, buffer=>{
                     convolverNode.buffer = buffer;
@@ -54,12 +74,19 @@ app.constant('SampleCount', 1024)
                 });
             },
 
+            /**
+             * Turn off the convolver node
+             */
             disableConvolverNode(){
                 if(convolverNode){
                     convolverNode.disconnect();
                 }
             },
 
+            /**
+             * Retrieve, and create if necessary, the convolver node
+             * @returns {*}
+             */
             getConvolverNode(){
                 if(!convolverNode && player){
                     convolverNode = audioPlayerService.createConvolverNode(player);
@@ -68,6 +95,10 @@ app.constant('SampleCount', 1024)
                 return convolverNode;
             },
 
+            /**
+             * Create an audio context and source node in the service
+             * @param audioElement
+             */
             createAudioContextAndSource(audioElement){
                 // create new AudioContext
                 // The || is because WebAudio has not been standardized across browsers yet
@@ -77,6 +108,11 @@ app.constant('SampleCount', 1024)
                 sourceNode = sourceNode || audioCtx.createMediaElementSource(audioElement);
             },
 
+            /**
+             * Create a convolver node in the service
+             * @param audioElement
+             * @returns {ConvolverNode}
+             */
             createConvolverNode(audioElement){
                 this.createAudioContextAndSource(audioElement);
 
@@ -87,6 +123,11 @@ app.constant('SampleCount', 1024)
                 return convolver;
             },
 
+            /**
+             * Create an analyzer node
+             * @param audioElement
+             * @returns {AnalyserNode|*}
+             */
             createAnalyzerNode(audioElement){
                 var analyserNode;
                 this.createAudioContextAndSource(audioElement);
