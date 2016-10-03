@@ -65,6 +65,7 @@ app.constant('MaxFrameRate', 60)
 
         /**
          * Derived From
+         * Isaac Sukin
          * http://www.isaacsukin.com/news/2015/01/detailed-explanation-javascript-game-loops-and-timing
          */
         function mainLoop(){

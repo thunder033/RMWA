@@ -112,6 +112,7 @@ app.constant('Effects', Object.freeze({
                 }
 
                 if (activeEffects[Effects.DESATURATE] === true) {
+                    //StackOverflow user Shmiddty
                     //http://stackoverflow.com/questions/13348129/using-native-javascript-to-desaturate-a-colour
                     var grey = (data[i] * 0.3086 + data[i + 1] * 0.6094 + data[i + 2] * 0.0820);
                     data[i] = data[i + 1] = data[i + 2] = grey;

@@ -9,6 +9,7 @@ var app = angular.module('audio-viz', ["checklist-model"])
         AudioPlayerService.getConvolverNode();
 
         AudioClipService.loadAudioClips([
+            //Audio clips from local machine
             'Hallelujah.wav',
             'Be Concerned.mp3',
             'Trees.mp3',
@@ -16,9 +17,11 @@ var app = angular.module('audio-viz', ["checklist-model"])
             'Secrets.mp3',
             'Undisclosed Desires.mp3',
             'Beam (Orchestral Remix).mp3',
+            //Class Provided Samples
             'New Adventure Theme.mp3',
             'Peanuts Theme.mp3',
             'The Picard Song.mp3',
+            //Impulse samples: Samplicity (http://www.samplicity.com/bricasti-m7-impulse-responses/)
             {name: 'Concert Hall.wav', type: 'reverbImpulse'},
             {name: 'Arena.wav', type: 'reverbImpulse'},
             {name: 'Bass Boost.wav', type: 'reverbImpulse'}
