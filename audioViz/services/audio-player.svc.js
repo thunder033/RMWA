@@ -66,6 +66,8 @@ app.constant('SampleCount', 1024)
              * @param impulseData
              */
             setConvolverImpulse(impulseData){
+                var convolverNode = audioPlayerService.getConvolverNode();
+
                 audioCtx.decodeAudioData(impulseData, buffer=>{
                     convolverNode.buffer = buffer;
                     convolverNode.loop = true;
