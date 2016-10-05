@@ -11,6 +11,9 @@ app.constant('Effects', Object.freeze({
     .constant('FrequencyRanges', [
         0, 60, 250, 2000, 6000, 21050
     ])
+    /**
+     * Provides access to audio data
+     */
     .service('AudioData', function(Scheduler, SampleCount, AudioPlayerService){
 
         var waveformData = new Uint8Array(SampleCount / 2),
@@ -36,6 +39,9 @@ app.constant('Effects', Object.freeze({
             }
         };
     })
+    /**
+     * Performs analysis on frequency data each frame to generate metrics
+     */
     .service('FrequencyAnalyzer', function(Scheduler, AudioData, FrequencyRanges, MaxFrequency, AudioPlayerService){
         var results = {
             avgLoudness: 0,
@@ -45,6 +51,11 @@ app.constant('Effects', Object.freeze({
             maxRangeLoudness: new Uint8Array(FrequencyRanges.length)
         };
 
+        /**
+         * Generate metrics from the given set of frequency data
+         * @param frequencies array of frequency byte data
+         * @param outResults object to output on
+         */
         function analyzerFrequencyData(frequencies, outResults){
             var loudness = 0,
                 frequency = 0,
@@ -99,6 +110,9 @@ app.constant('Effects', Object.freeze({
             }
         }
     })
+    /**
+     * Performs analysis on the waveform data each frame to derive metrics
+     */
     .service('WaveformAnalyzer', function(Scheduler, AudioData, SampleCount){
         var results = {};
 
@@ -148,6 +162,9 @@ app.constant('Effects', Object.freeze({
             }
         };
     })
+    /**
+     * Provides utility functions for working with CSS colors
+     */
     .service('Color', function(){
         return {
             /**
@@ -175,6 +192,9 @@ app.constant('Effects', Object.freeze({
             }
         }
     })
+    /**
+     * Provides functions to render the frequency pinwheel
+     */
     .service('FrequencyPinwheel', function(AudioData, EaselService, FrequencyAnalyzer, Color){
 
         function preRenderArc(color, arcLength, radius){
@@ -264,153 +284,6 @@ app.constant('Effects', Object.freeze({
         return {
             draw: drawFrequencyPinwheel
         }
-    })
-    .service('ParticleEmitter', function(Scheduler, EaselService){
-
-        /**
-         * A simple vector class
-         * @param x
-         * @param y
-         * @constructor
-         */
-        function Vector(x, y){
-            this.x = x;
-            this.y = typeof y !== 'undefined' ? y : x;
-        }
-
-        /**
-         * Stores the properties of a single particle
-         * @param position
-         * @param velocity
-         * @param energy
-         * @param size
-         * @constructor
-         */
-        function Particle(position, velocity, energy, size) {
-            this.position = position;
-            this.velocity = velocity;
-            this.energy = energy * 1000;
-            this.size = size;
-        }
-
-        /**
-         * Advance simulation of the particle
-         * @param dt
-         * @param velocityScale
-         */
-        Particle.prototype.update = function(dt, velocityScale){
-            this.position.x += this.velocity.x * dt * .25 + this.velocity.x * velocityScale * .75;
-            this.position.y += this.velocity.y * dt * .25 + this.velocity.y * velocityScale * .75;
-            this.energy -= dt;
-        };
-
-        /**
-         * Pre render a prototype particle into a temporary canvas and retrieve the image
-         * @returns {*|HTMLCanvasElement}
-         */
-        function preRenderParticle(){
-            var radius = 10;
-            //Create a temporary canvas
-            EaselService.createNewCanvas('particle', radius * 2, radius * 2);
-            var cacheCtx = EaselService.getContext('particle'),
-                origin = new Vector(cacheCtx.canvas.width / 2);
-
-            //Create a gradient for the particle
-            var gradient = cacheCtx.createRadialGradient(origin.x, origin.y, radius / 4, origin.x, origin.y, radius);
-            gradient.addColorStop(0, '#fff');
-            gradient.addColorStop(1, 'rgba(255,255,255,0)');
-
-            //Render the particle
-            cacheCtx.fillStyle = gradient;
-            cacheCtx.beginPath();
-            cacheCtx.arc(origin.x, origin.y, radius, 0, Math.PI * 2);
-            cacheCtx.closePath();
-            cacheCtx.fill();
-
-            //Return the rendered image
-            return cacheCtx.canvas;
-        }
-
-        //Define emission properties
-        var particles = [],
-            velocityScale = 1,
-            emissionEnergy = 0,
-            initEnergy = 4,
-            size = 1,
-            particleImage = preRenderParticle(),
-            emitter = {
-                incrementEmission(rate){
-                    emissionEnergy += rate;
-                },
-                setVelocityAdjustment(velocity){
-                    velocityScale = velocity;
-                },
-                setInitEnergy(energy){
-                    initEnergy = energy;
-                },
-                setParticleSize(newSize){
-                    size = newSize;
-                },
-                /**
-                 * Create a new particle
-                 */
-                emit(){
-                    var canvas = EaselService.context.canvas,
-                        aspectRatio = canvas.width / canvas.height;
-                    var origin = new Vector(canvas.width / 2, canvas.height / 2);
-                    particles.push(new Particle(
-                        new Vector(origin.x, origin.y),
-                        //Make particles evenly spread across canvas by taking aspect ratio into account
-                        new Vector((.166 - Math.random() / 3) * aspectRatio, (.166 - Math.random() / 3)),
-                        initEnergy,
-                        Math.random() * size
-                    ));
-                }
-            };
-
-        /**
-         * Draw all the particles in the emitter
-         * @param ctx
-         * @param particles
-         */
-        function drawParticles(ctx, particles){
-            for(var i = 0, len = particles.length; i < len; i++){
-                var pos = particles[i].position;
-                ctx.save();
-                ctx.translate(pos.x, pos.y);
-                ctx.scale(particles[i].size, particles[i].size);
-                //Make the particles fade as they near the end of their life
-                ctx.globalAlpha = Math.min(particles[i].energy / 500, .75);
-                ctx.drawImage(particleImage, 0, 0);
-                ctx.restore();
-            }
-        }
-
-        Scheduler.schedule((deltaTime)=>{
-            //Create new particles while we have emission energy
-            while(emissionEnergy > 0){
-                emissionEnergy -= deltaTime;
-                emitter.emit();
-            }
-
-            //Update particles in the emitter and filter out those with no energy left
-            var nextParticles = [];
-            for(var i = 0, len = particles.length; i < len; i++){
-                particles[i].update(deltaTime, velocityScale);
-                console.log(deltaTime);
-                if(particles[i].energy > 0){
-                    nextParticles.push(particles[i]);
-                }
-            }
-            particles = nextParticles;
-
-            //Draw the particles
-            Scheduler.draw(()=>{
-                drawParticles(EaselService.context, particles);
-            }, 125);
-        }, 100);
-
-        return emitter;
     })
     .service('Visualizer', function (Scheduler, EaselService, SampleCount, Effects, FrequencyRanges, Color, WaveformAnalyzer, FrequencyAnalyzer, FrequencyPinwheel, ParticleEmitter) {
 
@@ -657,8 +530,8 @@ app.constant('Effects', Object.freeze({
             var avgLoudness = FrequencyAnalyzer.getMetrics().avgLoudness;
             //Particles should exist short when things are more active or if frame rate is bad
             ParticleEmitter.setInitEnergy((Scheduler.FPS / 12.5) * .8 - (avgLoudness / 256));
-            ParticleEmitter.incrementEmission(avgLoudness / 4);
-            ParticleEmitter.setVelocityAdjustment(visualizer.velocity * 1200);
+            ParticleEmitter.incrementEmission(avgLoudness / 5);
+            ParticleEmitter.setParticleSpeed(visualizer.velocity * 1200);
 
             var canvas = EaselService.context.canvas,
                 origin = {x: canvas.width / 2, y: canvas.height / 2};
