@@ -11,38 +11,408 @@ app.constant('Effects', Object.freeze({
     .constant('FrequencyRanges', [
         0, 60, 250, 2000, 6000, 21050
     ])
-    .service('Visualizer', function (Scheduler, AudioPlayerService, EaselService, SampleCount, Effects, FrequencyRanges, MaxFrequency) {
+    .service('AudioData', function(Scheduler, SampleCount, AudioPlayerService){
+
+        var waveformData = new Uint8Array(SampleCount / 2),
+            frequencyData = new Uint8Array(SampleCount / 2);
+
+        Scheduler.schedule(()=>{
+            var analyzerNode = AudioPlayerService.getAnalyzerNode();
+
+            if (!analyzerNode) {
+                return;
+            }
+
+            analyzerNode.getByteFrequencyData(frequencyData);
+            analyzerNode.getByteTimeDomainData(waveformData);
+        }, 50);
+
+        return {
+            getWaveform(){
+                return waveformData;
+            },
+            getFrequencies(){
+                return frequencyData;
+            }
+        };
+    })
+    .service('FrequencyAnalyzer', function(Scheduler, AudioData, FrequencyRanges, MaxFrequency, AudioPlayerService){
+        var results = {
+            avgLoudness: 0,
+            //keep track of how many indices in the data array actually have values
+            //This prevents a large slice of the visualizer from being empty early in the song or for songs that smaller range of data
+            dataLimit: 0,
+            maxRangeLoudness: new Uint8Array(FrequencyRanges.length)
+        };
+
+        function analyzerFrequencyData(frequencies, outResults){
+            var loudness = 0,
+                frequency = 0,
+                dataLimit = outResults.dataLimit,
+                currentRangeIndex = 0,
+                maxRangeLoudness = outResults.maxRangeLoudness,
+                frequencyInterval = MaxFrequency / frequencies.length,
+                avgLoudness = 0;
+
+            maxRangeLoudness.fill(0);
+
+            for(var i = 0, len = frequencies.length; i < len; i++){
+                loudness = frequencies[i];
+                if(loudness > 0){
+                    if(i > dataLimit){
+                        dataLimit = i;
+                    }
+
+                    frequency = frequencyInterval * i;
+
+                    //Check we've moved to the next frequency range
+                    if(frequency > FrequencyRanges[currentRangeIndex]){
+                        currentRangeIndex++;
+                    }
+
+                    //Check if this channel is the loudest in it's range
+                    if(loudness > maxRangeLoudness[currentRangeIndex]){
+                        maxRangeLoudness[currentRangeIndex] = loudness;
+                    }
+
+                    //Add to the average loudness
+                    avgLoudness += loudness / len;
+                }
+            }
+
+            outResults.dataLimit = dataLimit - (dataLimit % 2);
+            outResults.avgLoudness = avgLoudness * 1.1;
+            outResults.maxRangeLoudness = maxRangeLoudness;
+        }
+
+        Scheduler.schedule(()=>{
+            analyzerFrequencyData(AudioData.getFrequencies(), results);
+        });
+
+        AudioPlayerService.addPlayEventListener(()=>{
+            results.dataLimit = 0;
+        });
+
+        return {
+            getMetrics(){
+                return results;
+            }
+        }
+    })
+    .service('WaveformAnalyzer', function(Scheduler, AudioData, SampleCount){
+        var results = {};
 
         /**
-         * Generate and RGBA color string from the provided values
-         * @param red
-         * @param green
-         * @param blue
-         * @param alpha
-         * @returns {string}
+         * Calculate the peak, trough, and period of the waveform
+         * @param {Array} waveform
+         * @param {Object} outResults
          */
-        function rgba(red, green, blue, alpha) {
-            return 'rgba(' + red + ',' + green + ',' + blue + ', ' + alpha + ')';
+        function analyzeWaveform(waveform, outResults) {
+            var peakMax = -Number.MAX_VALUE,
+                troughMin = Number.MAX_VALUE,
+                peakDistance = 0;
+
+            //Find the peak value of the wave and position of the first peak
+            var i = 0;
+            while (waveform[i] > peakMax) {
+                peakMax = waveform[i++];
+            }
+
+            //Find the trough and the period
+            while (waveform[++i] < peakMax || troughMin >= peakMax) {
+                peakDistance++;
+                if (waveform[i] < troughMin) {
+                    troughMin = waveform[i];
+                }
+
+                if (i > waveform.length) {
+                    break;
+                }
+            }
+
+            //Set the values on the object to maintain object references
+            outResults.peak = peakMax;
+            outResults.peakDistance = peakDistance;
+            outResults.trough = troughMin;
+            outResults.amplitude = peakMax - troughMin;
+            outResults.period = peakDistance / SampleCount * 2
+        }
+
+        Scheduler.schedule(()=>{
+            analyzeWaveform(AudioData.getWaveform(), results);
+        }, 75);
+
+        return {
+            getMetrics(){
+                return results;
+            }
+        };
+    })
+    .service('Color', function(){
+        return {
+            /**
+             * Generate and RGBA color string from the provided values
+             * @param red
+             * @param green
+             * @param blue
+             * @param alpha
+             * @returns {string}
+             */
+            rgba(red, green, blue, alpha) {
+                return 'rgba(' + red + ',' + green + ',' + blue + ', ' + alpha + ')';
+            },
+
+            /**
+             * Generate an HSLA color string from the provided values
+             * @param hue
+             * @param saturation
+             * @param lightness
+             * @param alpha
+             * @returns {string}
+             */
+            hsla(hue, saturation, lightness, alpha) {
+                return `hsla(${hue},${saturation},${lightness},${alpha})`;
+            }
+        }
+    })
+    .service('FrequencyPinwheel', function(AudioData, EaselService, FrequencyAnalyzer, Color){
+
+        function preRenderArc(color, arcLength, radius){
+            var cacheCtx = EaselService.getContext('arcRender');
+            //Pre-render a single arc so it can be transformed fro each section of the pinwheel
+            cacheCtx.clearRect(0, 0, cacheCtx.canvas.width, cacheCtx.canvas.height);
+            cacheCtx.canvas.height = Math.sin(arcLength) * radius;
+            cacheCtx.fillStyle = color;
+            cacheCtx.beginPath();
+            cacheCtx.moveTo(0, 0);
+            cacheCtx.arc(0, 0, radius, 0, arcLength);
+            cacheCtx.closePath();
+            cacheCtx.fill();
+
+            return cacheCtx.canvas;
         }
 
         /**
-         * Generate an HSLA color string from the provided values
-         * @param hue
-         * @param saturation
-         * @param lightness
-         * @param alpha
-         * @returns {string}
+         * Draw a subset of the arcs for the frequency pinwheel
+         * @param ctx
+         * @param data frequency data to draw with
+         * @param start the index to start drawing from
+         * @param end the index to stop drawing at
+         * @param fill the color to fill the arcs
+         * @param interval how many data values to increment each iteration
+         * @param angle what rotation to draw the pinwheel at
          */
-        function hsla(hue, saturation, lightness, alpha) {
-            return `hsla(${hue},${saturation},${lightness},${alpha})`;
+        function drawArcSet(ctx, data, start, end, fill, interval, angle) {
+            interval = interval || 1;
+
+            //The length of each arc
+            var arcLength = (4 * Math.PI) / FrequencyAnalyzer.getMetrics().dataLimit,
+                avgLoudness = FrequencyAnalyzer.getMetrics().avgLoudness,
+                maxLoudness = 256,
+                canvas = ctx.canvas,
+                origin = {x: canvas.width / 2, y: canvas.height / 2},
+                arcBuffer = preRenderArc(fill, arcLength, canvas.width / 2);
+
+            ctx.save();
+            ctx.translate(origin.x, origin.y);
+            ctx.rotate(angle + start * arcLength);
+            // loop through the data and draw!
+            for (var i = start; i < end; i += interval) {
+                var loudness = data[i];
+
+                ctx.rotate(arcLength * interval);
+                if (loudness > 0) {
+                    // //Fudge the radius of the arcs based on the overall average of the previous range to the whole set of arcs is fuller
+                    var scale = ((loudness + avgLoudness) / (maxLoudness * 2));
+                    ctx.save();
+                    ctx.scale(scale, scale);
+                    ctx.drawImage(arcBuffer, 0, 0);
+                    ctx.restore();
+                }
+            }
+
+            ctx.restore();
         }
 
-        //The average of the frequency values from the last frame
-        var lastFrameAvg = 0,
-            frameAvg = 0;
-        //The maximum range of values with valid data present in the clip
-        var dataLimit = 0,
-            angle = 0;
+        function drawFrequencyPinwheel(origin, hue, ctx, angle) {
+            var metrics = FrequencyAnalyzer.getMetrics(),
+                data = AudioData.getFrequencies();
+
+            //Draw each set of arcs
+            var darkBack = Color.hsla(hue, '84%', '25%', .65),
+                lightBack = Color.hsla(hue, '90%', '43%', .75),
+                darkFront = Color.hsla(hue, '70%', '70%', .5),
+                lightFront = Color.hsla(hue, '55%', '78%', .5);
+
+            drawArcSet(ctx, data, 0, metrics.dataLimit / 2, lightBack, 2, angle); //skip every other
+            drawArcSet(ctx, data, 1, metrics.dataLimit / 2 + 1, darkBack, 2, angle); //offset by 1 and skip ever other arc
+            drawArcSet(ctx, data, metrics.dataLimit / 2, metrics.dataLimit, darkFront, 2, angle); //start at middle, skip every other
+            drawArcSet(ctx, data, metrics.dataLimit / 2 + 1, metrics.dataLimit - 1, lightFront, 2, angle); //start middle, offset by 1, skip every other
+
+            //Draw circle in center of arcs
+            var gradient = ctx.createRadialGradient(origin.x, origin.y, metrics.avgLoudness / 10, origin.x, origin.y, metrics.avgLoudness);
+            gradient.addColorStop(0, "#fff");
+            gradient.addColorStop(1, "rgba(255,255,255,0)");
+
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.moveTo(origin.x, origin.y);
+            ctx.arc(origin.x, origin.y, metrics.avgLoudness, 0, 2 * Math.PI);
+            ctx.fill();
+        }
+
+        return {
+            draw: drawFrequencyPinwheel
+        }
+    })
+    .service('ParticleEmitter', function(Scheduler, EaselService){
+
+        /**
+         * A simple vector class
+         * @param x
+         * @param y
+         * @constructor
+         */
+        function Vector(x, y){
+            this.x = x;
+            this.y = typeof y !== 'undefined' ? y : x;
+        }
+
+        /**
+         * Stores the properties of a single particle
+         * @param position
+         * @param velocity
+         * @param energy
+         * @param size
+         * @constructor
+         */
+        function Particle(position, velocity, energy, size) {
+            this.position = position;
+            this.velocity = velocity;
+            this.energy = energy * 1000;
+            this.size = size;
+        }
+
+        /**
+         * Advance simulation of the particle
+         * @param dt
+         * @param velocityScale
+         */
+        Particle.prototype.update = function(dt, velocityScale){
+            this.position.x += this.velocity.x * dt * .25 + this.velocity.x * velocityScale * .75;
+            this.position.y += this.velocity.y * dt * .25 + this.velocity.y * velocityScale * .75;
+            this.energy -= dt;
+        };
+
+        /**
+         * Pre render a prototype particle into a temporary canvas and retrieve the image
+         * @returns {*|HTMLCanvasElement}
+         */
+        function preRenderParticle(){
+            var radius = 10;
+            //Create a temporary canvas
+            EaselService.createNewCanvas('particle', radius * 2, radius * 2);
+            var cacheCtx = EaselService.getContext('particle'),
+                origin = new Vector(cacheCtx.canvas.width / 2);
+
+            //Create a gradient for the particle
+            var gradient = cacheCtx.createRadialGradient(origin.x, origin.y, radius / 4, origin.x, origin.y, radius);
+            gradient.addColorStop(0, '#fff');
+            gradient.addColorStop(1, 'rgba(255,255,255,0)');
+
+            //Render the particle
+            cacheCtx.fillStyle = gradient;
+            cacheCtx.beginPath();
+            cacheCtx.arc(origin.x, origin.y, radius, 0, Math.PI * 2);
+            cacheCtx.closePath();
+            cacheCtx.fill();
+
+            //Return the rendered image
+            return cacheCtx.canvas;
+        }
+
+        //Define emission properties
+        var particles = [],
+            velocityScale = 1,
+            emissionEnergy = 0,
+            initEnergy = 4,
+            size = 1,
+            particleImage = preRenderParticle(),
+            emitter = {
+                incrementEmission(rate){
+                    emissionEnergy += rate;
+                },
+                setVelocityAdjustment(velocity){
+                    velocityScale = velocity;
+                },
+                setInitEnergy(energy){
+                    initEnergy = energy;
+                },
+                setParticleSize(newSize){
+                    size = newSize;
+                },
+                /**
+                 * Create a new particle
+                 */
+                emit(){
+                    var canvas = EaselService.context.canvas,
+                        aspectRatio = canvas.width / canvas.height;
+                    var origin = new Vector(canvas.width / 2, canvas.height / 2);
+                    particles.push(new Particle(
+                        new Vector(origin.x, origin.y),
+                        //Make particles evenly spread across canvas by taking aspect ratio into account
+                        new Vector((.166 - Math.random() / 3) * aspectRatio, (.166 - Math.random() / 3)),
+                        initEnergy,
+                        Math.random() * size
+                    ));
+                }
+            };
+
+        /**
+         * Draw all the particles in the emitter
+         * @param ctx
+         * @param particles
+         */
+        function drawParticles(ctx, particles){
+            for(var i = 0, len = particles.length; i < len; i++){
+                var pos = particles[i].position;
+                ctx.save();
+                ctx.translate(pos.x, pos.y);
+                ctx.scale(particles[i].size, particles[i].size);
+                //Make the particles fade as they near the end of their life
+                ctx.globalAlpha = Math.min(particles[i].energy / 500, .75);
+                ctx.drawImage(particleImage, 0, 0);
+                ctx.restore();
+            }
+        }
+
+        Scheduler.schedule((deltaTime)=>{
+            //Create new particles while we have emission energy
+            while(emissionEnergy > 0){
+                emissionEnergy -= deltaTime;
+                emitter.emit();
+            }
+
+            //Update particles in the emitter and filter out those with no energy left
+            var nextParticles = [];
+            for(var i = 0, len = particles.length; i < len; i++){
+                particles[i].update(deltaTime, velocityScale);
+                console.log(deltaTime);
+                if(particles[i].energy > 0){
+                    nextParticles.push(particles[i]);
+                }
+            }
+            particles = nextParticles;
+
+            //Draw the particles
+            Scheduler.draw(()=>{
+                drawParticles(EaselService.context, particles);
+            }, 125);
+        }, 100);
+
+        return emitter;
+    })
+    .service('Visualizer', function (Scheduler, EaselService, SampleCount, Effects, FrequencyRanges, Color, WaveformAnalyzer, FrequencyAnalyzer, FrequencyPinwheel, ParticleEmitter) {
 
         //pulse values - these don't strictly need priority queues, but they work
         var radialPulses = new PriorityQueue(), //pulses generated from waveform - drawn as circles
@@ -51,21 +421,15 @@ app.constant('Effects', Object.freeze({
         var visualizer = {
             init(){
                 Scheduler.schedule(update);
-                AudioPlayerService.addPlayEventListener(visualizer.reset);
-            },
-            reset(){
-                dataLimit = 0;
             },
             effects: [],
-            waveform: {},
+            waveform: WaveformAnalyzer.getMetrics(),
             velocity: 0,
             hue: 0,
             noiseThreshold: .1,
-            frequencyMaxes: new Uint8Array(FrequencyRanges.length),
-            frequencyAverages: new Array(FrequencyRanges.length)
+            angle: 0,
+            frequencyMaxes: FrequencyAnalyzer.getMetrics().maxRangeLoudness
         };
-
-        visualizer.frequencyAverages.fill(0);
 
         /**
          * Returns a map of the active pixel effects, based on the visualizer effects array
@@ -123,59 +487,6 @@ app.constant('Effects', Object.freeze({
         }
 
         /**
-         * Calculate the peak, trough, and period of the waveform
-         * @param {Array} waveform
-         * @param {Object} outResults
-         */
-        function analyzeWaveform(waveform, outResults) {
-            var peakMax = -Number.MAX_VALUE,
-                troughMin = Number.MAX_VALUE,
-                peakDistance = 0;
-
-            //Find the peak value of the wave and position of the first peak
-            var i = 0;
-            while (waveform[i] > peakMax) {
-                peakMax = waveform[i++];
-            }
-
-            //Find the trough and the period
-            while (waveform[++i] < peakMax || troughMin >= peakMax) {
-                peakDistance++;
-                if (waveform[i] < troughMin) {
-                    troughMin = waveform[i];
-                }
-
-                if (i > waveform.length) {
-                    break;
-                }
-            }
-
-            //Set the values on the object to maintain object references
-            outResults.peak = peakMax;
-            outResults.peakDistance = peakDistance;
-            outResults.trough = troughMin;
-            outResults.amplitude = peakMax - troughMin;
-            outResults.period = peakDistance / SampleCount * 2
-        }
-
-        /**
-         * Find the highest index in the data set that has significant values
-         * @param data
-         * @param start
-         * @returns {number}
-         */
-        function getDataLimit(data, start) {
-            var limit = start || 0;
-            for (var i = start; i < data.length; i++) {
-                if (data[i] > 0 && i > limit) {
-                    limit = i;
-                }
-            }
-            //make the limit an even number to avoid weird overlaps in the arcs
-            return limit - (limit % 2);
-        }
-
-        /**
          * Draw radial pulses into the lower-right quarter of the the provided context
          * @param ctx the context to draw on
          * @param origin where to start drawing from
@@ -197,7 +508,7 @@ app.constant('Effects', Object.freeze({
             visualizer.velocity = vel > visualizer.velocity ? vel : visualizer.velocity * (1 - decayRate);
 
             //Create a gradient that will show the pulses
-            var gradient2 = ctx.createRadialGradient(origin.x, origin.y, lastFrameAvg / 10, origin.x, origin.y, maxRadius);
+            var gradient2 = ctx.createRadialGradient(origin.x, origin.y, 0, origin.x, origin.y, maxRadius);
 
             //Add stops for each pulse
             var it = radialPulses.getIterator(), pulse;
@@ -211,8 +522,8 @@ app.constant('Effects', Object.freeze({
                     a = stopPos > .5 ? (1 - (stopPos - .5) * 2) : 1,
                     opacity = a * a * pulse.energy;
 
-                gradient2.addColorStop(stopPos, rgba(255, 255, 255, opacity));
-                gradient2.addColorStop(stopEnd, rgba(255, 255, 255, 0));
+                gradient2.addColorStop(stopPos, Color.rgba(255, 255, 255, opacity));
+                gradient2.addColorStop(stopEnd, Color.rgba(255, 255, 255, 0));
             }
 
             //Remove pulses that are outside the cirlce
@@ -225,71 +536,6 @@ app.constant('Effects', Object.freeze({
             ctx.beginPath();
             ctx.moveTo(origin.x, origin.y);
             ctx.arc(origin.x, origin.y, maxRadius, 0, Math.PI / 2);
-            ctx.fill();
-        }
-
-        /**
-         * Get the index of the range the frequency falls into
-         * @param frequency
-         * @returns {number}
-         */
-        function getRangeIndex(frequency) {
-            var index = 0;
-            while (frequency > FrequencyRanges[index]) {
-                index++;
-
-                if (index >= FrequencyRanges.length) {
-                    return index;
-                }
-            }
-            return index;
-        }
-
-        /**
-         * Draw a subset of the arcs for the frequency pinwheel
-         * @param ctx
-         * @param data frequency data to draw with
-         * @param start the index to start drawing from
-         * @param end the index to stop drawing at
-         * @param fill the color to fill the arcs
-         * @param interval how many data values to increment each iteration
-         */
-        function drawArcSet(ctx, data, start, end, fill, interval) {
-            interval = interval || 1;
-
-            //The length of each arc
-            var arcLength = (4 * Math.PI) / dataLimit,
-                canvas = ctx.canvas,
-                origin = {x: canvas.width / 2, y: canvas.height / 2};
-
-            ctx.fillStyle = fill;
-            ctx.beginPath();
-
-            var frequencyInterval = MaxFrequency / data.length;
-
-            // loop through the data and draw!
-            for (var i = start; i < end; i += interval) {
-
-                if (data[i] > 0) {
-                    ctx.moveTo(origin.x, origin.y);
-                    //Fudge the radius of the arcs based on the overall average of the previous range to the whole set of arcs is fuller
-                    var r = (canvas.width / 2) * ((data[i] + lastFrameAvg) / (SampleCount / 2));
-                    ctx.arc(origin.x, origin.y, r, angle + i * arcLength, angle + (i + 1) * arcLength);
-                    ctx.closePath();
-
-                    //Check if this value is a max in it's range
-                    var frequency = frequencyInterval * i,
-                        rangeIndex = getRangeIndex(frequency);
-
-                    if (data[i] > visualizer.frequencyMaxes[rangeIndex]) {
-                        visualizer.frequencyMaxes[rangeIndex] = data[i];
-                    }
-                }
-
-                //Add the current value to the average
-                frameAvg += data[i] / dataLimit;
-            }
-
             ctx.fill();
         }
 
@@ -325,7 +571,7 @@ app.constant('Effects', Object.freeze({
 
             //Curves at the lower end of the frequency spectrum will be brighter
             var alpha = .5 + .5 * ((1 - pulse.frequencyRange) / FrequencyRanges.length);
-            ctx.fillStyle = rgba(255, 255, 255, alpha);
+            ctx.fillStyle = Color.rgba(255, 255, 255, alpha);
             ctx.fill();
         }
 
@@ -404,71 +650,28 @@ app.constant('Effects', Object.freeze({
             EaselService.drawQuarterRender(ctx, quarterCtx.canvas, origin);
         }
 
-        function drawFrequencyPinwheel(origin, ctx, data) {
-            //keep track of how many indices in the data array actually have values
-            //This prevents a large slice of the visualizer from being empty early in the song or for songs that smaller range of data
-            dataLimit = getDataLimit(data, dataLimit);
-
-            //reset frequency maxes and average volume of frame
-            visualizer.frequencyMaxes.fill(0);
-            frameAvg = 0;
-
-            //Draw each set of arcs
-            var darkBack = hsla(visualizer.hue, '84%', '25%', .65),
-                lightBack = hsla(visualizer.hue, '90%', '43%', .75),
-                darkFront = hsla(visualizer.hue, '70%', '70%', .5),
-                lightFront = hsla(visualizer.hue, '55%', '78%', .5);
-
-            drawArcSet(ctx, data, 0, dataLimit / 2, lightBack, 2); //skip every other
-            drawArcSet(ctx, data, 1, dataLimit / 2 + 1, darkBack, 2); //offset by 1 and skip ever other arc
-            drawArcSet(ctx, data, dataLimit / 2, dataLimit, darkFront, 2); //start at middle, skip every other
-            drawArcSet(ctx, data, dataLimit / 2 + 1, dataLimit - 1, lightFront, 2); //start middle, offset by 1, skip every other
-
-            //Draw circle in center of arcs
-            var gradient = ctx.createRadialGradient(origin.x, origin.y, frameAvg / 10, origin.x, origin.y, frameAvg);
-            gradient.addColorStop(0, "#fff");
-            gradient.addColorStop(1, "rgba(255,255,255,0)");
-
-            ctx.fillStyle = gradient;
-            ctx.beginPath();
-            ctx.moveTo(origin.x, origin.y);
-            ctx.arc(origin.x, origin.y, frameAvg, 0, 2 * Math.PI);
-            ctx.fill();
-
-            //Make things spin
-            angle += visualizer.velocity;
-
-            //store the average for the next frame
-            lastFrameAvg = frameAvg;
-        }
-
         function update() {
-            var analyzerNode = AudioPlayerService.getAnalyzerNode();
-            AudioPlayerService.getConvolverNode();
+            visualizer.angle += visualizer.velocity;
 
-            if (!analyzerNode) {
-                return;
-            }
-
-            var data = new Uint8Array(SampleCount / 2),
-                waveform = new Uint8Array(SampleCount / 2);
-
-            // populate the array with the frequency data
-            analyzerNode.getByteFrequencyData(data);
-            analyzerNode.getByteTimeDomainData(waveform); // waveform data
-
-            analyzeWaveform(waveform, visualizer.waveform);
+            //Update the particle emitter
+            var avgLoudness = FrequencyAnalyzer.getMetrics().avgLoudness;
+            //Particles should exist short when things are more active or if frame rate is bad
+            ParticleEmitter.setInitEnergy((Scheduler.FPS / 12.5) * .8 - (avgLoudness / 256));
+            ParticleEmitter.incrementEmission(avgLoudness / 4);
+            ParticleEmitter.setVelocityAdjustment(visualizer.velocity * 1200);
 
             var canvas = EaselService.context.canvas,
                 origin = {x: canvas.width / 2, y: canvas.height / 2};
 
-            //Draw visualization
             Scheduler.draw(()=> {
-                EaselService.context.fillStyle = hsla(visualizer.hue, '90%', '10%', 1);
+                //Draw the background color
+                EaselService.context.fillStyle = Color.hsla(visualizer.hue, '90%', '10%', 1);
                 EaselService.context.fillRect(0, 0, canvas.width, canvas.height);
             });
+
+            //Queue up draw commands for visualization
             Scheduler.draw(()=> drawRadialPulses(origin, EaselService.context), 99);
-            Scheduler.draw(()=> drawFrequencyPinwheel(origin, EaselService.context, data), 100);
+            Scheduler.draw(()=> FrequencyPinwheel.draw(origin, visualizer.hue, EaselService.context, visualizer.angle), 100);
             Scheduler.draw(()=> drawLinearPulses(origin, EaselService.context), 101);
 
             //Apply pixel manipulation effects
