@@ -48,6 +48,7 @@ app.constant('Effects', Object.freeze({
             //keep track of how many indices in the data array actually have values
             //This prevents a large slice of the visualizer from being empty early in the song or for songs that smaller range of data
             dataLimit: 0,
+            maxRangeIndices: [],
             maxRangeLoudness: new Uint8Array(FrequencyRanges.length)
         };
 
@@ -62,6 +63,7 @@ app.constant('Effects', Object.freeze({
                 dataLimit = outResults.dataLimit,
                 currentRangeIndex = 0,
                 maxRangeLoudness = outResults.maxRangeLoudness,
+                maxRangeIndices = outResults.maxRangeIndices,
                 frequencyInterval = MaxFrequency / frequencies.length,
                 avgLoudness = 0;
 
@@ -84,6 +86,7 @@ app.constant('Effects', Object.freeze({
                     //Check if this channel is the loudest in it's range
                     if(loudness > maxRangeLoudness[currentRangeIndex]){
                         maxRangeLoudness[currentRangeIndex] = loudness;
+                        maxRangeIndices[currentRangeIndex] = i;
                     }
 
                     //Add to the average loudness
@@ -254,6 +257,37 @@ app.constant('Effects', Object.freeze({
             ctx.restore();
         }
 
+        /**
+         * Draw shimmers at the loudest frequencies if the average loudness is great enough
+         * @param ctx
+         * @param origin
+         * @param peakIndices
+         * @param angle
+         */
+        function drawPeakShimmers(ctx, origin, peakIndices, angle) {
+            var metrics = FrequencyAnalyzer.getMetrics();
+
+            if(metrics.avgLoudness > 120){
+                var arcLength = (4 * Math.PI) / metrics.dataLimit,
+                    arcBuffer = preRenderArc('#fff', arcLength, ctx.canvas.width);
+
+                ctx.save();
+                ctx.translate(origin.x, origin.y);
+                ctx.rotate(angle);
+                ctx.scale(2 ,2);
+
+                for (var i = 0; i < peakIndices.length; i++) {
+                    ctx.save();
+                    ctx.rotate(peakIndices[i] * arcLength);
+                    ctx.globalAlpha = Math.random();
+                    ctx.drawImage(arcBuffer, 0, 0);
+                    ctx.restore();
+                }
+
+                ctx.restore();
+            }
+        }
+
         function drawFrequencyPinwheel(origin, hue, ctx, angle) {
             var metrics = FrequencyAnalyzer.getMetrics(),
                 data = AudioData.getFrequencies();
@@ -266,8 +300,10 @@ app.constant('Effects', Object.freeze({
 
             drawArcSet(ctx, data, 0, metrics.dataLimit / 2, lightBack, 2, angle); //skip every other
             drawArcSet(ctx, data, 1, metrics.dataLimit / 2 + 1, darkBack, 2, angle); //offset by 1 and skip ever other arc
-            drawArcSet(ctx, data, metrics.dataLimit / 2, metrics.dataLimit, darkFront, 2, angle); //start at middle, skip every other
-            drawArcSet(ctx, data, metrics.dataLimit / 2 + 1, metrics.dataLimit - 1, lightFront, 2, angle); //start middle, offset by 1, skip every other
+            drawArcSet(ctx, data, metrics.dataLimit / 2, metrics.dataLimit, darkFront, 2, -angle); //start at middle, skip every other
+            drawArcSet(ctx, data, metrics.dataLimit / 2 + 1, metrics.dataLimit - 1, lightFront, 2, -angle); //start middle, offset by 1, skip every other
+
+            drawPeakShimmers(ctx, origin, metrics.maxRangeIndices, angle);
 
             //Draw circle in center of arcs
             var gradient = ctx.createRadialGradient(origin.x, origin.y, metrics.avgLoudness / 10, origin.x, origin.y, metrics.avgLoudness);

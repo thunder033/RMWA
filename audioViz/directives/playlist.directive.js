@@ -10,8 +10,6 @@ app.directive('playlist', function(AudioClipService, AudioPlayerService){
         link: function(scope){
             scope.clips = AudioClipService.getAudioClips('media');
 
-            console.log(scope.clips);
-
             scope.playClip = function(clipId) {
                 AudioPlayerService.playClip(clipId);
             };

@@ -3,7 +3,7 @@
  */
 "use strict";
 app.constant('SampleCount', 1024)
-    .service('AudioPlayerService', function(SampleCount, AudioClipService){
+    .service('AudioPlayerService', function(SampleCount, AudioClipService, $q){
 
         var playing = null,
             sourceNode = null,
@@ -12,11 +12,16 @@ app.constant('SampleCount', 1024)
             convolverNode = null,
             player;
 
-        var playHooks = [];
+        var playHooks = [],
+            deferred = $q.defer();
 
         var audioPlayerService = {
             get playing(){
                 return playing;
+            },
+
+            isReady(){
+                return deferred.promise();
             },
 
             /**
@@ -25,6 +30,12 @@ app.constant('SampleCount', 1024)
              */
             registerPlayer(newPlayer){
                 player = newPlayer;
+                if(newPlayer){
+                    deferred.resolve(true);
+                }
+                else {
+                    deferred.reject();
+                }
             },
 
             /**
@@ -42,11 +53,13 @@ app.constant('SampleCount', 1024)
              * @param clipId
              */
             playClip(clipId){
-                playing = AudioClipService.getAudioClip(clipId);
-                player.src = playing.uri;
-                player.play();
+                deferred.promise.then(function(){
+                    playing = AudioClipService.getAudioClip(clipId);
+                    player.src = playing.uri;
+                    player.play();
 
-                playHooks.forEach(callback => callback.call(null, playing));
+                    playHooks.forEach(callback => callback.call(null, playing));
+                });
             },
 
             /**

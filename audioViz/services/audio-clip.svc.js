@@ -69,7 +69,7 @@ app.constant('MediaPath', 'assets/audio/')
                     clips[id].clip = clip.data;
                     return clips[id];
                 }, function(err){
-                    console.error(err);
+                    //console.warn(fileName + ' failed to load: ' + (err.message || err));
                     clips[id].state = MediaStates.ERROR;
                     return clips[id];
                 });
