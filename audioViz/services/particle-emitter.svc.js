@@ -42,6 +42,7 @@ app.service('ParticleEmitter', function(Scheduler, EaselService){
     Particle.prototype.update = function(dt, velocityScale){
         this.position.x += this.velocity.x * dt * .25 + this.velocity.x * velocityScale * .75;
         this.position.y += this.velocity.y * dt * .25 + this.velocity.y * velocityScale * .75;
+
         this.energy -= dt;
     };
 
@@ -154,7 +155,6 @@ app.service('ParticleEmitter', function(Scheduler, EaselService){
         var nextParticles = [];
         for(var i = 0, len = particles.length; i < len; i++){
             particles[i].update(deltaTime, speed);
-            console.log(deltaTime);
             if(particles[i].energy > 0){
                 nextParticles.push(particles[i]);
             }
