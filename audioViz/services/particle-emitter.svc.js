@@ -72,10 +72,14 @@ app.service('ParticleEmitter', function(Scheduler, EaselService){
         //Return the rendered image
         return cacheCtx.canvas;
     }
+    
+    function getDPISpeedFactor(){
+        return window.devicePixelRatio || 1;
+    }
 
     //Define emission properties
     var particles = [],
-        speed = 1,
+        speed = 1 * getDPISpeedFactor(),
         emissionEnergy = 0,
         initEnergy = 4,
         size = 1,
@@ -93,7 +97,7 @@ app.service('ParticleEmitter', function(Scheduler, EaselService){
              * @param newSpeed
              */
             setParticleSpeed(newSpeed){
-                speed = newSpeed;
+                speed = newSpeed  * getDPISpeedFactor();
             },
             /**
              * Set the initial lifespan that particles will be emitted with
