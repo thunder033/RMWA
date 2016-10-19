@@ -56,7 +56,7 @@ app.main = {
   }),
 
   circles: [],
-  numCircles: this.CIRCLE.NUM_CIRCLES_START,
+  numCircles: 0,
 
   // methods
 	init : function() {
