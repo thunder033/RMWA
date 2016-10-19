@@ -13,17 +13,16 @@ var app = app || {};
 
 window.onload = function(){
 	console.log("window.onload called");
+	app.sound.init();
+	app.main.sound = app.sound;
 	app.main.init();
+
 };
 
 window.onblur = function(){
-	app.main.paused = true;
-	cancelAnimationFrame(app.main.animationID);
-	app.main.update();
+	app.main.pauseGame();
 };
 
 window.onfocus = function(){
-	cancelAnimationFrame(app.main.animationID);
-	app.main.paused = false;
-	app.main.update();
+	app.main.resumeGame();
 };

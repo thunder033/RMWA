@@ -55,11 +55,18 @@ app.main = {
     END: 5
   }),
 
+  // Part I - #4A
+  // original 8 fluorescent crayons: https://en.wikipedia.org/wiki/List_of_Crayola_crayon_colors#Fluorescent_crayons
+  //  "Ultra Red", "Ultra Orange", "Ultra Yellow","Chartreuse","Ultra Green","Ultra Blue","Ultra Pink","Hot Magenta"
+  colors: ["#FD5B78","#FF6037","#FF9966","#FFFF66","#66FF66","#50BFE6","#FF6EFF","#EE34D2"],
+
   circles: [],
   numCircles: 0,
   gameState: null,
   roundScore: 0,
   totalScore: 0,
+  
+  sound: undefined, //placeholder for sound js
 
   // methods
 	init : function() {
@@ -74,6 +81,11 @@ app.main = {
     this.numCircles = this.CIRCLE.NUM_CIRCLES_START;
     this.circles = this.makeCircles(this.numCircles);
     this.gameState = this.GAME_STATE.BEGIN;
+
+    this.bgAudio = document.querySelector("#bgAudio");
+    this.bgAudio.volume = 0.25;
+    this.effectAudio = document.querySelector("#effectAudio");
+    this.effectAudio.volume = 0.3;
 
     //input events
     this.canvas.onmousedown = this.doMousedown.bind(this);
@@ -92,6 +104,8 @@ app.main = {
   },
 
   doMousedown: function(e){
+    this.sound.playBGAudio();
+
     if(this.paused){
       this.paused = false;
       this.update();
@@ -110,6 +124,24 @@ app.main = {
 
     var mouse = getMouse(e);
     this.checkCircleClicked(mouse);
+  },
+
+  pauseGame: function(){
+    this.stopBGAudio();
+    this.paused = true;
+    cancelAnimationFrame(this.animationID);
+    this.update();
+  },
+
+  resumeGame: function(){
+    cancelAnimationFrame(this.animationID);
+    this.paused = false;
+    this.update();
+    this.sound.playBGAudio();
+  },
+
+  stopBGAudio: function () {
+    this.sound.stopBGAudio();
   },
 
   checkForCollision: function(){
@@ -132,6 +164,7 @@ app.main = {
           if(circlesIntersect(c1,c2) ){
             c2.state = this.CIRCLE_STATE.EXPLODING;
             c2.xSpeed = c2.ySpeed = 0;
+            this.sound.playEffect();
             this.roundScore ++;
           }
         }
@@ -150,6 +183,7 @@ app.main = {
       if(isOver){
         this.gameState = this.GAME_STATE.ROUND_OVER;
         this.totalScore += this.roundScore;
+        this.stopBGAudio();
       }
 
     } // end if GAME_STATE_EXPLODING
@@ -160,11 +194,11 @@ app.main = {
     for (var i = this.circles.length - 1; i >= 0; i--) {
       var c = this.circles[i];
       if (pointInsideCircle(mouse.x, mouse.y, c)) {
-        c.fillStyle = "red";
         c.xSpeed = c.ySpeed = 0;
         c.state = this.CIRCLE_STATE.EXPLODING;
         this.gameState = this.GAME_STATE.EXPLODING;
         this.roundScore++;
+        this.sound.playEffect();
         break; // we want to click only one circle
       }
     }
@@ -201,7 +235,7 @@ app.main = {
       c.ySpeed = randomVector.y;
 
       c.speed = this.CIRCLE.MAX_SPEED;
-      c.fillStyle = getRandomColor();
+      c.fillStyle = this.colors[i % this.colors.length];
       c.state = this.CIRCLE_STATE.NORMAL;
       c.lifetime = 0;
       c.draw = circleDraw;
@@ -259,10 +293,12 @@ app.main = {
       //did the circle go out of bounds? the bounce
       if(this.circleHitLeftRight(circle)){
         circle.xSpeed *= -1;
+        circle.move(dt);
       }
 
       if(this.circleHitTopBottom(circle)){
         circle.ySpeed *= -1;
+        circle.move(dt);
       }
     });
   },
@@ -281,7 +317,7 @@ app.main = {
     ctx.fillRect(0, 0, this.WIDTH, this.HEIGHT);
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    this.fillText('...PAUSED...', this.WIDTH / 2, this.HEIGHT / 2, '40pt courier', 'white');
+    this.fillText(this.ctx, '...PAUSED...', this.WIDTH / 2, this.HEIGHT / 2, '40pt courier', 'white');
     ctx.restore();
   },
 
@@ -289,14 +325,14 @@ app.main = {
     ctx.save(); // NEW
     // draw score
     // fillText(string, x, y, css, color)
-    this.fillText("This Round: " + this.roundScore + " of " + this.numCircles, 20, 20, "14pt courier", "#ddd");
-    this.fillText("Total Score: " + this.totalScore, this.WIDTH - 200, 20, "14pt courier", "#ddd");
+    this.fillText(this.ctx, "This Round: " + this.roundScore + " of " + this.numCircles, 20, 20, "14pt courier", "#ddd");
+    this.fillText(this.ctx, "Total Score: " + this.totalScore, this.WIDTH - 200, 20, "14pt courier", "#ddd");
 
     // NEW
     if(this.gameState == this.GAME_STATE.BEGIN){
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      this.fillText("To begin, click a circle", this.WIDTH/2, this.HEIGHT/2, "30pt courier", "white");
+      this.fillText(this.ctx, "To begin, click a circle", this.WIDTH/2, this.HEIGHT/2, "30pt courier", "white");
     } // end if
 
     // NEW
@@ -304,9 +340,9 @@ app.main = {
       ctx.save();
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      this.fillText("Round Over", this.WIDTH/2, this.HEIGHT/2 - 40, "30pt courier", "red");
-      this.fillText("Click to continue", this.WIDTH/2, this.HEIGHT/2, "30pt courier", "red");
-      this.fillText("Next round there are " + (this.numCircles + 5) + " circles", this.WIDTH/2 , this.HEIGHT/2 + 35, "20pt courier", "#ddd");
+      this.fillText(this.ctx, "Round Over", this.WIDTH/2, this.HEIGHT/2 - 40, "30pt courier", "red");
+      this.fillText(this.ctx, "Click to continue", this.WIDTH/2, this.HEIGHT/2, "30pt courier", "red");
+      this.fillText(this.ctx, "Next round there are " + (this.numCircles + 5) + " circles", this.WIDTH/2 , this.HEIGHT/2 + 35, "20pt courier", "#ddd");
     } // end if
 
     ctx.restore(); // NEW
@@ -349,18 +385,26 @@ app.main = {
 		// iv) draw debug info
 		if (this.debug){
 			// draw dt in bottom right corner
-			this.fillText("dt: " + dt.toFixed(3), this.WIDTH - 150, this.HEIGHT - 10, "18pt courier", "white");
+			this.fillText(this,ctx, "dt: " + dt.toFixed(3), this.WIDTH - 150, this.HEIGHT - 10, "18pt courier", "white");
 		}
-		
+
+    // 6) CHECK FOR CHEATS
+    //if we are on the start screen or a round over screen
+    if(this.gameState == this.GAME_STATE.BEGIN || this.gameState == this.GAME_STATE.ROUND_OVER){
+      if(myKeys.keydown[myKeys.KEYBOARD.KEY_UP] && myKeys.keydown[myKeys.KEYBOARD.KEY_SHIFT]){
+        this.totalScore++;
+        this.sound.playEffect();
+      }
+    }
 	},
 	
-	fillText: function(string, x, y, css, color) {
-		this.ctx.save();
+	fillText: function(ctx, string, x, y, css, color) {
+		ctx.save();
 		// https://developer.mozilla.org/en-US/docs/Web/CSS/font
-		this.ctx.font = css;
-		this.ctx.fillStyle = color;
-		this.ctx.fillText(string, x, y);
-		this.ctx.restore();
+		ctx.font = css;
+		ctx.fillStyle = color;
+		ctx.fillText(string, x, y);
+		ctx.restore();
 	},
 	
 	calculateDeltaTime: function() {
