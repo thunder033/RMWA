@@ -385,7 +385,7 @@ app.main = {
 		// iv) draw debug info
 		if (this.debug){
 			// draw dt in bottom right corner
-			this.fillText(this,ctx, "dt: " + dt.toFixed(3), this.WIDTH - 150, this.HEIGHT - 10, "18pt courier", "white");
+			this.fillText(this.ctx, "dt: " + dt.toFixed(3), this.WIDTH - 150, this.HEIGHT - 10, "18pt courier", "white");
 		}
 
     // 6) CHECK FOR CHEATS
