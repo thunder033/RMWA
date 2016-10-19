@@ -71,8 +71,9 @@ app.service('EaselService', function () {
 
                 canvas.style.width = oldWidth + "px";
                 canvas.style.height = oldHeight + "px";
-
-                ctx.scale(ratio, ratio);
+                
+                //We don't appear to need this working w/ relative sizes
+                //ctx.scale(ratio, ratio);
 
                 ctx = canvas.getContext("2d");
             }
