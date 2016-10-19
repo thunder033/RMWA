@@ -57,6 +57,9 @@ app.main = {
 
   circles: [],
   numCircles: 0,
+  gameState: null,
+  roundScore: 0,
+  totalScore: 0,
 
   // methods
 	init : function() {
@@ -70,17 +73,86 @@ app.main = {
     //create circles
     this.numCircles = this.CIRCLE.NUM_CIRCLES_START;
     this.circles = this.makeCircles(this.numCircles);
+    this.gameState = this.GAME_STATE.BEGIN;
 
     //input events
     this.canvas.onmousedown = this.doMousedown.bind(this);
+
+    //load level
+    this.reset();
 
 		// start the game loop
 		this.update();
 	},
 
+  reset: function(){
+    this.numCircles += 5;
+    this.roundScore = 0;
+    this.circles = this.makeCircles(this.numCircles);
+  },
+
   doMousedown: function(e){
+    if(this.paused){
+      this.paused = false;
+      this.update();
+      return;
+    }
+
+    if(this.gameState === this.GAME_STATE.EXPLODING){
+      return;
+    }
+
+    if(this.gameState === this.GAME_STATE.ROUND_OVER){
+      this.gameState = this.GAME_STATE.DEFAULT;
+      this.reset();
+      return;
+    }
+
     var mouse = getMouse(e);
     this.checkCircleClicked(mouse);
+  },
+
+  checkForCollision: function(){
+    if(this.gameState == this.GAME_STATE.EXPLODING){
+      // check for collisions between circles
+      for(var i=0;i<this.circles.length; i++){
+        var c1 = this.circles[i];
+        // only check for collisions if c1 is exploding
+        if (c1.state === this.CIRCLE_STATE.NORMAL) continue;
+        if (c1.state === this.CIRCLE_STATE.DONE) continue;
+        for(var j=0;j<this.circles.length; j++){
+          var c2 = this.circles[j];
+          // don't check for collisions if c2 is the same circle
+          if (c1 === c2) continue;
+          // don't check for collisions if c2 is already exploding
+          if (c2.state != this.CIRCLE_STATE.NORMAL ) continue;
+          if (c2.state === this.CIRCLE_STATE.DONE) continue;
+
+          // Now you finally can check for a collision
+          if(circlesIntersect(c1,c2) ){
+            c2.state = this.CIRCLE_STATE.EXPLODING;
+            c2.xSpeed = c2.ySpeed = 0;
+            this.roundScore ++;
+          }
+        }
+      } // end for
+
+      // round over?
+      var isOver = true;
+      for(var i=0;i<this.circles.length; i++){
+        var c = this.circles[i];
+        if(c.state != this.CIRCLE_STATE.NORMAL && c.state != this.CIRCLE_STATE.DONE){
+          isOver = false;
+          break;
+        }
+      } // end for
+
+      if(isOver){
+        this.gameState = this.GAME_STATE.ROUND_OVER;
+        this.totalScore += this.roundScore;
+      }
+
+    } // end if GAME_STATE_EXPLODING
   },
 
   checkCircleClicked: function (mouse) {
@@ -90,6 +162,9 @@ app.main = {
       if (pointInsideCircle(mouse.x, mouse.y, c)) {
         c.fillStyle = "red";
         c.xSpeed = c.ySpeed = 0;
+        c.state = this.CIRCLE_STATE.EXPLODING;
+        this.gameState = this.GAME_STATE.EXPLODING;
+        this.roundScore++;
         break; // we want to click only one circle
       }
     }
@@ -140,12 +215,46 @@ app.main = {
   },
 
   drawCircles: function(ctx){
-    this.circles.forEach(circle=>circle.draw(ctx));
+    if(this.gameState === this.GAME_STATE.ROUND_OVER){
+      this.ctx.globalAlpha = 0.25;
+    }
+
+    this.circles.forEach(circle=>{
+      if(circle.state !== this.CIRCLE_STATE.DONE){
+        circle.draw(ctx);
+      }
+    });
   },
 
   moveCircles: function(dt){
     this.circles.forEach(circle=>{
       circle.move(dt);
+
+      switch(circle.state){
+        case this.CIRCLE_STATE.DONE:
+          return;
+        case this.CIRCLE_STATE.EXPLODING:
+          circle.radius += this.CIRCLE.EXPLOSION_SPEED * dt;
+          if(circle.radius > this.CIRCLE.MAX_RADIUS){
+            circle.state = this.CIRCLE_STATE.MAX_SIZE;
+          }
+          break;
+
+        case this.CIRCLE_STATE.MAX_SIZE:
+          circle.lifetime += dt;
+          if(circle.lifetime >= this.CIRCLE.MAX_LIFETIME){
+            circle.state = this.CIRCLE_STATE.IMPLODING;
+          }
+          break;
+
+        case this.CIRCLE_STATE.IMPLODING:
+          circle.radius -= this.CIRCLE.IMPLOSION_SPEED * dt;
+          if(circle.radius <= this.CIRCLE.MIN_RADIUS){
+            circle.state = this.CIRCLE_STATE.DONE;
+            return;
+          }
+          break;
+      }
 
       //did the circle go out of bounds? the bounce
       if(this.circleHitLeftRight(circle)){
@@ -175,6 +284,33 @@ app.main = {
     this.fillText('...PAUSED...', this.WIDTH / 2, this.HEIGHT / 2, '40pt courier', 'white');
     ctx.restore();
   },
+
+  drawHUD: function(ctx){
+    ctx.save(); // NEW
+    // draw score
+    // fillText(string, x, y, css, color)
+    this.fillText("This Round: " + this.roundScore + " of " + this.numCircles, 20, 20, "14pt courier", "#ddd");
+    this.fillText("Total Score: " + this.totalScore, this.WIDTH - 200, 20, "14pt courier", "#ddd");
+
+    // NEW
+    if(this.gameState == this.GAME_STATE.BEGIN){
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      this.fillText("To begin, click a circle", this.WIDTH/2, this.HEIGHT/2, "30pt courier", "white");
+    } // end if
+
+    // NEW
+    if(this.gameState == this.GAME_STATE.ROUND_OVER){
+      ctx.save();
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      this.fillText("Round Over", this.WIDTH/2, this.HEIGHT/2 - 40, "30pt courier", "red");
+      this.fillText("Click to continue", this.WIDTH/2, this.HEIGHT/2, "30pt courier", "red");
+      this.fillText("Next round there are " + (this.numCircles + 5) + " circles", this.WIDTH/2 , this.HEIGHT/2 + 35, "20pt courier", "#ddd");
+    } // end if
+
+    ctx.restore(); // NEW
+  },
 	
 	update: function(){
 		// 1) LOOP
@@ -194,6 +330,9 @@ app.main = {
 	 	// 4) UPDATE
 	 	// move circles
     this.moveCircles(dt);
+
+    //check for collisions
+    this.checkForCollision();
 	 	
 		// 5) DRAW	but
 		// i) draw background
@@ -201,10 +340,11 @@ app.main = {
 		this.ctx.fillRect(0,0,this.WIDTH,this.HEIGHT); 
 
 		// ii) draw circles
+    this.ctx.globalAlpha = 0.9;
     this.drawCircles(this.ctx);
 
 		// iii) draw HUD
-		
+		this.drawHUD(this.ctx);
 		
 		// iv) draw debug info
 		if (this.debug){
