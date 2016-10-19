@@ -34,7 +34,7 @@ app.service('AudioClipService', function($http, $q, MediaPath, MediaStates, Reve
             /**
              * Load a series of clips into the audio clip service
              * @param clipList
-             * @returns {Promise}
+             * @returns {Promise|IPromise}
              */
             loadAudioClips(clipList){
                 clipList = clipList instanceof Array ? clipList : [clipList];

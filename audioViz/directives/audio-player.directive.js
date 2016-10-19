@@ -7,9 +7,20 @@ app.directive('audioPlayer', function(AudioPlayerService){
     return {
         restrict: 'E',
         replace: true,
-        template: '<audio controls loop></audio>',
+        templateUrl: 'templates/audio-player.html',
         link: function(scope, elem){
-            AudioPlayerService.registerPlayer(elem[0]);
+            //Connect the audio element to the player service
+            AudioPlayerService.registerPlayer(elem[0].querySelector('audio'));
+
+            var states = {
+                LOADING: 'LOADING',
+                PLAYING: 'PLAYING',
+                PAUSED: 'PAUSED',
+                STOPPED: 'STOPPED',
+                ERROR: 'ERROR'
+            };
+
+            scope.state = states.LOADING
         }
     }
 });
