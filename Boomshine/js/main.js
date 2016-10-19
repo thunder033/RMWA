@@ -130,6 +130,14 @@ app.main = {
       return;
     }
 
+    if(this.gameState === this.GAME_STATE.END){
+      this.gameState = this.GAME_STATE.BEGIN;
+      this.totalScore = 0;
+      this.numCircles = this.CIRCLE.NUM_CIRCLES_START;
+      this.reset();
+      return;
+    }
+
     var mouse = getMouse(e);
     this.checkCircleClicked(mouse);
   },
@@ -189,9 +197,15 @@ app.main = {
       } // end for
 
       if(isOver){
-        this.gameState = this.GAME_STATE.ROUND_OVER;
-        this.totalScore += this.roundScore;
-        this.stopBGAudio();
+        if(this.numCirlces >= this.CIRCLE.NUM_CIRCLES_END){
+	  this.gameState = this.GAME_STATE.END;
+	  this.stopBGAudio();
+	}
+        else {
+          this.gameState = this.GAME_STATE.ROUND_OVER;
+          this.totalScore += this.roundScore;
+          this.stopBGAudio();
+	}
       }
 
     } // end if GAME_STATE_EXPLODING
@@ -257,7 +271,7 @@ app.main = {
   },
 
   drawCircles: function(ctx){
-    if(this.gameState === this.GAME_STATE.ROUND_OVER){
+    if(this.gameState === this.GAME_STATE.ROUND_OVER || this.gameState === this.GAME_STATE.END){
       this.ctx.globalAlpha = 0.25;
     }
 
@@ -352,6 +366,15 @@ app.main = {
       this.fillText(this.ctx, "Click to continue", this.WIDTH/2, this.HEIGHT/2, "30pt courier", "red");
       this.fillText(this.ctx, "Next round there are " + (this.numCircles + 5) + " circles", this.WIDTH/2 , this.HEIGHT/2 + 35, "20pt courier", "#ddd");
     } // end if
+	 
+    if(this.gameState == this.GAME_STATE.END){
+      ctx.save();
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      this.fillText(this.ctx, "Game Over", this.WIDTH/2, this.HEIGHT/2 - 40, "30pt courier", "red");
+      this.fillText(this.ctx, "Click to continue", this.WIDTH/2, this.HEIGHT/2, "30pt courier", "red");
+      this.fillText(this.ctx, "Final Score " + (this.totalScore), this.WIDTH/2 , this.HEIGHT/2 + 35, "20pt courier", "#ddd");
+    }
 
     ctx.restore(); // NEW
   },
