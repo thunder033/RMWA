@@ -102,12 +102,24 @@ function requestFullscreen(element) {
 	  element.webkitRequestFullscreen();
 	}
 	// .. and do nothing if the method is not supported
-};
+}
 
 
 // This gives Array a randomElement() method
 Array.prototype.randomElement = function(){
 	return this[Math.floor(Math.random() * this.length)];
+};
+
+/**
+ * Returns boolean indicating if point is inside a circle
+ * http://stackoverflow.com/questions/2212604/javascript-check-mouse-clicked-inside-the-circleor-polygon
+ * @param x
+ * @param y
+ * @param I
+ * @returns {boolean}
+ */
+function pointInsideCircle(x, y, I) {
+	var dx = x - I.x;
+	var dy = y - I.y;
+	return dx * dx + dy * dy <= I.radius * I.radius;
 }
-
-
