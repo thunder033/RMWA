@@ -2,8 +2,7 @@
  * Created by gjr8050 on 9/16/2016.
  */
 "use strict";
-app.constant('MaxFrameRate', 60)
-    .service("Scheduler", function(MaxFrameRate){
+app.service("Scheduler", function(MaxFrameRate){
         var updateOperations = new PriorityQueue(),
             drawCommands = new PriorityQueue(),
             postDrawCommands = new PriorityQueue(),

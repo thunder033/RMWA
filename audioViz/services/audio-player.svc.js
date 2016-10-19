@@ -2,8 +2,7 @@
  * Created by gjr8050 on 9/16/2016.
  */
 "use strict";
-app.constant('SampleCount', 1024)
-    .service('AudioPlayerService', function(SampleCount, AudioClipService, $q){
+app.service('AudioPlayerService', function(SampleCount, AudioClipService, $q){
 
         var playing = null,
             sourceNode = null,

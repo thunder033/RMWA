@@ -2,20 +2,35 @@
  * Created by gjr8050 on 9/16/2016.
  */
 "use strict";
-app.constant('MediaPath', 'assets/audio/')
-    .constant('ReverbImpulsePath', 'assets/reverb-impulses/')
-    .constant('MediaStates', Object.freeze({
-        READY: 'READY',
-        LOADING: 'LOADING',
-        ERROR: 'ERROR'
-    }))
-    .service('AudioClipService', function($http, $q, MediaPath, MediaStates, ReverbImpulsePath){
+app.service('AudioClipService', function($http, $q, MediaPath, MediaStates, ReverbImpulsePath){
 
         var clips = {},
             clipList = [],
             autoIncrementID = 0;
 
         var audioClipService = {
+            getClipList(){
+                return $q.when([
+                    //Audio clips from local machine
+                    'Kitchen Sink.mp3',
+                    'Hallelujah.wav',
+                    'Be Concerned.mp3',
+                    'Trees.mp3',
+                    'Panic Station.mp3',
+                    'Secrets.mp3',
+                    'Undisclosed Desires.mp3',
+                    'Beam (Orchestral Remix).mp3',
+                    'Remember the name.mp3',
+                    //Class Provided Samples
+                    'New Adventure Theme.mp3',
+                    'Peanuts Theme.mp3',
+                    'The Picard Song.mp3',
+                    //Impulse samples: Samplicity (http://www.samplicity.com/bricasti-m7-impulse-responses/)
+                    {name: 'Concert Hall.wav', type: 'reverbImpulse'},
+                    {name: 'Arena.wav', type: 'reverbImpulse'},
+                    {name: 'Bass Boost.wav', type: 'reverbImpulse'}
+                ]);
+            },
             /**
              * Load a series of clips into the audio clip service
              * @param clipList

@@ -58,16 +58,16 @@ app.service('EaselService', function () {
 
                 ratio = devicePixelRatio / backingStoreRatio;
 
+            var oldWidth = canvas.clientWidth,
+                oldHeight = canvas.clientHeight;
+
             canvas.width = canvas.clientWidth * scale;
             canvas.height = canvas.clientHeight * scale;
 
-            if(devicePixelRatio !== backingStoreRatio) {
+            if(devicePixelRatio !== backingStoreRatio || scale !== 1 ) {
 
-                var oldWidth = canvas.width,
-                    oldHeight = canvas.height;
-
-                canvas.width = oldWidth * ratio;
-                canvas.height = oldHeight * ratio;
+                canvas.width *= ratio;
+                canvas.height *= ratio;
 
                 canvas.style.width = oldWidth + "px";
                 canvas.style.height = oldHeight + "px";

@@ -6,7 +6,7 @@
  * The particle emitter provider maintains position, velocity, and other properties of each particle drawn
  * on the screen. It provides an interface to change how particles are emitted and when.
  */
-app.service('ParticleEmitter', function(Scheduler, EaselService){
+app.service('ParticleEmitter', function(Scheduler, EaselService, ScaleFactor){
 
     /**
      * A simple vector class
@@ -72,17 +72,13 @@ app.service('ParticleEmitter', function(Scheduler, EaselService){
         //Return the rendered image
         return cacheCtx.canvas;
     }
-    
-    function getDPISpeedFactor(){
-        return window.devicePixelRatio || 1;
-    }
 
     //Define emission properties
     var particles = [],
-        speed = 1 * getDPISpeedFactor(),
+        speed = 1 * ScaleFactor,
         emissionEnergy = 0,
         initEnergy = 4,
-        size = 1,
+        size = ScaleFactor,
         particleImage = preRenderParticle(),
         emitter = {
             /**
@@ -97,7 +93,7 @@ app.service('ParticleEmitter', function(Scheduler, EaselService){
              * @param newSpeed
              */
             setParticleSpeed(newSpeed){
-                speed = newSpeed  * getDPISpeedFactor();
+                speed = newSpeed  * ScaleFactor;
             },
             /**
              * Set the initial lifespan that particles will be emitted with
