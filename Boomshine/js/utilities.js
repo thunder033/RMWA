@@ -123,3 +123,16 @@ function pointInsideCircle(x, y, I) {
 	var dy = y - I.y;
 	return dx * dx + dy * dy <= I.radius * I.radius;
 }
+
+/**
+ * Checks if two circles are colliding
+ * @param c1
+ * @param c2
+ * @returns {boolean}
+ */
+function circlesIntersect(c1, c2) {
+	var dx = c2.x - c1.x;
+	var dy = c2.y - c1.y;
+	var distance = Math.sqrt(dx * dx + dy * dy);
+	return distance < c1.radius + c2.radius;
+}
