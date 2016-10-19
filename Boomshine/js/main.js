@@ -89,7 +89,8 @@ app.main = {
 
     //input events
     this.canvas.onmousedown = this.doMousedown.bind(this);
-
+    window.addEventListener("keyup", this.doKeyUp.bind(this));
+		
     //load level
     this.reset();
 
@@ -102,6 +103,13 @@ app.main = {
     this.roundScore = 0;
     this.circles = this.makeCircles(this.numCircles);
   },
+	
+  doKeyUp: function(e){
+	var char = String.fromCharCode(e.keyCode);
+	if (char == "d" || char == "D"){
+		this.debug = !this.debug;
+	}	  
+  }
 
   doMousedown: function(e){
     this.sound.playBGAudio();
