@@ -35,14 +35,14 @@ html, body {
     background: #222;
 }
 
-.playing {
+li.playing {
     font-weight: bold;
     color: #ccffcc;
     border-left: 3px #ccffcc solid;
     background: #444;
 }
 
-.playing::before {
+li.playing::before {
     content: '';
     height: 0;
     width: 0;
@@ -92,6 +92,7 @@ html, body {
 .playlist {
     overflow-y: scroll;
     max-height: 13em;
+    background: #2a2a2a;
 }
 
 .playlist ul {
