@@ -2,7 +2,7 @@
  * Created by gjr8050 on 9/16/2016.
  */
 "use strict";
-app.service('AudioPlayerService', function(SampleCount, AudioClipService, $q){
+app.service('AudioPlayerService', function(SampleCount, AudioClipService, $q, MediaStates){
 
     var states = Object.freeze({
         LOADING: 'LOADING',
@@ -160,7 +160,15 @@ app.service('AudioPlayerService', function(SampleCount, AudioClipService, $q){
 
         playNext(){
             if(playing){
-                audioPlayerService.playClip(playing.id + 1);
+                var next = playing;
+                do {
+                    next = AudioClipService.getAudioClip(next.id + 1);
+                } while(next.state === MediaStates.ERROR);
+
+                audioPlayerService.playClip(next.id);
+            }
+            else {
+                audioPlayerService.playClip(0);
             }
         },
 

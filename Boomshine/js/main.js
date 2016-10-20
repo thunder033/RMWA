@@ -109,7 +109,7 @@ app.main = {
 	if (char == "d" || char == "D"){
 		this.debug = !this.debug;
 	}	  
-  }
+  },
 
   doMousedown: function(e){
     this.sound.playBGAudio();
