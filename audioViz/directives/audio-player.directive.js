@@ -3,13 +3,16 @@
  */
 "use strict";
 app.directive('audioPlayer', function(AudioPlayerService){
-
     return {
         restrict: 'E',
         replace: true,
-        template: '<audio controls loop></audio>',
-        link: function(scope, elem){
-            AudioPlayerService.registerPlayer(elem[0]);
+        templateUrl: 'templates/audio-player.html',
+        link: function(scope){
+            AudioPlayerService.registerPlayer();
+            scope.player = AudioPlayerService;
+            scope.getPlaybarSize = function(){
+                return AudioPlayerService.completionPct * 100 + '%'
+            }
         }
     }
 });
