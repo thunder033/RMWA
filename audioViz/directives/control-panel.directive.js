@@ -30,10 +30,7 @@ app.directive('controlPanel', function(Visualizer, Effects, Scheduler, AudioClip
             };
 
             Scheduler.schedule(()=>scope.$apply());
-
-            AudioPlayerService.addPlayEventListener(clip=>{
-                scope.clip = clip;
-            })
-        }
+        },
+        controller: 'ControlPanelCtrl'
     }
 });
