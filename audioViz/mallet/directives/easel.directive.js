@@ -2,7 +2,7 @@
  * Created by gjrwcs on 9/15/2016.
  */
 "use strict";
-app.directive('easel', function(EaselService, Scheduler){
+angular.module('mallet').directive('mEasel', ['MEasel','MScheduler', function(EaselService, Scheduler){
 
     var canvas, ctx, scale = 1;
 
@@ -51,4 +51,4 @@ app.directive('easel', function(EaselService, Scheduler){
 
         }
     }
-});
+}]);

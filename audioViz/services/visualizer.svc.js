@@ -2,7 +2,7 @@
  * Created by Greg on 9/18/2016.
  */
 "use strict";
-app.service('Visualizer', function (Scheduler, EaselService, SampleCount, Effects, FrequencyRanges, Color, WaveformAnalyzer, FrequencyAnalyzer, FrequencyPinwheel, ParticleEmitter) {
+app.service('Visualizer', function (MScheduler, MEasel, SampleCount, Effects, FrequencyRanges, MColor, WaveformAnalyzer, FrequencyAnalyzer, FrequencyPinwheel, MParticleEmitter) {
 
     //pulse values - these don't strictly need priority queues, but they work
     var radialPulses = new PriorityQueue(), //pulses generated from waveform - drawn as circles
@@ -10,7 +10,7 @@ app.service('Visualizer', function (Scheduler, EaselService, SampleCount, Effect
 
     var visualizer = {
         init(){
-            Scheduler.schedule(update);
+            MScheduler.schedule(update);
         },
         effects: [],
         waveform: WaveformAnalyzer.getMetrics(),
@@ -112,8 +112,8 @@ app.service('Visualizer', function (Scheduler, EaselService, SampleCount, Effect
                 a = stopPos > .5 ? (1 - (stopPos - .5) * 2) : 1,
                 opacity = a * a * pulse.energy;
 
-            gradient2.addColorStop(stopPos, Color.rgba(255, 255, 255, opacity));
-            gradient2.addColorStop(stopEnd, Color.rgba(255, 255, 255, 0));
+            gradient2.addColorStop(stopPos, MColor.rgba(255, 255, 255, opacity));
+            gradient2.addColorStop(stopEnd, MColor.rgba(255, 255, 255, 0));
         }
 
         //Remove pulses that are outside the cirlce
@@ -161,7 +161,7 @@ app.service('Visualizer', function (Scheduler, EaselService, SampleCount, Effect
 
         //Curves at the lower end of the frequency spectrum will be brighter
         var alpha = .5 + .5 * ((1 - pulse.frequencyRange) / FrequencyRanges.length);
-        ctx.fillStyle = Color.rgba(255, 255, 255, alpha);
+        ctx.fillStyle = MColor.rgba(255, 255, 255, alpha);
         ctx.fill();
     }
 
@@ -226,18 +226,18 @@ app.service('Visualizer', function (Scheduler, EaselService, SampleCount, Effect
     }
 
     function drawRadialPulses(origin, ctx) {
-        var quarterCtx = EaselService.getContext('quarterRender');
+        var quarterCtx = MEasel.getContext('quarterRender');
         drawQuarterRadialPulses(quarterCtx, {x: 0, y: 0}, ctx.canvas.width / 2);
         //mirror the image into the other quadrants
-        EaselService.drawQuarterRender(ctx, quarterCtx.canvas, origin);
+        MEasel.drawQuarterRender(ctx, quarterCtx.canvas, origin);
     }
 
     function drawLinearPulses(origin, ctx) {
-        var quarterCtx = EaselService.getContext('quarterRender');
-        EaselService.clearCanvas(quarterCtx);
+        var quarterCtx = MEasel.getContext('quarterRender');
+        MEasel.clearCanvas(quarterCtx);
         drawQuarterLinearPulses(quarterCtx, {x: 0, y: 0}, ctx.canvas.width, ctx.canvas.height);
         //mirror the image into the other quadrants
-        EaselService.drawQuarterRender(ctx, quarterCtx.canvas, origin);
+        MEasel.drawQuarterRender(ctx, quarterCtx.canvas, origin);
     }
 
     function update() {
@@ -246,26 +246,26 @@ app.service('Visualizer', function (Scheduler, EaselService, SampleCount, Effect
         //Update the particle emitter
         var avgLoudness = FrequencyAnalyzer.getMetrics().avgLoudness;
         //Particles should exist short when things are more active or if frame rate is bad
-        ParticleEmitter.setInitEnergy((Scheduler.FPS / 12.5) * .8 - (avgLoudness / 256));
-        ParticleEmitter.incrementEmission(avgLoudness / 5);
-        ParticleEmitter.setParticleSpeed(visualizer.velocity * 1200);
+        MParticleEmitter.setInitEnergy((MScheduler.FPS / 12.5) * .8 - (avgLoudness / 256));
+        MParticleEmitter.incrementEmission(avgLoudness / 5);
+        MParticleEmitter.setParticleSpeed(visualizer.velocity * 1200);
 
-        var canvas = EaselService.context.canvas,
+        var canvas = MEasel.context.canvas,
             origin = {x: canvas.width / 2, y: canvas.height / 2};
 
-        Scheduler.draw(()=> {
+        MScheduler.draw(()=> {
             //Draw the background color
-            EaselService.context.fillStyle = Color.hsla(visualizer.hue, '90%', '10%', 1);
-            EaselService.context.fillRect(0, 0, canvas.width, canvas.height);
+            MEasel.context.fillStyle = MColor.hsla(visualizer.hue, '90%', '10%', 1);
+            MEasel.context.fillRect(0, 0, canvas.width, canvas.height);
         });
 
         //Queue up draw commands for visualization
-        Scheduler.draw(()=> drawRadialPulses(origin, EaselService.context), 99);
-        Scheduler.draw(()=> FrequencyPinwheel.draw(origin, visualizer.hue, EaselService.context, visualizer.angle), 100);
-        Scheduler.draw(()=> drawLinearPulses(origin, EaselService.context), 101);
+        MScheduler.draw(()=> drawRadialPulses(origin, MEasel.context), 99);
+        MScheduler.draw(()=> FrequencyPinwheel.draw(origin, visualizer.hue, MEasel.context, visualizer.angle), 100);
+        MScheduler.draw(()=> drawLinearPulses(origin, MEasel.context), 101);
 
         //Apply pixel manipulation effects
-        Scheduler.postProcess(()=>manipulatePixels(EaselService.context));
+        MScheduler.postProcess(()=>manipulatePixels(MEasel.context));
     }
 
     return visualizer;

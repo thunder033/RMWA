@@ -17,25 +17,32 @@
     <script src="../node_modules/angular/angular.min.js"></script>
     <script src="../node_modules/checklist-model/checklist-model.js"></script>
     <script src="util/priorityQueue.js"></script>
+    
+    <!--LOAD MALLET-->
+    <script src="mallet/constants.js"></script>
+    <script src="mallet/mallet.js"></script>
 
-    <script src="audioViz.js"></script>
+    <script src="mallet/services/scheduler.service.js"></script>
+    <script src="mallet/services/color.svc.js"></script>
+    <script src="mallet/services/easel.svc.js"></script>
+    <script src="mallet/services/particle-emitter.svc.js"></script>
+
+    <script src="mallet/directives/easel.directive.js"></script>
+    
+    <!--LOAD PULSAR-->
+    <script src="pulsar.js"></script>
 
     <script src="constants.js"></script>
 
-    <script src="services/scheduler.service.js"></script>
     <script src="services/audio-player.svc.js"></script>
     <script src="services/audio-clip.svc.js"></script>
-    <script src="services/particle-emitter.svc.js"></script>
     <script src="services/audio-data.svc.js"></script>
-    <script src="services/color.svc.js"></script>
     <script src="services/frequency-analyzer.svc.js"></script>
     <script src="services/waveform-analyzer.svc.js"></script>
     <script src="services/frequency-pinwheel.svc.js"></script>
     <script src="services/visualizer.svc.js"></script>
-    <script src="services/easel.svc.js"></script>
 
     <script src="controllers/control-panel.ctrl.js"></script>
-    <script src="controllers/easel.ctrl.js"></script>
 
     <script src="filters/secondsToDate.filter.js"></script>
     <script src="filters/capitalize.filter.js"></script>
@@ -45,14 +52,13 @@
     <script src="directives/playlist.directive.js"></script>
     <script src="directives/audio-player.directive.js"></script>
     <script src="directives/control-panel.directive.js"></script>
-    <script src="directives/easel.directive.js"></script>
 
 </head>
 <body>
-    <div class="wrapper" ng-app="audio-viz">
+    <div class="wrapper" ng-app="pulsar">
         <div id="loadError" class="es6-warning-banner"></div>
         <control-panel></control-panel>
-        <easel id="visualizer"></easel>
+        <m-easel id="visualizer"></m-easel>
     </div>
 </body>
 </html>

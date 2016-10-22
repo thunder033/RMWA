@@ -5,5 +5,5 @@
     <span class="clip-title" ng-bind="player.playing.name"></span><br>
     <span class="timestamp">{{ player.playbackTime | secondsToDate | date:'m:ss' }} / {{ player.trackLength | secondsToDate | date:'m:ss' }}</span>
 
-    <span class="play-bar"><span class="play-bar-progress" ng-style="{width: getPlaybarSize()}"></span></span>
+    <span class="play-bar" ng-click="seek($event)"><span class="play-bar-progress" ng-style="{width: getPlaybarSize()}"></span></span>
 </div>

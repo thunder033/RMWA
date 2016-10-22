@@ -3,11 +3,6 @@
  */
 "use strict";
 app
-    //Rendering
-    .constant('ScaleFactor', (()=>window.devicePixelRatio || 1)())
-    .constant('SampleCount', 1024)
-    .constant('MaxFrameRate', 60)
-
     //Visualization
     .constant('Effects', Object.freeze({
         NOISE: 'NOISE',

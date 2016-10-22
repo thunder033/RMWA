@@ -5,12 +5,12 @@
 /**
  * Provides access to audio data
  */
-app.service('AudioData', function (Scheduler, SampleCount, AudioPlayerService) {
+app.service('AudioData', function (MScheduler, SampleCount, AudioPlayerService) {
 
     var waveformData = new Uint8Array(SampleCount / 2),
         frequencyData = new Uint8Array(SampleCount / 2);
 
-    Scheduler.schedule(()=> {
+    MScheduler.schedule(()=> {
         var analyzerNode = AudioPlayerService.getAnalyzerNode();
 
         if (!analyzerNode) {

@@ -5,10 +5,10 @@
 /**
  * Provides functions to render the frequency pinwheel
  */
-app.service('FrequencyPinwheel', function(AudioData, EaselService, FrequencyAnalyzer, Color){
+app.service('FrequencyPinwheel', function(AudioData, MEasel, FrequencyAnalyzer, MColor){
 
     function preRenderArc(color, arcLength, radius){
-        var cacheCtx = EaselService.getContext('arcRender');
+        var cacheCtx = MEasel.getContext('arcRender');
         //Pre-render a single arc so it can be transformed fro each section of the pinwheel
         cacheCtx.clearRect(0, 0, cacheCtx.canvas.width, cacheCtx.canvas.height);
         cacheCtx.canvas.height = Math.sin(arcLength) * radius;
@@ -100,10 +100,10 @@ app.service('FrequencyPinwheel', function(AudioData, EaselService, FrequencyAnal
             data = AudioData.getFrequencies();
 
         //Draw each set of arcs
-        var darkBack = Color.hsla(hue, '84%', '25%', .65),
-            lightBack = Color.hsla(hue, '90%', '43%', .75),
-            darkFront = Color.hsla(hue, '70%', '70%', .5),
-            lightFront = Color.hsla(hue, '55%', '78%', .5);
+        var darkBack = MColor.hsla(hue, '84%', '25%', .65),
+            lightBack = MColor.hsla(hue, '90%', '43%', .75),
+            darkFront = MColor.hsla(hue, '70%', '70%', .5),
+            lightFront = MColor.hsla(hue, '55%', '78%', .5);
 
         drawArcSet(ctx, data, 0, metrics.dataLimit / 2, lightBack, 2, angle); //skip every other
         drawArcSet(ctx, data, 1, metrics.dataLimit / 2 + 1, darkBack, 2, angle); //offset by 1 and skip ever other arc

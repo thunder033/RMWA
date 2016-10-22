@@ -5,7 +5,7 @@
 /**
  * Performs analysis on the waveform data each frame to derive metrics
  */
-app.service('WaveformAnalyzer', function (Scheduler, AudioData, SampleCount) {
+app.service('WaveformAnalyzer', function (MScheduler, AudioData, SampleCount) {
     var results = {};
 
     /**
@@ -44,7 +44,7 @@ app.service('WaveformAnalyzer', function (Scheduler, AudioData, SampleCount) {
         outResults.period = peakDistance / SampleCount * 2
     }
 
-    Scheduler.schedule(()=> {
+    MScheduler.schedule(()=> {
         analyzeWaveform(AudioData.getWaveform(), results);
     }, 75);
 

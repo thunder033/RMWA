@@ -2,7 +2,7 @@
 /**
  * Created by gjrwcs on 9/15/2016.
  */
-app.directive('controlPanel', function(Visualizer, Effects, Scheduler, AudioClipService, AudioPlayerService){
+app.directive('controlPanel', function(Visualizer, Effects, MScheduler, AudioClipService, AudioPlayerService){
     return {
         restrict: 'E',
         replace: true,
@@ -29,7 +29,7 @@ app.directive('controlPanel', function(Visualizer, Effects, Scheduler, AudioClip
                 }
             };
 
-            Scheduler.schedule(()=>scope.$apply());
+            MScheduler.schedule(()=>scope.$apply());
         },
         controller: 'ControlPanelCtrl'
     }

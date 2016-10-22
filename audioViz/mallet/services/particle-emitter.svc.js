@@ -6,7 +6,7 @@
  * The particle emitter provider maintains position, velocity, and other properties of each particle drawn
  * on the screen. It provides an interface to change how particles are emitted and when.
  */
-app.service('ParticleEmitter', function(Scheduler, EaselService, ScaleFactor){
+angular.module('mallet').service('MParticleEmitter', ['MScheduler','MEasel','ScaleFactor', function(Scheduler, Easel, ScaleFactor){
 
     /**
      * A simple vector class
@@ -53,8 +53,8 @@ app.service('ParticleEmitter', function(Scheduler, EaselService, ScaleFactor){
     function preRenderParticle(){
         var radius = 10;
         //Create a temporary canvas
-        EaselService.createNewCanvas('particle', radius * 2, radius * 2);
-        var cacheCtx = EaselService.getContext('particle'),
+        Easel.createNewCanvas('particle', radius * 2, radius * 2);
+        var cacheCtx = Easel.getContext('particle'),
             origin = new Vector(cacheCtx.canvas.width / 2);
 
         //Create a gradient for the particle
@@ -113,7 +113,7 @@ app.service('ParticleEmitter', function(Scheduler, EaselService, ScaleFactor){
              * Create a new particle
              */
             emit(){
-                var canvas = EaselService.context.canvas,
+                var canvas = Easel.context.canvas,
                     aspectRatio = canvas.width / canvas.height;
                 var origin = new Vector(canvas.width / 2, canvas.height / 2);
                 particles.push(new Particle(
@@ -163,9 +163,9 @@ app.service('ParticleEmitter', function(Scheduler, EaselService, ScaleFactor){
 
         //Draw the particles
         Scheduler.draw(()=>{
-            drawParticles(EaselService.context, particles);
+            drawParticles(Easel.context, particles);
         }, 125);
     }, 100);
 
     return emitter;
-});
+}]);

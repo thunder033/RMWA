@@ -5,7 +5,7 @@
 /**
  * Provides utility functions for working with CSS colors
  */
-app.service('Color', function(){
+angular.module('mallet').service('MColor', [function(){
     return {
         /**
          * Generate and RGBA color string from the provided values
@@ -31,4 +31,4 @@ app.service('Color', function(){
             return `hsla(${hue},${saturation},${lightness},${alpha})`;
         }
     }
-});
+}]);

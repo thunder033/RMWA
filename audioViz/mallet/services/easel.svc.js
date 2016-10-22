@@ -2,7 +2,7 @@
  * Created by gjrwcs on 9/15/2016.
  */
 "use strict";
-app.service('EaselService', function () {
+angular.module('mallet').service('MEasel', [function () {
 
     var contexts = {},
         defaultKey = 'default';
@@ -79,4 +79,4 @@ app.service('EaselService', function () {
             }
         }
     }
-});
+}]);

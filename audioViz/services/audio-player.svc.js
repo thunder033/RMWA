@@ -13,12 +13,15 @@ app.service('AudioPlayerService', function(SampleCount, AudioClipService, $q, Me
     });
 
 
-    var playing = null,
-        sourceNode = null,
-        audioCtx = null,
+    var playing = null, //currently playing clip
+        sourceNode = null, //active source node (different for each track)
+        audioCtx = null, //the audio context
+        
         analyzerNode = null,
-        convolverNode = null,
-        gainNode = null,
+        convolverNode = null, //Produces reverb effects
+        gainNode = null, // Master Gain node (affects visualization)
+        outputGainNode = null, //Outuput gain (affects only volume)
+        
         state = states.LOADING,
         player,
 
@@ -46,6 +49,7 @@ app.service('AudioPlayerService', function(SampleCount, AudioClipService, $q, Me
 
     var audioPlayerService = {
         init(){
+            outputGainNode = this.createOutputGainNode();
             analyzerNode = this.createAnalyzerNode();
             gainNode = this.createMasterGainNode();
             convolverNode = this.createConvolverNode();
@@ -130,10 +134,16 @@ app.service('AudioPlayerService', function(SampleCount, AudioClipService, $q, Me
                 playing = AudioClipService.getAudioClip(clipId);
                 state = states.LOADING;
 
-                audioCtx.decodeAudioData(playing.clip, buffer=> {
-                    playing.buffer = buffer;
+                if(playing && playing.buffer){
                     audioPlayerService.playBuffer(buffer, startTime);
-                });
+                }
+                else {
+                    audioCtx.decodeAudioData(playing.clip, buffer=> {
+                        playing.buffer = buffer;
+                        audioPlayerService.playBuffer(buffer, startTime);
+                    });    
+                }
+                
             });
         },
 
@@ -143,6 +153,7 @@ app.service('AudioPlayerService', function(SampleCount, AudioClipService, $q, Me
          * @param startTime
          */
         playBuffer(buffer, startTime){
+
             if(sourceNode){
                 sourceNode.onended = null;
                 sourceNode.stop(0);
@@ -156,6 +167,15 @@ app.service('AudioPlayerService', function(SampleCount, AudioClipService, $q, Me
             playHooks.forEach(callback => callback.call(null, playing));
             trackStart = getNow();
             trackLength = buffer.duration;
+        },
+        
+        seekTo(pct){
+            if(playing){
+                var time = trackLength * (pct || 0);
+                audioPlayerService.playBuffer(playing.buffer, time);
+                trackStart = getNow() - time * 1000;
+            }
+            
         },
 
         playNext(){
@@ -268,7 +288,7 @@ app.service('AudioPlayerService', function(SampleCount, AudioClipService, $q, Me
             analyserNode.fftSize = SampleCount;
 
             // here we connect to the destination i.e. speakers
-            analyserNode.connect(audioCtx.destination);
+            analyserNode.connect(outputGainNode);
             return analyserNode;
         },
 
@@ -279,6 +299,16 @@ app.service('AudioPlayerService', function(SampleCount, AudioClipService, $q, Me
             gainNode = audioCtx.createGain();
             gainNode.connect(analyzerNode);
 
+            return gainNode;
+        },
+        
+        createOutputGainNode(){
+            var gainNode;
+            this.createAudioContext();
+            
+            gainNode = audioCtx.createGain();
+            gainNode.connect(audioCtx.destination);
+            
             return gainNode;
         }
     };
