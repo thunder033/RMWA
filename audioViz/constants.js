@@ -22,4 +22,9 @@ app
         READY: 'READY',
         LOADING: 'LOADING',
         ERROR: 'ERROR'
+    }))
+    .constant('MediaType', Object.freeze({
+        "Song": 'Song',
+        'Effect': 'Effect',
+        'ReverbImpulse' : 'ReverbImpulse'
     }));

@@ -61,7 +61,7 @@ app.service('AudioClipService', function ($http, $q, MediaPath, MediaStates, Rev
         var defer = $q.defer();
 
         $q.all(clipList.map(fileName=> {
-            return self.loadAudioClip(fileName.name || fileName, fileName.type || MediaType.Clip).then(defer.notify);
+            return self.loadAudioClip(fileName.name || fileName, fileName.type || MediaType.Song).then(defer.notify);
         })).then(defer.resolve, defer.reject);
 
         return defer.promise.then(updateCaches);
