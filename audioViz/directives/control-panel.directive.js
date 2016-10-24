@@ -2,7 +2,7 @@
 /**
  * Created by gjrwcs on 9/15/2016.
  */
-app.directive('controlPanel', function(Visualizer, Effects, MScheduler, AudioClipService, AudioPlayerService){
+app.directive('controlPanel', function(Visualizer, Effects, MScheduler, AudioClipService, AudioPlayerService, MediaType){
     return {
         restrict: 'E',
         replace: true,
@@ -12,7 +12,7 @@ app.directive('controlPanel', function(Visualizer, Effects, MScheduler, AudioCli
             scope.effects = Effects;
 
             scope.reverbEffect = {name: 'None', id: 9999};
-            scope.reverbEffects = AudioClipService.getAudioClips('reverbImpulse');
+            scope.reverbEffects = AudioClipService.getAudioClips(MediaType.ReverbImpulse);
             scope.reverbEffects.push({name: 'None', id: 9999});
             
             scope.setCircleRadius = function(value){
