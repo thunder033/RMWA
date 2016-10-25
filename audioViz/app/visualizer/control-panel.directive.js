@@ -2,11 +2,11 @@
 /**
  * Created by gjrwcs on 9/15/2016.
  */
-app.directive('controlPanel', function(Visualizer, Effects, MScheduler, AudioClipService, AudioPlayerService, MediaType){
+angular.module('pulsar-visualizer').directive('controlPanel', function(Visualizer, Effects, MScheduler, AudioClipService, AudioPlayerService, MediaType){
     return {
         restrict: 'E',
         replace: true,
-        templateUrl: 'templates/control-panel.html',
+        templateUrl: 'views/control-panel.html',
         link: function(scope){
             scope.visualizer = Visualizer;
             scope.effects = Effects;

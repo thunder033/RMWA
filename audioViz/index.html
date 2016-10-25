@@ -7,53 +7,59 @@
     <link href="https://fonts.googleapis.com/css?family=Cuprum" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Droid+Sans+Mono" rel="stylesheet">
 
-    <link rel="stylesheet" href="css/theme.css" type="text/css">
-    <link rel="stylesheet" href="css/easel.css" type="text/css">
-    <link rel="stylesheet" href="css/control-panel.css" type="text/css">
-    <link rel="stylesheet" href="css/loader-icon.css" type="text/css">
-    <link rel="stylesheet" href="css/audio-player.css" type="text/css">
+    <link rel="stylesheet" href="assets/css/theme.css" type="text/css">
+    <link rel="stylesheet" href="assets/css/easel.css" type="text/css">
+    <link rel="stylesheet" href="assets/css/control-panel.css" type="text/css">
+    <link rel="stylesheet" href="assets/css/loader-icon.css" type="text/css">
+    <link rel="stylesheet" href="assets/css/audio-player.css" type="text/css">
 
-    <script src="util/load-error.js"></script>
+    <script src="assets/js/load-error.js"></script>
     <script src="../node_modules/angular/angular.min.js"></script>
     <script src="../node_modules/angular-ui-router/release/angular-ui-router.min.js"></script>
     <script src="../node_modules/checklist-model/checklist-model.js"></script>
-    <script src="util/priorityQueue.js"></script>
+    <script src="assets/js/priorityQueue.js"></script>
     
     <!--LOAD MALLET-->
-    <script src="mallet/constants.js"></script>
-    <script src="mallet/mallet.js"></script>
+    <script src="app/mallet/constants.js"></script>
 
-    <script src="mallet/services/scheduler.service.js"></script>
-    <script src="mallet/services/color.svc.js"></script>
-    <script src="mallet/services/easel.svc.js"></script>
-    <script src="mallet/services/particle-emitter.svc.js"></script>
-
-    <script src="mallet/directives/easel.directive.js"></script>
+    <script src="app/mallet/_module.mallet.js"></script>
+    <script src="app/mallet/scheduler.svc.js"></script>
+    <script src="app/mallet/color.svc.js"></script>
+    <script src="app/mallet/easel.svc.js"></script>
+    <script src="app/mallet/particle-emitter.svc.js"></script>
+    <script src="app/mallet/easel.directive.js"></script>
+    <script src="app/mallet/concurrent-operation.factory.js"></script>
     
     <!--LOAD PULSAR-->
-    <script src="pulsar.js"></script>
 
-    <script src="constants.js"></script>
+    <!--AUDIO-->
+    <script src="app/audio/_module.audio.js"></script>
+    <script src="app/audio/audio-player.svc.js"></script>
+    <script src="app/audio/audio-clip.svc.js"></script>
+    <script src="app/audio/audio-data.svc.js"></script>
 
-    <script src="services/audio-player.svc.js"></script>
-    <script src="services/audio-clip.svc.js"></script>
-    <script src="services/audio-data.svc.js"></script>
-    <script src="services/frequency-analyzer.svc.js"></script>
-    <script src="services/waveform-analyzer.svc.js"></script>
-    <script src="services/frequency-pinwheel.svc.js"></script>
-    <script src="services/visualizer.svc.js"></script>
+    <!--VISUALIZER-->
+    <script src="app/visualizer/_module.visualizer.js"></script>
+    <script src="app/visualizer/frequency-analyzer.svc.js"></script>
+    <script src="app/visualizer/waveform-analyzer.svc.js"></script>
+    <script src="app/visualizer/frequency-pinwheel.svc.js"></script>
+    <script src="app/visualizer/visualizer.svc.js"></script>
+    <script src="app/visualizer/control-panel.ctrl.js"></script>
+    <script src="app/visualizer/playlist.directive.js"></script>
+    <script src="app/visualizer/audio-player.directive.js"></script>
+    <script src="app/visualizer/control-panel.directive.js"></script>
 
-    <script src="controllers/control-panel.ctrl.js"></script>
+    <!--WARP-->
+    <script src="app/warp/_module.warp.js"></script>
 
-    <script src="filters/secondsToDate.filter.js"></script>
-    <script src="filters/capitalize.filter.js"></script>
+    <script src="app/app.module.js"></script>
+    <script src="app/constants.js"></script>
 
-    <script src="directives/loader.directive.js"></script>
-    <script src="directives/es6-warning-banner.directive.js"></script>
-    <script src="directives/playlist.directive.js"></script>
-    <script src="directives/audio-player.directive.js"></script>
-    <script src="directives/control-panel.directive.js"></script>
-
+    <!--SHARED-->
+    <script src="app/shared/secondsToDate.filter.js"></script>
+    <script src="app/shared/capitalize.filter.js"></script>
+    <script src="app/shared/loader.directive.js"></script>
+    <script src="app/shared/es6-warning-banner.directive.js"></script>
 </head>
 <body>
     <div class="wrapper" ng-app="pulsar">

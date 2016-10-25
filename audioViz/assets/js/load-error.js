@@ -11,6 +11,10 @@ window.addEventListener('load', function(){
       return false;
     }
 
+    if(!window.Worker){
+      return false;
+    }
+
     try {
       eval('class Test {}');
       eval('(x=>x)()');

@@ -2,11 +2,11 @@
  * Created by gjr8050 on 9/16/2016.
  */
 "use strict";
-app.directive('audioPlayer', function(AudioPlayerService){
+angular.module('pulsar-visualizer').directive('audioPlayer', function(AudioPlayerService){
     return {
         restrict: 'E',
         replace: true,
-        templateUrl: 'templates/audio-player.html',
+        templateUrl: 'views/audio-player.html',
         link: function(scope, elem){
             AudioPlayerService.registerPlayer();
             scope.player = AudioPlayerService;

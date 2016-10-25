@@ -2,7 +2,7 @@
  * Created by gjr8050 on 9/16/2016.
  */
 "use strict";
-app.service('AudioPlayerService', function(SampleCount, AudioClipService, $q, MediaStates){
+angular.module('pulsar-audio').service('AudioPlayerService', function(SampleCount, AudioClipService, $q, MediaStates){
 
     var states = Object.freeze({
         LOADING: 'LOADING',
@@ -11,7 +11,6 @@ app.service('AudioPlayerService', function(SampleCount, AudioClipService, $q, Me
         STOPPED: 'STOPPED',
         ERROR: 'ERROR'
     });
-
 
     var playing = null, //currently playing clip
         sourceNode = null, //active source node (different for each track)

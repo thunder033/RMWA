@@ -5,7 +5,7 @@
 /**
  * Provides functions to render the frequency pinwheel
  */
-app.service('FrequencyPinwheel', function(AudioData, MEasel, FrequencyAnalyzer, MColor){
+angular.module('pulsar-visualizer').service('FrequencyPinwheel', function(AudioData, MEasel, FrequencyAnalyzer, MColor){
 
     function preRenderArc(color, arcLength, radius){
         var cacheCtx = MEasel.getContext('arcRender');

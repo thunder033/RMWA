@@ -2,7 +2,7 @@
  * Created by Greg on 9/18/2016.
  */
 "use strict";
-app.service('Visualizer', function (MScheduler, MEasel, SampleCount, Effects, FrequencyRanges, MColor, WaveformAnalyzer, FrequencyAnalyzer, FrequencyPinwheel, MParticleEmitter) {
+angular.module('pulsar-visualizer').service('Visualizer', function (MScheduler, MEasel, SampleCount, Effects, FrequencyRanges, MColor, WaveformAnalyzer, FrequencyAnalyzer, FrequencyPinwheel, MParticleEmitter) {
 
     //pulse values - these don't strictly need priority queues, but they work
     var radialPulses = new PriorityQueue(), //pulses generated from waveform - drawn as circles

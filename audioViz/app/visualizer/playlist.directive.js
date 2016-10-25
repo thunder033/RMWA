@@ -2,11 +2,11 @@
  * Created by Greg on 9/18/2016.
  */
 "use strict";
-app.directive('playlist', function(AudioClipService, AudioPlayerService, MediaType){
+angular.module('pulsar-visualizer').directive('playlist', function(AudioClipService, AudioPlayerService, MediaType){
     return {
         restrict: 'E',
         replace: true,
-        templateUrl: 'templates/playlist.html',
+        templateUrl: 'views/playlist.html',
         link: function(scope){
             scope.clips = AudioClipService.getAudioClips(MediaType.Song);
 

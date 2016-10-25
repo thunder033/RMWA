@@ -2,7 +2,7 @@
 /**
  * Created by gjrwcs on 9/15/2016.
  */
-app.controller('ControlPanelCtrl', function($scope, $timeout, AudioClipService, AutoPlay, AudioPlayerService, MediaStates){
+angular.module('pulsar-visualizer').controller('ControlPanelCtrl', function($scope, $timeout, AudioClipService, AutoPlay, AudioPlayerService, MediaStates){
     //Ensure all components render before we start trying to load songs
         $timeout(()=>{
             AudioClipService.getClipList()

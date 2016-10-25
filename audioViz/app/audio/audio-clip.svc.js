@@ -2,7 +2,7 @@
  * Created by gjr8050 on 9/16/2016.
  */
 "use strict";
-app.service('AudioClipService', function ($http, $q, MediaPath, MediaStates, ReverbImpulsePath, MediaType) {
+angular.module('pulsar-audio').service('AudioClipService', function ($http, $q, MediaPath, MediaStates, ReverbImpulsePath, MediaType) {
     var self = this,
         clips = {},
         clipList = [],
