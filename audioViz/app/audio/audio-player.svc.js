@@ -88,6 +88,7 @@ angular.module('pulsar-audio').service('AudioPlayerService', function(SampleCoun
 
         /**
          * Register audio player with the service
+         * This probably needs to be deleted at some point
          */
         registerPlayer(){
             ready.resolve(true);
@@ -129,21 +130,26 @@ angular.module('pulsar-audio').service('AudioPlayerService', function(SampleCoun
                 state = states.LOADING;
             }
 
+            var playOp = $q.defer();
             ready.promise.then(function () {
                 playing = AudioClipService.getAudioClip(clipId);
                 state = states.LOADING;
 
                 if(playing && playing.buffer){
                     audioPlayerService.playBuffer(buffer, startTime);
+                    playOp.resolve();
                 }
                 else {
                     audioCtx.decodeAudioData(playing.clip, buffer=> {
                         playing.buffer = buffer;
                         audioPlayerService.playBuffer(buffer, startTime);
+                        playOp.resolve();
                     });    
                 }
                 
             });
+
+            return playOp.promise;
         },
 
         /**

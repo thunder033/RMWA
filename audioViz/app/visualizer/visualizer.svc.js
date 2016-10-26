@@ -84,6 +84,7 @@ angular.module('pulsar-visualizer').service('Visualizer', function (MScheduler, 
      */
     function drawQuarterRadialPulses(ctx, origin, maxRadius) {
         //PULSES
+        
         //Derive new velocity value from the period the waveform
         var vel = (1 / visualizer.waveform.period) / 20000;
 

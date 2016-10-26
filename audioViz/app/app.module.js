@@ -20,7 +20,10 @@ var app = angular.module('pulsar', [
         }
     }).state('warp', {
         url: '/warp',
-        template: '<m-easel id="visualizer"></m-easel>'
+        template: '<m-easel id="warp"></m-easel><div class="notes"><h3>WARP</h3><ul><li>This can take a long time to load.</li><li>If things start acting up just reload the page</li></div>',
+        controller: function WarpCtrl(Warp) {
+            Warp.init();
+        }
     });
 })
 .run(function(MScheduler){

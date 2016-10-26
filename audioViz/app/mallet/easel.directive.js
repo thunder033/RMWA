@@ -16,7 +16,7 @@ angular.module('mallet').directive('mEasel', ['MEasel','MScheduler', function(Ea
         link: function(scope, elem, attr){
 
             canvas = elem[0].querySelector('canvas');
-            canvas.style.background = "#200";
+            canvas.style.background = "#000";
             ctx = canvas.getContext(attr.context || '2d');
 
             window.addEventListener('resize', ()=>EaselService.resizeCanvas(canvas, ctx));

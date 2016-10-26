@@ -18,7 +18,7 @@ app
     //Media Loading
     .constant('MediaPath', 'assets/audio/')
     .constant('ReverbImpulsePath', 'assets/reverb-impulses/')
-    .constant('AutoPlay', "Trees") //what song to auto-play
+    .constant('AutoPlay', "Be Concerned") //what song to auto-play
     .constant('MediaStates', Object.freeze({
         READY: 'READY',
         LOADING: 'LOADING',
