@@ -138,6 +138,13 @@ angular.module('mallet').service("MScheduler", ['MaxFrameRate', function(MaxFram
              */
             postProcess(operation, zIndex) {
                 scheduleCommand(operation, zIndex, postDrawCommands);
+            },
+
+            /**
+             * Clears the set of registered update operations
+             */
+            reset(){
+                updateOperations.clear();
             }
         }
 }]);
