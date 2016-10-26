@@ -1,0 +1,52 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background: #eee;
+    font-size: 100%;
+    font-family: 'Cuprum', "Century Gothic", sans-serif;
+}
+
+.wrapper {
+    width: 100%;
+    height: 100%;
+}
+
+#visualizer {
+    margin-left: 25em;
+    height: 100%;
+}
+
+#warp {
+    width: 100%;
+    height: 100%;
+}
+
+.notes {
+    position: absolute;
+    bottom: 1em;
+    left: 1em;
+    background: rgba(255,255,255,.5);
+    padding: 1em;
+    color: #fff;
+}
+
+h4 {
+    font-size: 1.1em;
+    margin: 1em 0 .2em;
+}
+
+.clearfix:after {
+    visibility: hidden;
+    display: block;
+    font-size: 0;
+    content: " ";
+    clear: both;
+    height: 0;
+}
+.clearfix { display: inline-block; }
+/* start commented backslash hack \*/
+* html .clearfix { height: 1%; }
+.clearfix { display: block; }
+/* close commented backslash hack */
