@@ -3,7 +3,8 @@
  */
 "use strict";
 angular.module('pulsar-warp', [])
-    .service('Warp', function (MConcurrentOperation, AudioClipService, AudioData, AutoPlay, MediaStates, SampleCount, MScheduler, MEasel, AudioPlayerService, WaveformAnalyzer) {
+    .service('Warp', function (MConcurrentOperation, AudioClipService, AudioData, AutoPlay, MediaStates, SampleCount, MScheduler, MEasel, AudioPlayerService, WaveformAnalyzer, MalletMath) {
+        var MM = MalletMath;
         //Create a web worker with the analysis script
         var fieldGenerator = MConcurrentOperation.create('assets/js/workers/generateAudioField.js');
 
@@ -111,30 +112,89 @@ angular.module('pulsar-warp', [])
 
                     //add a new bar to the queue
                     barQueue.push({
-                        widthFactor: .9 + .1 * getAvg(frequencies) //this value is basically fudged to work well
+                        speed: .9 + .1 * getAvg(frequencies) //this value is basically fudged to work well
                     });
                 }
             }
 
+            function getLensAngle(){
+                var focalLength = 5;
+                return Math.atan(1 / focalLength);
+            }
+
+            /**
+             * Draws a rectangle in the Z plane - derived from Hammer code
+             * @param x
+             * @param y
+             * @param z
+             * @param width
+             * @param depth
+             */
+            function drawFlatRect(x, y, z, width, depth){
+                var ctx = MEasel.context,
+                    cameraPos = MM.vec3(0, .2, 0), //position of the camera in 3d space
+                    viewport = MM.vec2(ctx.canvas.width, ctx.canvas.height),
+                    screenCenter = MM.vec2(viewport.x / 2, viewport.y / 2), //center of the viewport
+
+                    //position of the object relative to the camera
+                    relPosition = MM.vec3(x - cameraPos.x, -(y - cameraPos.y), z - cameraPos.z),
+                    lensAngle = getLensAngle(), //the viewing angle of the lens, large is more stuff
+
+                    nearFieldRadius = z * Math.tan(lensAngle), //the FOV radius at the close rect edge
+                    farFieldRadius = (z + depth) * Math.tan(lensAngle); //the FOV radius at the far edge of the rect
+
+                //Calculate the position of the object on the screen
+                //Draw position of the near left corner
+                var screenPosX = (relPosition.x / nearFieldRadius) * viewport.x + screenCenter.x,
+                    screenPosY = (relPosition.y / nearFieldRadius) * viewport.y + screenCenter.y,
+                    screenPos = MM.vec2(screenPosX, screenPosY);
+
+                //Draw position of the far left corner
+                var screenPosXFar = (relPosition.x / farFieldRadius) * viewport.x,
+                    screenPosYFar = (relPosition.y / farFieldRadius) * viewport.y,
+                    screenPosFar = MM.vec2(screenPosXFar, -screenPosYFar);
+
+                var nearEdgeWidth = (width / nearFieldRadius) * viewport.x,
+                    farEdgeWidth = (width / farFieldRadius) * viewport.x;
+
+                ctx.save();
+                ctx.fillStyle = "#fff";
+                ctx.translate(screenPos.x, screenPos.y);
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(screenPosFar.x, screenPosFar.y);
+                ctx.lineTo(screenPosFar.x + farEdgeWidth, screenPosFar.y);
+                ctx.lineTo(nearEdgeWidth, 0);
+                ctx.closePath();
+                ctx.fill();
+                ctx.restore();
+            }
+
+
             //Add a draw command for the frame
             MScheduler.draw(()=>{
                 var ctx = MEasel.context,
-                    barWidth = ctx.canvas.width / barsVisible,
+                    barHeight = ctx.canvas.height / barsVisible,
                     barMargin = 10, //space between bars
-                    barHeight = ctx.canvas.height / 2; //height of the bars
+                    barWidth = ctx.canvas.width / 2; //width of the bars
 
                 //how fast the set of bars is moving across the screen
-                velocity = (barWidth * barQueue[0].widthFactor + barMargin) / timeStep;
+                velocity = (barHeight * barQueue[0].speed + barMargin) / timeStep;
                 barOffset += velocity * dt;
                 //make the first bar yellow
                 ctx.fillStyle = '#ff0';
-                var drawOffset = 0; //this spaces the bars correctly across the screen
+                var firstBarHeight = barHeight * barQueue[0].speed,
+                    drawOffset = ctx.canvas.height - firstBarHeight; //this spaces the bars correctly across the screen
                 for(var i = 0; i < barsVisible; i++){
-                    var drawHeight = barHeight * audioField[barIndex + i];
-                    ctx.fillRect(-barOffset + drawOffset, 100 + (barHeight / 2) - drawHeight / 2, barWidth * barQueue[i].widthFactor, drawHeight);
-                    drawOffset += barWidth * barQueue[i].widthFactor + barMargin; //add the width the current bar (each bar has a different width)
+                    var drawWidth = barWidth * audioField[barIndex + i];
+                    drawOffset -= barHeight * barQueue[i].speed + barMargin; //add the width the current bar (each bar has a different width)
+                    //ctx.fillRect(ctx.canvas.width / 4 + (barWidth / 2) - drawWidth / 2, drawOffset + barOffset, drawWidth, barHeight * barQueue[i].speed);
                     ctx.fillStyle = '#fff';
                 }
+
+                drawFlatRect(.05, 0, 15, .25, .45);
+                drawFlatRect(-.1, 0, 10, .25, .25);
+                drawFlatRect(.05, 0, 5, .25, .15);
             });
         }
 

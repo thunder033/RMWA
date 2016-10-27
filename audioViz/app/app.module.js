@@ -9,7 +9,7 @@ var app = angular.module('pulsar', [
     'pulsar-warp',
     'checklist-model',
     'ui.router'
-]).config(function($stateProvider, $urlRouterProvider, $rootScope, AudioPlayerService, MScheduler) {
+]).config(function($stateProvider, $urlRouterProvider) {
     $urlRouterProvider.otherwise('/visualizer');
 
     $stateProvider.state('visualizer', {
@@ -26,11 +26,13 @@ var app = angular.module('pulsar', [
         }
     });
 
+
+})
+.run(function(MScheduler, $rootScope, AudioPlayerService){
+    MScheduler.startMainLoop();
+
     $rootScope.$on('$stateChangeStart', ()=>{
         AudioPlayerService.stop();
         MScheduler.reset();
     });
-})
-.run(function(MScheduler){
-    MScheduler.startMainLoop();
 });
