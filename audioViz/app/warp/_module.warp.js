@@ -150,9 +150,9 @@ angular.module('pulsar-warp', [])
                     screenPos = MM.vec2(screenPosX, screenPosY);
 
                 //Draw position of the far left corner
-                var screenPosXFar = (relPosition.x / farFieldRadius) * viewport.x,
-                    screenPosYFar = (relPosition.y / farFieldRadius) * viewport.y,
-                    screenPosFar = MM.vec2(screenPosXFar, -screenPosYFar);
+                var farEdgeOffsetX = ((relPosition.x / farFieldRadius) - (relPosition.x / nearFieldRadius)) * viewport.x,
+                    farEdgeOffsetY = ((relPosition.y / farFieldRadius) - (relPosition.y / nearFieldRadius)) * viewport.y,
+                    farEdgeOffset = MM.vec2(farEdgeOffsetX, farEdgeOffsetY);
 
                 var nearEdgeWidth = (width / nearFieldRadius) * viewport.x,
                     farEdgeWidth = (width / farFieldRadius) * viewport.x;
@@ -162,8 +162,8 @@ angular.module('pulsar-warp', [])
                 ctx.translate(screenPos.x, screenPos.y);
                 ctx.beginPath();
                 ctx.moveTo(0, 0);
-                ctx.lineTo(screenPosFar.x, screenPosFar.y);
-                ctx.lineTo(screenPosFar.x + farEdgeWidth, screenPosFar.y);
+                ctx.lineTo(farEdgeOffset.x, farEdgeOffset.y);
+                ctx.lineTo(farEdgeOffset.x + farEdgeWidth, farEdgeOffset.y);
                 ctx.lineTo(nearEdgeWidth, 0);
                 ctx.closePath();
                 ctx.fill();
@@ -192,9 +192,9 @@ angular.module('pulsar-warp', [])
                     ctx.fillStyle = '#fff';
                 }
 
-                drawFlatRect(.05, 0, 15, .25, .45);
-                drawFlatRect(-.1, 0, 10, .25, .25);
-                drawFlatRect(.05, 0, 5, .25, .15);
+                drawFlatRect(.35, 0, 15, .25, 10);
+                drawFlatRect(-.25, 0, 10, .25, 15);
+                drawFlatRect(.05, 0, 5, .25, 30);
             });
         }
 
