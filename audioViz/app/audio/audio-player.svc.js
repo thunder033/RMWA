@@ -52,6 +52,7 @@ angular.module('pulsar-audio').service('AudioPlayerService', function(SampleCoun
         'state': {get: () => state},
         'playing': {get: () => playing},
         'context': {get: () => audioCtx},
+        'trackLength': {get: () => trackLength},
         'playbackTime': {get: () => getPlaybackTime()},
         'completionPct': {get: () => getPlaybackTime() / trackLength}
     });
@@ -118,7 +119,7 @@ angular.module('pulsar-audio').service('AudioPlayerService', function(SampleCoun
             state = states.LOADING;
 
             if(playing && playing.buffer){
-                self.playBuffer(buffer, startTime);
+                self.playBuffer(playing.buffer, startTime);
                 playOp.resolve();
             }
             else {
@@ -165,10 +166,11 @@ angular.module('pulsar-audio').service('AudioPlayerService', function(SampleCoun
     };
 
     this.stop = () => {
-        playing = null;
+        //playing = null;
         if(sourceNode){
             sourceNode.onended = null;
             sourceNode.stop(0);
+            state = states.STOPPED;
         }
     };
 
