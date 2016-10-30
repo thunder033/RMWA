@@ -2,149 +2,183 @@
  * Created by gjr8050 on 9/16/2016.
  */
 "use strict";
-angular.module('mallet').service("MScheduler", ['MaxFrameRate', function(MaxFrameRate){
-        var updateOperations = new PriorityQueue(),
-            drawCommands = new PriorityQueue(),
-            postDrawCommands = new PriorityQueue(),
+angular.module('mallet').service("MScheduler", ['MaxFrameRate', 'MState', 'MApp', '$rootScope', function(MaxFrameRate, MState, MApp, $rootScope){
+    var self = this,
+        updateOperations = new PriorityQueue(),
+        drawCommands = new PriorityQueue(),
+        postDrawCommands = new PriorityQueue(),
 
-            timestep = 1000 / MaxFrameRate,
-            fps = MaxFrameRate,
-            lastFPSUpdate = 0,
-            framesThisSecond = 0,
-            
-            startTime = 0,
-            deltaTime = 0,
-            elapsedTime = 0,
-            lastFrameTime = 0;
+        timestep = 1000 / MaxFrameRate,
+        fps = MaxFrameRate,
+        lastFPSUpdate = 0,
+        framesThisSecond = 0,
 
-        /**
-         * Execute all update opeartions while preserving the queue
-         * @param deltaTime
-         * @param elapsedTime
-         */
-        function update(deltaTime, elapsedTime) {
-            //reset draw commands to prevent duplicate frames being rendered
-            drawCommands.clear();
-            postDrawCommands.clear();
+        suspendOnBlur = false,
+        animationFrame = null,
 
-            var opsIterator = updateOperations.getIterator();
-            while(!opsIterator.isEnd()){
-                opsIterator.next().call(null, deltaTime, elapsedTime);
+        startTime = 0,
+        deltaTime = 0,
+        elapsedTime = 0,
+        lastFrameTime = 0;
+
+    /**
+     * Execute all update opeartions while preserving the queue
+     * @param deltaTime
+     * @param elapsedTime
+     */
+    function update(deltaTime, elapsedTime) {
+        //reset draw commands to prevent duplicate frames being rendered
+        drawCommands.clear();
+        postDrawCommands.clear();
+
+        var opsIterator = updateOperations.getIterator();
+        while(!opsIterator.isEnd()){
+            opsIterator.next().call(null, deltaTime, elapsedTime);
+        }
+
+        //There might be a better way to do this, but not really slowing things down right now
+        $rootScope.$apply();
+    }
+
+    /**
+     * Execute all draw and post-draw commands, emptying each queue
+     * @param deltaTime
+     * @param elapsedTime
+     */
+    function draw(deltaTime, elapsedTime) {
+        while(drawCommands.peek() != null){
+            drawCommands.dequeue().call(null, deltaTime, elapsedTime);
+        }
+
+        while(postDrawCommands.peek() != null){
+            postDrawCommands.dequeue().call(null, deltaTime, elapsedTime);
+        }
+    }
+
+    /**
+     * Update the FPS value
+     * @param elapsedTime
+     */
+    function updateFPS(elapsedTime) {
+        framesThisSecond++;
+        if(elapsedTime > lastFPSUpdate + 1000){
+            var weightFactor = 0.25;
+            fps = weightFactor * framesThisSecond + (1 - weightFactor) * fps;
+            lastFPSUpdate = elapsedTime;
+            framesThisSecond = 0;
+        }
+    }
+
+    /**
+     * Derived From
+     * Isaac Sukin
+     * http://www.isaacsukin.com/news/2015/01/detailed-explanation-javascript-game-loops-and-timing
+     */
+    function mainLoop(){
+        var frameTime =  (new Date()).getTime();
+        deltaTime += frameTime - lastFrameTime;
+        lastFrameTime = frameTime;
+        elapsedTime = frameTime - startTime;
+
+        updateFPS(elapsedTime);
+
+        var updateSteps = 0;
+        while(deltaTime > timestep){
+            update(timestep, elapsedTime);
+            deltaTime -= timestep;
+
+            if(++updateSteps > 240){
+                console.warn("Update Loop Exceeded 240 Calls");
+                deltaTime = 0; //don't do a silly # of updates
+                break;
             }
         }
 
-        /**
-         * Execute all draw and post-draw commands, emptying each queue
-         * @param deltaTime
-         * @param elapsedTime
-         */
-        function draw(deltaTime, elapsedTime) {
-            while(drawCommands.peek() != null){
-                drawCommands.dequeue().call(null, deltaTime, elapsedTime);
-            }
+        draw(deltaTime, elapsedTime);
+        animationFrame = requestAnimationFrame(mainLoop);
+    }
 
-            while(postDrawCommands.peek() != null){
-                postDrawCommands.dequeue().call(null, deltaTime, elapsedTime);
-            }
+    this.suspend = (e) => {
+        if(e && e.type !== 'blur' || suspendOnBlur === true){
+            MApp.setState(MState.Suspended);
+            cancelAnimationFrame(animationFrame);
+            $rootScope.$apply();
         }
+    };
 
-        /**
-         * Update the FPS value
-         * @param elapsedTime
-         */
-        function updateFPS(elapsedTime) {
-            framesThisSecond++;
-            if(elapsedTime > lastFPSUpdate + 1000){
-                var weightFactor = 0.25;
-                fps = weightFactor * framesThisSecond + (1 - weightFactor) * fps;
-                lastFPSUpdate = elapsedTime;
-                framesThisSecond = 0;
-            }
+    this.resume = () => {
+        console.log('resume');
+        if(MApp.hasState(MState.Suspended)){
+            MApp.setState(MState.Running);
+            self.startMainLoop();
         }
+    };
 
-        /**
-         * Derived From
-         * Isaac Sukin
-         * http://www.isaacsukin.com/news/2015/01/detailed-explanation-javascript-game-loops-and-timing
-         */
-        function mainLoop(){
-            var frameTime =  (new Date()).getTime();
-            deltaTime += frameTime - lastFrameTime;
-            lastFrameTime = frameTime;
-            elapsedTime = frameTime - startTime;
-
-            updateFPS(elapsedTime);
-
-            var updateSteps = 0;
-            while(deltaTime > timestep){
-                update(timestep, elapsedTime);
-                deltaTime -= timestep;
-
-                if(++updateSteps > 240){
-                    console.warn("Update Loop Exceeded 240 Calls");
-                    break;
-                }
-            }
-
-            draw(deltaTime, elapsedTime);
-            requestAnimationFrame(mainLoop);
+    function scheduleCommand(command, priority, queue) {
+        if(command instanceof Function){
+            priority = priority || 0;
+            queue.enqueue(priority, command);
         }
-
-        function scheduleCommand(command, priority, queue) {
-            if(command instanceof Function){
-                priority = priority || 0;
-                queue.enqueue(priority, command);
-            }
-            else {
-                throw new TypeError("Operation must be a function");
-            }
+        else {
+            throw new TypeError("Operation must be a function");
         }
+    }
 
-        return {
-            get FPS(){
-                return fps;
-            },
-            /**
-             * Initialize the main app loop
-             */
-            startMainLoop() {
-                startTime = (new Date()).getTime();
-                lastFrameTime = (new Date()).getTime();
-                requestAnimationFrame(mainLoop);
-            },
+    window.addEventListener('blur', this.suspend);
 
-            /**
-             * Schedule an update command to be executed each frame
-             * @param operation
-             * @param order
-             */
-            schedule(operation, order) {
-               scheduleCommand(operation, order, updateOperations);
-            },
+    Object.defineProperties(this, {
+        'FPS': {get: () => fps}
+    });
 
-            /**
-             * Queue a draw opeartion to be executed once and discarded
-             * @param operation
-             * @param zIndex
-             */
-            draw(operation, zIndex) {
-                scheduleCommand(operation, zIndex, drawCommands);
-            },
+    /**
+     * Initialize the main app loop
+     */
+    this.startMainLoop = () => {
+        startTime = (new Date()).getTime();
+        lastFrameTime = (new Date()).getTime();
+        animationFrame = requestAnimationFrame(mainLoop);
+        MApp.setState(MState.Running);
+    };
 
-            /**
-             * Queue a post process operation to be executed one and discarded
-             * @param operation
-             * @param zIndex
-             */
-            postProcess(operation, zIndex) {
-                scheduleCommand(operation, zIndex, postDrawCommands);
-            },
+    /**
+     * Schedule an update command to be executed each frame
+     * @param operation
+     * @param order
+     */
+    this.schedule = (operation, order) => {
+       scheduleCommand(operation, order, updateOperations);
+    };
 
-            /**
-             * Clears the set of registered update operations
-             */
-            reset(){
-                updateOperations.clear();
-            }
-        }
+    /**
+     * Queue a draw opeartion to be executed once and discarded
+     * @param operation
+     * @param zIndex
+     */
+    this.draw = (operation, zIndex) => {
+        scheduleCommand(operation, zIndex, drawCommands);
+    };
+
+    /**
+     * Queue a post process operation to be executed one and discarded
+     * @param operation
+     * @param zIndex
+     */
+    this.postProcess = (operation, zIndex) => {
+        scheduleCommand(operation, zIndex, postDrawCommands);
+    };
+
+    /**
+     * Clears the set of registered update operations
+     */
+    this.reset = () => {
+        updateOperations.clear();
+    };
+
+    /**
+     * Toggles suspension of the main loop when the window is blurred
+     * @param flag
+     */
+    this.suspendOnBlur = (flag) => {
+        suspendOnBlur = typeof flag !== 'undefined' ? flag : true;
+    }
 }]);

@@ -12,7 +12,9 @@ angular.module('mallet-constants', [])
         Escape: 27
     }))
     .constant('MState', Object.freeze({
-        Playing: 'Playing',
+        Running: 'Running',
         Paused: 'Paused',
-        Loading: 'Loading'
+        Loading: 'Loading',
+        Suspended: 'Suspended',
+        Debug: 'Debug'
     }));

@@ -10,6 +10,7 @@ angular.module('pulsar-visualizer').service('Visualizer', function (MScheduler, 
 
     var visualizer = {
         init(){
+            MScheduler.suspendOnBlur(false);
             MScheduler.schedule(update);
         },
         effects: [],

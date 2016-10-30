@@ -229,7 +229,7 @@ angular.module('pulsar-warp', [])
 
                 //Play the clip - this can take time to initialize
                 return AudioPlayerService.playClip(clip.id).then(()=>{
-                    state = MState.Playing;
+                    state = MState.Running;
                 });
             });
         }
@@ -238,6 +238,7 @@ angular.module('pulsar-warp', [])
          * Initialize Game
          */
         this.init = () => {
+            MScheduler.suspendOnBlur(); //Suspend the event loop when the window is blurred
             AudioPlayerService.registerPlayer(); //init the audio player service
             MScheduler.schedule(update); //when the clip actually begins playing start the level
             AudioClipService.getClipList() //wait for clips to load
@@ -262,8 +263,7 @@ angular.module('pulsar-warp', [])
          */
         function update(dt) {
 
-            if(state !== MState.Playing)
-            {
+            if(state !== MState.Running) {
                 return;
             }
 
