@@ -9,7 +9,7 @@ angular.module('mallet').service('MKeyboard', [function(){
     function invokeListeners(listeners, e){
         listeners.forEach(listener => {
             //this is sort of unreliable but should be good enough for our purposes
-            if(listener.key == e.keyCode || listener.key === String.fromCharCode(e.keyCode)){
+            if(listener.key === e.keyCode || listener.key === String.fromCharCode(e.keyCode)){
                 listener.callback(e);
             }
         });

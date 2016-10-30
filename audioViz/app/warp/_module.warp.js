@@ -144,35 +144,60 @@ angular.module('pulsar-warp', [])
         }
     }])
     .service('WarpShip', ['MScheduler', 'WarpCamera', 'MEasel', 'MalletMath', 'MKeyboard', 'MKeys', 'Shapes', function(MScheduler, WarpCamera, MEasel, MM, MKeyboard, MKeys, Shapes){
-        var self = this;
+        var self = this,
+            velocity = MM.vec3(0),
+            destLane = 0,
+            moveSpeed = 0.0003,
+            laneWidth = .05,
+            shipWidth = .03,
+            pos = MM.vec3(- laneWidth - shipWidth / 2, .1, 1.25),
+            moving = false;
 
         this.lane = 0;
 
+        function isSwitchingLanes() {
+            return destLane !== self.lane;
+        }
+
+        function getSwitchDirection(){
+            return (destLane - self.lane)
+        }
+
+        function hasReachedLane(){
+            var lanePos = (destLane - 1) * laneWidth - shipWidth / 2;
+            return getSwitchDirection() > 0 ? pos.x >= lanePos : pos.x <= lanePos;
+        }
+
         MKeyboard.onkeydown(MKeys.Left, () => {
-            if(self.lane > 0){
-                self.lane--;
+            if(self.lane > 0 && !isSwitchingLanes()){
+                destLane = self.lane - 1;
             }
         });
 
         MKeyboard.onkeydown(MKeys.Right, () => {
-            if (self.lane < 2){
-                self.lane++;
+            if (self.lane < 2 && !isSwitchingLanes()){
+                destLane = self.lane + 1;
             }
         });
 
         MScheduler.schedule(dt => {
 
-            MScheduler.draw(dt => {
-                var laneWidth = .05,
-                    shipWidth = .03,
-                    x = (self.lane - 1) * laneWidth - shipWidth / 2;
+            if(isSwitchingLanes()){
+                pos.x += getSwitchDirection() * moveSpeed * dt;
+                if(hasReachedLane()){
+                    pos.x = (destLane - 1) * laneWidth - shipWidth / 2;
+                    self.lane = destLane;
+                }
+            }
+
+            MScheduler.draw(() => {
                 //Draw Ship
                 MEasel.context.fillStyle = '#f00';
-                WarpCamera.fillFlatShape(Shapes.Triangle, MM.vec3(x, .1, 1.25), shipWidth, 1);
+                WarpCamera.fillFlatShape(Shapes.Triangle, pos, shipWidth, 1);
 
                 //Draw Shadow
                 MEasel.context.fillStyle = 'rgba(0,0,0,.25)';
-                WarpCamera.fillFlatShape(Shapes.Triangle, MM.vec3(x, 0, 1.25), shipWidth, 1);
+                WarpCamera.fillFlatShape(Shapes.Triangle, MM.vec3(pos.x, 0, 1.25), shipWidth, 1);
             }, 10);
         });
     }])
