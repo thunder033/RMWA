@@ -21,10 +21,35 @@ angular.module('mallet-math', []).service('MalletMath', [function(){
      * Add the given vector to this one
      * @param addend {Vector3}
      */
-    Vector3.prototype.add = (addend) => {
-        this.x = addend.x;
-        this.y = addend.y;
-        this.z = addend.z;
+    Vector3.prototype.add = function(addend) {
+        this.x += addend.x;
+        this.y += addend.y;
+        this.z += addend.z;
+        return this;
+    };
+
+    /**
+     * Scale the vector by the scalar
+     * @param scalar
+     * @returns {*}
+     */
+    Vector3.prototype.scale = function(scalar) {
+        this.x *= scalar;
+        this.y *= scalar;
+        this.z *= scalar;
+        return this;
+    };
+
+    /**
+     * Multiplies each component of the 2 vectors
+     * @param factor
+     * @returns {*}
+     */
+    Vector3.prototype.mult = function (factor) {
+        this.x *= factor.x;
+        this.y *= factor.y;
+        this.z *= factor.z;
+        return this;
     };
 
     /**
@@ -54,9 +79,32 @@ angular.module('mallet-math', []).service('MalletMath', [function(){
      * Adds the given Vector2
      * @param addend {Vector2}
      */
-    Vector2.prototype.add = (addend) => {
-        this.x = addend.x;
-        this.y = addend.y;
+    Vector2.prototype.add = function(addend) {
+        this.x += addend.x;
+        this.y += addend.y;
+        return this;
+    };
+
+    /**
+     * Scales the vector by the scalar
+     * @param scalar
+     * @returns {*}
+     */
+    Vector2.prototype.scale = function(scalar) {
+        this.x *= scalar;
+        this.y *= scalar;
+        return this;
+    };
+
+    /**
+     * Multiplies each component of the 2 vectors
+     * @param factor
+     * @returns {*}
+     */
+    Vector2.prototype.mult = function (factor) {
+        this.x *= factor.x;
+        this.y *= factor.y;
+        return this;
     };
 
     /**
