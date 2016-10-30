@@ -90,17 +90,30 @@ angular.module('pulsar-audio').service('AudioPlayerService', function(SampleCoun
         }
     };
 
-    this.togglePlaying = () => {
+    this.pause = () => {
         if(state === states.PLAYING){
             sourceNode.onended = null;
-            gainNode.gain.exponentialRampToValueAtTime(0.0000001, audioCtx.currentTime + 0.5);
+            gainNode.gain.exponentialRampToValueAtTime(0.00000001, audioCtx.currentTime + 0.5);
             pausedAt = self.playbackTime;
             state = states.PAUSED;
         }
-        else {
+    };
+
+    this.resume = () =>{
+        if(state === states.PAUSED){
+            gainNode.gain.cancelScheduledValues(audioCtx.currentTime);
             self.playBuffer(playing.buffer, pausedAt);
             gainNode.gain.value = 1;
             trackStart = getNow() - pausedAt * 1000;
+        }
+    };
+
+    this.togglePlaying = () => {
+        if(state === states.PLAYING){
+            self.pause();
+        }
+        else {
+           self.resume();
         }
     };
 
@@ -147,9 +160,13 @@ angular.module('pulsar-audio').service('AudioPlayerService', function(SampleCoun
         self.createAudioSource();
         sourceNode.buffer = buffer;
         state = states.PLAYING;
+        gainNode.gain.value = 1;
         sourceNode.start(0 , startTime || 0);
         if(_autoPlay){
             sourceNode.onended = self.playNext;
+        }
+        else {
+            sourceNode.onended = self.stop;
         }
         playHooks.forEach(callback => callback.call(null, playing));
         trackStart = getNow();
