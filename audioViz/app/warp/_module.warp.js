@@ -86,15 +86,33 @@ angular.module('pulsar-warp', [])
          * Draws a rectangle in the Z plane - derived from Hammer code
          * @param shape
          * @param pos {Vector3}
-         * @param width
-         * @param depth
+         * @param width {Number} size of shape on x-axis
+         * @param depth {Number} size of shape on z-axis
+         * @param zRot {Number} rotation on z-axis
          */
-        this.fillFlatShape = function(shape, pos, width, depth){
+        this.fillFlatShape = function(shape, pos, width, depth, zRot){
             //Don't draw things that are in front of the camera
             if(pos.z <= 0){
                 return;
             }
 
+            var pts = [];
+
+            if(shape === Shapes.Triangle){
+                pts = [
+                    MM.vec3(-width / 2, 0, 0),
+                    MM.vec3(0, 0, depth),
+                    MM.vec3(+width / 2, 0, 0)];
+            }
+            else if(shape === Shapes.Quadrilateral){
+                pts = [
+                    MM.vec3(-width / 2, 0, 0),
+                    MM.vec3(-width / 2, 0, depth),
+                    MM.vec3(+width / 2, 0, depth),
+                    MM.vec3(+width / 2, 0, 0)];
+            }
+
+            zRot = zRot || 0;
             var ctx = MEasel.context,
                 viewport = MM.vec2(ctx.canvas.width, ctx.canvas.height),
                 screenCenter = MM.vec2(viewport.x / 2, viewport.y / 2), //center of the viewport
@@ -102,41 +120,30 @@ angular.module('pulsar-warp', [])
             //position of the object relative to the camera
             //The Y position is inverted because screen space is reversed in Y
                 relPosition = MM.vec3(pos.x - self.position.x, -(pos.y - self.position.y), pos.z - self.position.z),
-                lensAngle = self.getLensAngle(), //the viewing angle of the lens, large is more stuff visible
-
-                nearFieldRadius = pos.z * Math.tan(lensAngle), //the FOV radius at the close rect edge (smaller)
-                farFieldRadius = (pos.z + depth) * Math.tan(lensAngle); //the FOV radius at the far edge of the rect (larger)
-
-            //Calculate the position of the object on the screen
-            //Draw position of the near left corner
-            var screenPosX = (relPosition.x / nearFieldRadius) * viewport.x + screenCenter.x,
-                screenPosY = (relPosition.y / nearFieldRadius) * viewport.y + screenCenter.y,
-                screenPos = MM.vec2(screenPosX, screenPosY);
-
-            //Draw position of the far left corner
-            var farEdgeOffsetX = ((relPosition.x / farFieldRadius) - (relPosition.x / nearFieldRadius)) * viewport.x,
-                farEdgeOffsetY = ((relPosition.y / farFieldRadius) - (relPosition.y / nearFieldRadius)) * viewport.y,
-                farEdgeOffset = MM.vec2(farEdgeOffsetX, farEdgeOffsetY);
-
-            //The widths of the near and far edges of the rectangle
-            var nearEdgeWidth = (width / nearFieldRadius) * viewport.x,
-                farEdgeWidth = (width / farFieldRadius) * viewport.x;
+                lensAngle = self.getLensAngle(); //the viewing angle of the lens, large is more stuff visible
 
             ctx.save();
-            ctx.translate(screenPos.x, screenPos.y);
             ctx.beginPath();
 
-            if(shape == Shapes.Triangle){
-                ctx.moveTo(0, 0); //front left point
-                ctx.lineTo(farEdgeOffset.x + farEdgeWidth / 2, farEdgeOffset.y); //back right
-                ctx.lineTo(nearEdgeWidth, 0); //front right
-            }
-            else if(shape == Shapes.Quadrilateral){
-                ctx.moveTo(0, 0); //front left point
-                ctx.lineTo(farEdgeOffset.x, farEdgeOffset.y); //back left
-                ctx.lineTo(farEdgeOffset.x + farEdgeWidth, farEdgeOffset.y); //back right
-                ctx.lineTo(nearEdgeWidth, 0); //front right
-            }
+            //Draw the shape with each point
+            pts.forEach((pt, index) => {
+                var screenPos = MM.vec2(
+                    //x' = x * cos(theta) - y * sin(theta)
+                    pt.x * Math.cos(zRot) - pt.y * Math.sin(zRot) + relPosition.x,
+                    //y' = y * cos(theta) + x * sin(theta)
+                    pt.y * Math.cos(zRot) + pt.x * Math.sin(zRot) + relPosition.y
+                );
+                
+                var fieldRadius = (pos.z + pt.z) * Math.tan(lensAngle); //FOV radius at the point
+                //Transform the point into screen space
+                screenPos
+                    .scale(1 / fieldRadius) //1. Scale by the depth of the point
+                    .mult(viewport)         //2. Scale to the size of the viewport
+                    .add(screenCenter);     //3. Move relative to the screen center
+
+                //Add the point to the path (move for the first point)
+                (index === 0 ? ctx.moveTo : ctx.lineTo)(screenPos.x, screenPos.y);
+            });
 
             ctx.closePath();
             ctx.fill();
@@ -150,7 +157,8 @@ angular.module('pulsar-warp', [])
             moveSpeed = 0.0003,
             laneWidth = .05,
             shipWidth = .03,
-            pos = MM.vec3(- laneWidth - shipWidth / 2, .1, 1.25),
+            pos = MM.vec3(- laneWidth, .1, 1.25),
+            bankAngle = 0,
             moving = false;
 
         this.lane = 0;
@@ -164,7 +172,7 @@ angular.module('pulsar-warp', [])
         }
 
         function hasReachedLane(){
-            var lanePos = (destLane - 1) * laneWidth - shipWidth / 2;
+            var lanePos = (destLane - 1) * laneWidth;
             return getSwitchDirection() > 0 ? pos.x >= lanePos : pos.x <= lanePos;
         }
 
@@ -183,21 +191,23 @@ angular.module('pulsar-warp', [])
         MScheduler.schedule(dt => {
 
             if(isSwitchingLanes()){
+                bankAngle = getSwitchDirection() * Math.PI / 4;
                 pos.x += getSwitchDirection() * moveSpeed * dt;
                 if(hasReachedLane()){
-                    pos.x = (destLane - 1) * laneWidth - shipWidth / 2;
+                    pos.x = (destLane - 1) * laneWidth;
                     self.lane = destLane;
+                    bankAngle = 0;
                 }
             }
 
             MScheduler.draw(() => {
                 //Draw Ship
                 MEasel.context.fillStyle = '#f00';
-                WarpCamera.fillFlatShape(Shapes.Triangle, pos, shipWidth, 1);
+                WarpCamera.fillFlatShape(Shapes.Triangle, pos, shipWidth, 1, bankAngle);
 
                 //Draw Shadow
                 MEasel.context.fillStyle = 'rgba(0,0,0,.25)';
-                WarpCamera.fillFlatShape(Shapes.Triangle, MM.vec3(pos.x, 0, 1.25), shipWidth, 1);
+                WarpCamera.fillFlatShape(Shapes.Triangle, MM.vec3(pos.x, 0, 1.25), shipWidth * Math.cos(bankAngle), 1);
             }, 10);
         });
     }])
@@ -354,7 +364,7 @@ angular.module('pulsar-warp', [])
                 var drawOffset = 200; //this spaces the bars correctly across the screen, 200 is based on how far above the plane the camera is
                 for(var i = 0; i < barsVisible; i++){
                     var drawWidth = barWidth * audioField[barIndex + i],
-                        pos = MalletMath.vec3( - drawWidth / 2, 0, (drawOffset - barOffset) / 100);
+                        pos = MalletMath.vec3(0, 0, (drawOffset - barOffset) / 100);
                     WarpCamera.fillFlatShape(Shapes.Quadrilateral, pos, drawWidth, (barHeight * barQueue[i].speed) / 100);
                     drawOffset += barHeight * barQueue[i].speed + barMargin; //add the width the current bar (each bar has a different width)
                     ctx.fillStyle = '#fff';
