@@ -1,0 +1,10 @@
+<div class="hud">
+    <span class="score" ng-bind="score"></span>
+    <span class="song-title" ng-bind="player.playing.title"></span>
+
+    <div ng-if="!mApp.hasState(mState.Running)" class="menu">
+        <h1>Warp</h1>
+        <button ng-click="resume()">Resume</button>
+    </div>
+
+</div>
