@@ -201,7 +201,10 @@ angular.module('pulsar-warp', [])
             }, 10);
         });
     }])
-    .service('Warp', function (AudioClipService, AudioData, AutoPlay, MediaStates, MScheduler, MEasel, AudioPlayerService, WaveformAnalyzer, WarpFieldCache, $q, WarpField, WarpCamera, MState, WarpShip, Shapes, MalletMath) {
+    .service('WarpAudio', [function(){
+
+    }])
+    .service('Warp', function (MApp, MKeyboard, MKeys, AudioClipService, AutoPlay, MediaStates, MScheduler, MEasel, AudioPlayerService, WaveformAnalyzer, WarpFieldCache, $q, WarpField, WarpCamera, MState, WarpShip, Shapes, MalletMath) {
         
         var audioField = [],
             barQueue = [],
@@ -255,6 +258,11 @@ angular.module('pulsar-warp', [])
                 //Play the clip - this can take time to initialize
                 return AudioPlayerService.playClip(clip.id).then(()=>{
                     state = MState.Running;
+
+                    //Don't start playing the song if game is paused
+                    if(MApp.hasState(MState.Suspended)){
+                        AudioPlayerService.pause();
+                    }
                 });
             });
         }
@@ -271,6 +279,13 @@ angular.module('pulsar-warp', [])
                 .then(function() {
                     playClip(AutoPlay);
                 });
+
+            //Setup state events
+            MApp.onState(MState.Suspended, AudioPlayerService.pause);
+            MApp.onState(MState.Running, AudioPlayerService.resume);
+            MKeyboard.onkeydown(MKeys.Escape, () => { //Escape key toggles playing
+                MApp.hasState(MState.Running) ? MScheduler.suspend() : MScheduler.resume()
+            });
         };
 
         /**
@@ -305,10 +320,7 @@ angular.module('pulsar-warp', [])
                 barOffset = 0; //reset the bar offset
 
                 //remove the bar that just moved off screen
-                if(barQueue.length > 0)
-                {
-                    barQueue.shift();
-                }
+                barQueue.shift();
 
                 var waveform = WaveformAnalyzer.getMetrics();
                 //Create a new bar
@@ -325,6 +337,7 @@ angular.module('pulsar-warp', [])
                     });
                 }
             }
+
 
             //Add a draw command for the frame
             MScheduler.draw(()=>{
