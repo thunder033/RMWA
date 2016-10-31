@@ -13,6 +13,11 @@
     text-align: center;
 }
 
+.menu .playlist {
+    height: 10.5em;
+    margin-top: .5em;
+}
+
 .menu button {
     background: #fff;
     color: #333;
@@ -26,4 +31,22 @@
 .menu button:hover {
     background: #ddd;
     cursor: pointer;
+}
+
+.song-title {
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding: 1em;
+    color: #fff;
+    font-size: 1.3em;
+}
+
+.score {
+    position: fixed;
+    top: 3em;
+    color: #fff;
+    left: 1em;
+    font-size: 1.2em;
+    font-weight: bold;
 }

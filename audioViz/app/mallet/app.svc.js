@@ -4,12 +4,24 @@
 "use strict";
 /**
  * For now just handles maintain app state, might change in the future
+ * @name MState
+ * @memberOf mallet
+ * @property Running
+ * @property Loading
+ * @property Suspended
+ * @property Debug
  */
-angular.module('mallet').service('MApp', ['MState', function(MState){
+angular.module('mallet').service('MState', ['$location', function($location){
 
     var self = this,
         stateListeners = [],
-        appState = {};
+        appState = 0;
+
+    //Define states - this is probably getting clever code, but is possible setup
+    //for a state machine provider
+    ['Running','Loading','Suspended','Debug'].forEach((state, i) => {
+        Object.defineProperty(self, state, {value: Math.pow(2, i), enumerable: true});
+    });
 
     /**
      * Invokes callbacks for events listening for the given state
@@ -17,10 +29,10 @@ angular.module('mallet').service('MApp', ['MState', function(MState){
      */
     function invokeStateListeners(state) {
         stateListeners.forEach(listener => {
-            if(listener.state === state){
+            if((listener.state | state) === state){
                 listener.callback();
             }
-        })
+        });
     }
 
     /**
@@ -28,8 +40,12 @@ angular.module('mallet').service('MApp', ['MState', function(MState){
      * @param state
      * @returns {boolean}
      */
-    this.hasState = state => {
-        return appState[state] === true;
+    this.is = state => {
+        return (state | appState) === appState;
+    };
+
+    this.getState = () => {
+        return appState;
     };
 
     /**
@@ -44,24 +60,26 @@ angular.module('mallet').service('MApp', ['MState', function(MState){
         });
     };
 
+    function deactivate(state){
+        appState ^= appState & state;
+    }
+
     /**
      * Activates the given state; some states will automatically deactive others
      * @param state
      */
     this.setState = state => {
-        console.log('set state:' + state);
-        appState[state] = true;
+        appState |= state;
         switch(state){
-            case MState.Suspended:
-                appState[MState.Running] = false;
-                appState[MState.Loading] = false;
+            case self.Suspended:
+                deactivate(self.Running | self.Loading);
                 break;
-            case MState.Running:
-                appState[MState.Suspended] = false;
-                appState[MState.Loading] = false;
+            case self.Running:
+                deactivate(self.Suspended | self.Loading);
                 break;
         }
 
+        console.log('set state: ' + state + ' => ' + appState);
         invokeStateListeners(state);
     };
 
@@ -69,11 +87,8 @@ angular.module('mallet').service('MApp', ['MState', function(MState){
      * Reset the state machine to the default state, clearing all listeners
      */
     this.clearState = () => {
-        Object.keys(MState || {}).forEach(state => {
-            appState[MState[state]] = false;
-        });
-        appState[MState.Loading] = true;
-
+        appState = self.Loading;
+        appState |= $location.search('debug') ? self.Debug : 0;
         stateListeners.length = 0;
     };
 
@@ -82,13 +97,8 @@ angular.module('mallet').service('MApp', ['MState', function(MState){
      * @param state
      */
     this.removeState = state => {
-        appState[state] = false;
+        deactivate(state);
     };
 
-    function init(){
-        self.clearState();
-        appState[MState.Loading] = true;
-    }
-
-    init();
+    self.clearState();
 }]);

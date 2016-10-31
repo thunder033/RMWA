@@ -6,6 +6,9 @@ angular.module('pulsar-visualizer').directive('playlist', function(AudioClipServ
     return {
         restrict: 'E',
         replace: true,
+        scope: {
+            actionOverride: '='
+        },
         templateUrl: 'views/playlist.html',
         link: function(scope){
             scope.clips = AudioClipService.getAudioClips(MediaType.Song);
@@ -13,6 +16,11 @@ angular.module('pulsar-visualizer').directive('playlist', function(AudioClipServ
             scope.playClip = function(clipId) {
                 AudioPlayerService.playClip(clipId);
             };
+
+            if(scope.actionOverride instanceof Function){
+                scope.playClip = scope.actionOverride;
+            }
+
 
             scope.isPlaying = function(clipId) {
                 return (AudioPlayerService.playing || {}).id == clipId;

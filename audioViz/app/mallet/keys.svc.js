@@ -2,8 +2,9 @@
  * Created by Greg on 10/28/2016.
  */
 "use strict";
-angular.module('mallet').service('MKeyboard', [function(){
-    var keyDownEvents = [],
+angular.module('mallet').service('MKeyboard', ['MKeys', function(MKeys){
+    var keyState = [],
+        keyDownEvents = [],
         keyUpEvents = [];
 
     function invokeListeners(listeners, e){
@@ -16,18 +17,24 @@ angular.module('mallet').service('MKeyboard', [function(){
     }
 
     window.addEventListener('keyup', e => {
+        keyState[e.keyCode] = false;
         invokeListeners(keyUpEvents, e);
     });
     
     window.addEventListener('keydown', e => {
+        keyState[e.keyCode] = true;
         invokeListeners(keyDownEvents, e);
     });
+    
+    this.isKeyDown = (keyCode) => {
+        return keyState[keyCode] === true;
+    };
 
-    this.onkeydown = (key, callback) => {
+    this.onKeyDown = (key, callback) => {
         keyDownEvents.push({key: key, callback: callback});
     };
 
-    this.onkeyup = (key, callback) => {
+    this.onKeyUp = (key, callback) => {
         keyUpEvents.push({key: key, callback: callback});
     };
 }]);

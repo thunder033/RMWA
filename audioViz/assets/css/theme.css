@@ -24,12 +24,7 @@ body, html {
 }
 
 .notes {
-    position: absolute;
-    bottom: 1em;
-    left: 1em;
-    background: rgba(255,255,255,.5);
-    padding: 1em;
-    color: #fff;
+    text-align: left;
 }
 
 h4 {

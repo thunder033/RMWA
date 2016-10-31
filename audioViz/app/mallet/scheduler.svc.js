@@ -2,7 +2,7 @@
  * Created by gjr8050 on 9/16/2016.
  */
 "use strict";
-angular.module('mallet').service("MScheduler", ['MaxFrameRate', 'MState', 'MApp', '$rootScope', function(MaxFrameRate, MState, MApp, $rootScope){
+angular.module('mallet').service("MScheduler", ['MaxFrameRate', 'MState', '$rootScope', function(MaxFrameRate, MState, $rootScope){
     var self = this,
         updateOperations = new PriorityQueue(),
         drawCommands = new PriorityQueue(),
@@ -100,7 +100,7 @@ angular.module('mallet').service("MScheduler", ['MaxFrameRate', 'MState', 'MApp'
 
     this.suspend = (e) => {
         if(e && e.type !== 'blur' || suspendOnBlur === true){
-            MApp.setState(MState.Suspended);
+            MState.setState(MState.Suspended);
             cancelAnimationFrame(animationFrame);
             $rootScope.$apply();
         }
@@ -108,8 +108,8 @@ angular.module('mallet').service("MScheduler", ['MaxFrameRate', 'MState', 'MApp'
 
     this.resume = () => {
         console.log('resume');
-        if(MApp.hasState(MState.Suspended)){
-            MApp.setState(MState.Running);
+        if(MState.is(MState.Suspended)){
+            MState.setState(MState.Running);
             self.startMainLoop();
         }
     };
@@ -137,7 +137,7 @@ angular.module('mallet').service("MScheduler", ['MaxFrameRate', 'MState', 'MApp'
         startTime = (new Date()).getTime();
         lastFrameTime = (new Date()).getTime();
         animationFrame = requestAnimationFrame(mainLoop);
-        MApp.setState(MState.Running);
+        MState.setState(MState.Running);
     };
 
     /**
