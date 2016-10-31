@@ -15,17 +15,24 @@ var app = angular.module('pulsar', [
     $stateProvider.state('visualizer', {
         url: '/visualizer',
         template: '<control-panel></control-panel><m-easel id="visualizer"></m-easel>',
-        controller: function VisualizerCtrl(Visualizer) {
-            Visualizer.init();
+        controller: function VisualizerCtrl(Visualizer, $timeout) {
+            $timeout(()=>Visualizer.init());
         }
     }).state('warp', {
         url: '/warp',
-        template: '<m-easel id="warp"></m-easel><div class="notes"><h3>WARP</h3><ul><li>This can take a long time to load.</li><li>If things start acting up just reload the page</li></div>',
+        template: '<m-easel id="warp"></m-easel><warp-hud></warp-hud>',
         controller: function WarpCtrl(Warp) {
             Warp.init();
         }
     });
+
+
 })
-.run(function(MScheduler){
+.run(function(MScheduler, $rootScope, AudioPlayerService){
     MScheduler.startMainLoop();
+
+    $rootScope.$on('$stateChangeStart', ()=>{
+        AudioPlayerService.stop();
+        MScheduler.reset();
+    });
 });

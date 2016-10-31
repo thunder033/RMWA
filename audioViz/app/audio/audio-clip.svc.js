@@ -85,9 +85,9 @@ angular.module('pulsar-audio').service('AudioClipService', function ($http, $q, 
      * @returns {Promise.<Object>|IPromise<TResult>|*}
      */
     this.loadAudioClip = (fileName, type) => {
-        var uri = (type == 'reverbImpulse' ? ReverbImpulsePath : MediaPath) + fileName,
+        var uri = (type == MediaType.ReverbImpulse ? ReverbImpulsePath : MediaPath) + fileName,
             id = autoIncrementID++;
-
+        
         clips[id] = {
             id: id,
             name: self.getNiceName(fileName),

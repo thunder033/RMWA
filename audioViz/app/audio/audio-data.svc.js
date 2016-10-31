@@ -31,7 +31,7 @@ angular.module('pulsar-audio').service('AudioData', function (MScheduler, Sample
     };
 
     /**
-     * Generates an audio buffer for the clip
+     * Generates an audio buffer for the clip and caches the result on the clip
      * @param clip
      * @returns {Promise}
      */
@@ -39,9 +39,15 @@ angular.module('pulsar-audio').service('AudioData', function (MScheduler, Sample
         var renderOp = $q.defer(),
         audioCtx = new (window.AudioContext || window.webkitAudioContext);
 
-        audioCtx.decodeAudioData(clip.clip, function(buffer) {
-            renderOp.resolve(buffer);
-        });
+        if(clip.buffer){
+            renderOp.resolve(clip.buffer);
+        }
+        else {
+            audioCtx.decodeAudioData(clip.clip, function(buffer) {
+                clip.buffer = buffer;
+                renderOp.resolve(buffer);
+            });
+        }
 
         return renderOp.promise;
     };

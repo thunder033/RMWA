@@ -10,7 +10,12 @@ angular.module('pulsar-visualizer').service('Visualizer', function (MScheduler, 
 
     var visualizer = {
         init(){
+            MScheduler.suspendOnBlur(false);
             MScheduler.schedule(update);
+
+            //Create a context to pre-render pinwheel arcs
+            var canvas = MEasel.context.canvas;
+            MEasel.createNewCanvas('arcRender', canvas.width / 2, canvas.height / 2);
         },
         effects: [],
         waveform: WaveformAnalyzer.getMetrics(),

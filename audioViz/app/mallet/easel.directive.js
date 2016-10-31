@@ -2,7 +2,7 @@
  * Created by gjrwcs on 9/15/2016.
  */
 "use strict";
-angular.module('mallet').directive('mEasel', ['MEasel','MScheduler', function(EaselService, Scheduler){
+angular.module('mallet').directive('mEasel', ['MEasel','MScheduler', 'MState', function(MEasel, Scheduler, MState){
 
     var canvas, ctx, scale = 1;
 
@@ -19,34 +19,34 @@ angular.module('mallet').directive('mEasel', ['MEasel','MScheduler', function(Ea
             canvas.style.background = "#000";
             ctx = canvas.getContext(attr.context || '2d');
 
-            window.addEventListener('resize', ()=>EaselService.resizeCanvas(canvas, ctx));
-            EaselService.resizeCanvas(canvas, ctx);
-            EaselService.setActiveContext(ctx);
+            window.addEventListener('resize', ()=>MEasel.resizeCanvas(canvas, ctx));
+            MEasel.resizeCanvas(canvas, ctx);
+            MEasel.setActiveContext(ctx);
 
             //Create a context to hold pre-rendered data
-            var baseCanvas = EaselService.context.canvas;
-            EaselService.createNewCanvas('quarterRender', baseCanvas.width / 2, baseCanvas.height / 2);
-
-            //Create a context to pre-render pinwheel arcs
-            EaselService.createNewCanvas('arcRender', baseCanvas.width / 2, baseCanvas.height / 2);
+            var baseCanvas = MEasel.context.canvas;
+            MEasel.createNewCanvas('quarterRender', baseCanvas.width / 2, baseCanvas.height / 2);
 
             Scheduler.schedule(()=>{
                 //Reduce canvas resolution is performance is bad
                 if(Scheduler.FPS < 30 && scale == 1){
                     scale = .75;
-                    EaselService.resizeCanvas(canvas, ctx, scale);
+                    MEasel.resizeCanvas(canvas, ctx, scale);
                 }
                 else if(Scheduler.FPS > 40 && scale == .75){
                     scale = 1;
-                    EaselService.resizeCanvas(canvas, ctx, scale);
+                    MEasel.resizeCanvas(canvas, ctx, scale);
                 }
 
-                Scheduler.draw(()=>EaselService.clearCanvas(ctx), -1);
-                Scheduler.draw(()=>EaselService.clearCanvas(EaselService.getContext('quarterRender')), -1);
-                Scheduler.draw(() => {
-                    ctx.fillStyle = "#fff";
-                    ctx.fillText("FPS: " + (~~Scheduler.FPS), 25, 25);
-                });
+                Scheduler.draw(()=>MEasel.clearCanvas(ctx), -1);
+                Scheduler.draw(()=>MEasel.clearCanvas(MEasel.getContext('quarterRender')), -1);
+
+                if(MState.is(MState.Debug)){
+                    Scheduler.draw(() => {
+                        ctx.fillStyle = "#fff";
+                        ctx.fillText("FPS: " + (~~Scheduler.FPS), 25, 25);
+                    });
+                }
             });
 
         }
