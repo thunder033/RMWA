@@ -15,8 +15,8 @@ var app = angular.module('pulsar', [
     $stateProvider.state('visualizer', {
         url: '/visualizer',
         template: '<control-panel></control-panel><m-easel id="visualizer"></m-easel>',
-        controller: function VisualizerCtrl(Visualizer) {
-            Visualizer.init();
+        controller: function VisualizerCtrl(Visualizer, $timeout) {
+            $timeout(()=>Visualizer.init());
         }
     }).state('warp', {
         url: '/warp',

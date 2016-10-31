@@ -27,8 +27,6 @@ angular.module('mallet').directive('mEasel', ['MEasel','MScheduler', function(Ea
             var baseCanvas = EaselService.context.canvas;
             EaselService.createNewCanvas('quarterRender', baseCanvas.width / 2, baseCanvas.height / 2);
 
-            //Create a context to pre-render pinwheel arcs
-            EaselService.createNewCanvas('arcRender', baseCanvas.width / 2, baseCanvas.height / 2);
 
             Scheduler.schedule(()=>{
                 //Reduce canvas resolution is performance is bad
