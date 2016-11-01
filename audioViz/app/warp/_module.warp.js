@@ -82,6 +82,78 @@ angular.module('pulsar-warp', [])
         //position of the camera in 3d space
         this.position = MM.vec3(0, .2, 0);
 
+        this.toVertexBuffer = (verts) => {
+            var buffer = new Float32Array(verts.length * 3);
+            verts.forEach((vert, i) => {
+                buffer[i] = vert.x;
+                buffer[i + 1] = vert.y;
+                buffer[i + 2] = vert.z;
+            });
+        };
+
+        /**
+         *
+         * @param buffer {Float32Array}
+         * @param pos {Vector3}
+         * @param scale {Vector3}
+         * @param rot {Vector3}
+         * @returns {*}
+         */
+        this.applyTransform = function (buffer, pos, scale, rot) {
+            var Cx = Math.cos(rot.x),
+                Cy = Math.cos(rot.y),
+                Cz = Math.cos(rot.z),
+                Sx = Math.sin(rot.x),
+                Sy = Math.sin(rot.y),
+                Sz = Math.sin(rot.z),
+
+                /*
+                 * Euler rotation matrix
+                 * http://what-when-how.com/advanced-methods-in-computer-graphics/quaternions-advanced-methods-in-computer-graphics-part-2/
+                 * [  Cy * Cz,  Cx * Sz + Sx * Sy * Cz, Sx * Sz - Cx * Sy * Cz ]
+                 * [ -Cy * Sz,  Cx * Cz - Sx * Sy * Sz, Sx * Cz + Cx * Sy * Sz ]
+                 * [  Sy,      -Sx * Cy,                Cx * Cy                ]
+                 */
+                M11 = +Cy * Cz, M12a = Cx * Sz, M12b = + Sx * Sy * Cz, M13a = Sx * Sz, M13b = - Cx * Sy * Cz,
+                M21 = -Cy * Sz, M22a = Cx * Cz, M22b = - Sx * Sy * Sz, M23a = Sx * Cz, M23b = + Cx * Sy * Sz,
+                M31 = Sy, M32 = -Sx * Cy, M33 = Cx * Cy;
+
+            for(var i = 0; i < buffer.length; i += 3){
+                var x = buffer[i], y = buffer[i + 1], z = buffer[i + 2];
+
+                buffer[i + 0] = pos.x + (x * M11 + y * M12a + y * M12b + z * M13a + z * M13b) * scale.x;
+                buffer[i + 1] = pos.y + (x * M21 + y * M22a + y * M22b + z * M23a + z * M23b) * scale.y;
+                buffer[i + 2] = pos.z + (x * M31 + y * M32 + z * M33) * scale.z;
+            }
+
+            return buffer;
+        };
+
+        this.renderBuffer = (buffer) => {
+            var tanLensAngle = Math.tan(self.getLensAngle()),
+                viewport = MM.vec2(ctx.canvas.width, ctx.canvas.height),
+                screenCenter = MM.vec2(viewport.x / 2, viewport.y / 2); //center of the viewport
+
+            var faceBuffer = new Float32Array(3);
+            for(var i = 0; i < buffer.length; i += 3) {
+                var x = buffer[i], y = buffer[i + 1], z = buffer[i + 2];
+
+                var dispX = x - self.position.x,
+                    dispY = y - self.position.y,
+                    dispZ = z - self.position.z;
+
+                var fieldScale = 1 / (dispZ * tanLensAngle),
+                    screenX = dispX * fieldScale * viewport.x + screenCenter.x,
+                    screenY = dispY * fieldScale * viewport.y + screenCenter.y;
+
+                //faceBuffer[i % 9]
+
+                if(i > 0 && i % 9 == 0){
+
+                }
+            }
+        };
+
         /**
          * Draws a rectangle in the Z plane - derived from Hammer code (Camera.cs)
          * @param shape
@@ -90,22 +162,22 @@ angular.module('pulsar-warp', [])
          * @param depth {Number} size of shape on z-axis
          * @param zRot {Number} rotation on z-axis
          */
-        this.fillFlatShape = function(shape, pos, width, depth, zRot){
+        this.drawShape = function(shape, pos, width, depth, zRot){
             //Don't draw things that are in front of the camera
             if(pos.z <= 0){
                 return;
             }
 
-            var pts = [];
+            var verts = [];
 
             if(shape === Shapes.Triangle){
-                pts = [
+                verts = [
                     MM.vec3(-width / 2, 0, 0),
                     MM.vec3(0, 0, depth),
                     MM.vec3(+width / 2, 0, 0)];
             }
             else if(shape === Shapes.Quadrilateral){
-                pts = [
+                verts = [
                     MM.vec3(-width / 2, 0, 0),
                     MM.vec3(-width / 2, 0, depth),
                     MM.vec3(+width / 2, 0, depth),
@@ -126,7 +198,7 @@ angular.module('pulsar-warp', [])
             ctx.beginPath();
 
             //Draw the shape with each point
-            pts.forEach((pt, index) => {
+            verts.forEach((pt, index) => {
                 var screenPos = MM.vec2(
                     /**
                      * { cos -sin }
@@ -226,11 +298,11 @@ angular.module('pulsar-warp', [])
             MScheduler.draw(() => {
                 //Draw Ship
                 MEasel.context.fillStyle = '#f00';
-                WarpCamera.fillFlatShape(Shapes.Triangle, pos, shipWidth, 1, bankAngle);
+                WarpCamera.drawShape(Shapes.Triangle, pos, shipWidth, 1, bankAngle);
 
                 //Draw Shadow
                 MEasel.context.fillStyle = 'rgba(0,0,0,.25)';
-                WarpCamera.fillFlatShape(Shapes.Triangle, MM.vec3(pos.x, 0, 1.25), shipWidth * Math.cos(bankAngle), 1, 0);
+                WarpCamera.drawShape(Shapes.Triangle, MM.vec3(pos.x, 0, 1.25), shipWidth * Math.cos(bankAngle), 1, 0);
             }, 10);
         });
     }])
@@ -473,8 +545,8 @@ angular.module('pulsar-warp', [])
                         posRight = MalletMath.vec3(laneWidth * 1.5 + xOffset, yOffset, zOffset),
                         posLeft = MalletMath.vec3(-laneWidth * 1.5 - xOffset, yOffset, zOffset);
 
-                    WarpCamera.fillFlatShape(Shapes.Quadrilateral, posRight, drawWidth, depth, - zRot);
-                    WarpCamera.fillFlatShape(Shapes.Quadrilateral, posLeft, drawWidth, depth, zRot);
+                    WarpCamera.drawShape(Shapes.Quadrilateral, posRight, drawWidth, depth, - zRot);
+                    WarpCamera.drawShape(Shapes.Quadrilateral, posLeft, drawWidth, depth, zRot);
 
                     drawOffset += barDepth * barQueue[i].speed + barMargin; //add the width the current bar (each bar has a different width)
                 }
@@ -487,7 +559,7 @@ angular.module('pulsar-warp', [])
 
                     for(var l = 0; l < 3; l++){
                         ctx.fillStyle = ((self.warpField[self.sliceIndex + i] || {}).gems || [])[l] === 1 ? "#0f0" : "#fff";
-                        WarpCamera.fillFlatShape(Shapes.Quadrilateral, MalletMath.vec3((l - 1) * laneWidth, 0, zOffset), laneWidth - lanePadding, depth, 0);
+                        WarpCamera.drawShape(Shapes.Quadrilateral, MalletMath.vec3((l - 1) * laneWidth, 0, zOffset), laneWidth - lanePadding, depth, 0);
                     }
 
                     drawOffset += barDepth * barQueue[i].speed + barMargin; //add the width the current bar (each bar has a different width)
