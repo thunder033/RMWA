@@ -73,7 +73,7 @@ angular.module('pulsar-warp', [])
     .factory('Geometry', ['MalletMath', function(MM){
         function Transform(){
             this.position = new MM.Vector3(0);
-            this.scale = new MM.Vector3(0);
+            this.scale = new MM.Vector3(1);
             this.rotation = new MM.Vector3(0);
         }
 
@@ -84,13 +84,23 @@ angular.module('pulsar-warp', [])
 
         return {
             Transform: Transform,
-            Mesh: Mesh
+            Mesh: Mesh,
+
+            meshes: {
+                XQuad: new Mesh([
+                    MM.vec3(-.5, 0, -.5),
+                    MM.vec3(-.5, 0, +.5),
+                    MM.vec3(+.5, 0, +.5),
+                    MM.vec3(+.5, 0, -.5)],[-1, 2, 3, 4])
+            }
         }
     }])
     .service('WarpCamera', ['MalletMath', 'MEasel', 'Shapes', function (MM, MEasel, Shapes) {
 
         var vertSize = 3,
             self = this;
+
+        this.renderRatio = 100;
 
         this.getLensAngle = () => {
             var focalLength = 5;
@@ -103,10 +113,12 @@ angular.module('pulsar-warp', [])
         this.toVertexBuffer = (verts) => {
             var buffer = new Float32Array(verts.length * vertSize);
             verts.forEach((vert, i) => {
-                buffer[i] = vert.x;
-                buffer[i + 1] = vert.y;
-                buffer[i + 2] = vert.z;
+                buffer[i * vertSize] = vert.x;
+                buffer[i * vertSize + 1] = vert.y;
+                buffer[i * vertSize + 2] = vert.z;
             });
+
+            return buffer;
         };
 
         /**
@@ -149,6 +161,7 @@ angular.module('pulsar-warp', [])
 
         this.renderBuffer = (buffer, indices) => {
             var tanLensAngle = Math.tan(self.getLensAngle()),
+                ctx = MEasel.context,
                 viewport = MM.vec2(ctx.canvas.width, ctx.canvas.height),
                 screenCenter = MM.vec2(viewport.x / 2, viewport.y / 2); //center of the viewport
 
@@ -158,24 +171,32 @@ angular.module('pulsar-warp', [])
             var faceSize = 3;
             for(var i = 0; i < indices.length; i++) {
                 var index = indices[i];
-                if(index < 0){
+                if(index < 0){ //A negative index indicates we are drawing a quad
                     faceSize = 4;
                     index = -index;
                 }
 
+                index--; //Input indices are 1 based
+
                 var b = index * vertSize,
+                    //Get the displacement of the vertex
                     dispX = buffer[b] - self.position.x,
                     dispY = buffer[b + 1] - self.position.y,
                     dispZ = buffer[b + 2] - self.position.z;
 
+                //Transform the vertex into screen space
                 var fieldScale = 1 / (dispZ * tanLensAngle),
                     screenX = dispX * fieldScale * viewport.x + screenCenter.x,
                     screenY = dispY * fieldScale * viewport.y + screenCenter.y;
 
+                console.log(tanLensAngle);
+
+                //Insert the screen coordinates into the screen buffer
                 faceBuffer[faceBufferIndex++] = screenX;
                 faceBuffer[faceBufferIndex++] = screenY;
 
-                if(i > 0 && i % faceSize == 0){
+                //Push the vertices into face buffer
+                if((i + 1) % faceSize == 0){
                     self.drawFace(faceBuffer, faceSize * 2);
                     faceSize = 3;
                     faceBufferIndex = 0;
@@ -184,8 +205,11 @@ angular.module('pulsar-warp', [])
         };
 
         this.drawFace = (buffer, end) => {
+            //console.log(buffer);
             var ctx = MEasel.context;
 
+            ctx.strokeStyle = "#000";
+            ctx.lineWidth = 1;
             ctx.beginPath();
             ctx.moveTo(buffer[0], buffer[1]);
 
@@ -196,9 +220,11 @@ angular.module('pulsar-warp', [])
 
             ctx.closePath();
             ctx.fill();
+            ctx.stroke();
         };
 
         this.render = (mesh, transform, color) => {
+
             MEasel.context.fillStyle = color;
             //Get a transformed vertex buffer for the mesh
             var buffer = self.applyTransform(self.toVertexBuffer(mesh.verts), transform.position, transform.scale, transform.rotation);
@@ -277,7 +303,7 @@ angular.module('pulsar-warp', [])
             ctx.restore();
         }
     }])
-    .service('WarpShip', ['MScheduler', 'WarpCamera', 'MEasel', 'MalletMath', 'MKeyboard', 'MKeys', 'Shapes', 'Warp', 'WarpState', function(MScheduler, WarpCamera, MEasel, MM, MKeyboard, MKeys, Shapes, Warp, WarpState){
+    .service('WarpShip', ['MScheduler', 'WarpCamera', 'MEasel', 'MalletMath', 'MKeyboard', 'MKeys', 'Shapes', 'Warp', 'WarpState', 'Geometry', function(MScheduler, WarpCamera, MEasel, MM, MKeyboard, MKeys, Shapes, Warp, WarpState, Geometry){
         var self = this,
             velocity = MM.vec3(0),
             destLane = 0,
@@ -354,6 +380,10 @@ angular.module('pulsar-warp', [])
                 //Draw Shadow
                 MEasel.context.fillStyle = 'rgba(0,0,0,.25)';
                 WarpCamera.drawShape(Shapes.Triangle, MM.vec3(pos.x, 0, 1.25), shipWidth * Math.cos(bankAngle), 1, 0);
+
+                var transform = new Geometry.Transform();
+                transform.position = MM.vec3(0, 2, 1.25);
+                WarpCamera.render(Geometry.meshes.XQuad, transform);
             }, 10);
         });
     }])
