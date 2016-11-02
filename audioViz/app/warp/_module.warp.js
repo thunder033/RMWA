@@ -87,11 +87,31 @@ angular.module('pulsar-warp', [])
             Mesh: Mesh,
 
             meshes: {
-                XQuad: new Mesh([
-                    MM.vec3(-.5, 0, -.5),
-                    MM.vec3(-.5, 0, +.5),
-                    MM.vec3(+.5, 0, +.5),
-                    MM.vec3(+.5, 0, -.5)],[-1, 2, 3, 4])
+                XYQuad: new Mesh([
+                    MM.vec3(-.5, -.5, 0),
+                    MM.vec3(-.5, +.5, 0),
+                    MM.vec3(+.5, +.5, 0),
+                    MM.vec3(+.5, -.5, 0)],
+                    [-1, 2, 3, 4]),
+                Cube: new Mesh([
+                    MM.vec3(-.5, -.5, +.5), //LBF
+                    MM.vec3(-.5, +.5, +.5), //LTF
+                    MM.vec3(+.5, +.5, +.5), //RTF
+                    MM.vec3(+.5, -.5, +.5), //RBF
+
+                    MM.vec3(-.5, -.5, -.5), //LBB
+                    MM.vec3(-.5, +.5, -.5), //LTB
+                    MM.vec3(+.5, +.5, -.5), //RTB
+                    MM.vec3(+.5, -.5, -.5)],//RBB
+                    [
+                        -1, 2, 3, 4, //F
+                        -3, 4, 8, 7, //R
+                        -2, 3, 7, 6, //T
+
+                        -5, 6, 7, 8, //Back
+                        -1, 2, 6, 5, //L
+                        -1, 4, 8, 5, //Bottom
+                    ])
             }
         }
     }])
@@ -160,15 +180,18 @@ angular.module('pulsar-warp', [])
         };
 
         this.renderBuffer = (buffer, indices) => {
-            var tanLensAngle = Math.tan(self.getLensAngle()),
+            var tanLensAngle = Math.tan(Math.atan(1 / 70)),
                 ctx = MEasel.context,
-                viewport = MM.vec2(ctx.canvas.width, ctx.canvas.height),
-                screenCenter = MM.vec2(viewport.x / 2, viewport.y / 2); //center of the viewport
+                viewport = MM.vec2(ctx.canvas.height, ctx.canvas.height),
+                screenCenter = MM.vec2(ctx.canvas.width / 2, viewport.y / 2); //center of the viewport
 
             var faceBufferIndex = 0,
                 faceBuffer = new Float32Array(8);
 
+            var drawQueue = new PriorityQueue(),
+                avgDist = 0;
             var faceSize = 3;
+
             for(var i = 0; i < indices.length; i++) {
                 var index = indices[i];
                 if(index < 0){ //A negative index indicates we are drawing a quad
@@ -181,15 +204,15 @@ angular.module('pulsar-warp', [])
                 var b = index * vertSize,
                     //Get the displacement of the vertex
                     dispX = buffer[b] - self.position.x,
-                    dispY = buffer[b + 1] - self.position.y,
-                    dispZ = buffer[b + 2] - self.position.z;
+                    dispY = -(buffer[b + 1] - self.position.y),
+                    dispZ = buffer[b + 2] - (-20);
+
+                avgDist += dispZ / faceSize;
 
                 //Transform the vertex into screen space
-                var fieldScale = 1 / (dispZ * tanLensAngle),
-                    screenX = dispX * fieldScale * viewport.x + screenCenter.x,
-                    screenY = dispY * fieldScale * viewport.y + screenCenter.y;
-
-                console.log(tanLensAngle);
+                var fieldScale = 1 / (dispZ / 5 * tanLensAngle),
+                    screenX = dispX * fieldScale * viewport.x / self.renderRatio + screenCenter.x,
+                    screenY = dispY * fieldScale * viewport.y / self.renderRatio + screenCenter.y;
 
                 //Insert the screen coordinates into the screen buffer
                 faceBuffer[faceBufferIndex++] = screenX;
@@ -197,15 +220,22 @@ angular.module('pulsar-warp', [])
 
                 //Push the vertices into face buffer
                 if((i + 1) % faceSize == 0){
-                    self.drawFace(faceBuffer, faceSize * 2);
+                    drawQueue.enqueue(1000 - avgDist, {buffer: faceBuffer.slice(), end: faceSize * 2});
                     faceSize = 3;
+                    avgDist = 0;
                     faceBufferIndex = 0;
                 }
+            }
+
+            //console.log(drawQueue.peek());
+            var face;
+            while(drawQueue.peek() != null){
+                face = drawQueue.dequeue();
+                self.drawFace(face.buffer, face.end);
             }
         };
 
         this.drawFace = (buffer, end) => {
-            //console.log(buffer);
             var ctx = MEasel.context;
 
             ctx.strokeStyle = "#000";
@@ -224,7 +254,6 @@ angular.module('pulsar-warp', [])
         };
 
         this.render = (mesh, transform, color) => {
-
             MEasel.context.fillStyle = color;
             //Get a transformed vertex buffer for the mesh
             var buffer = self.applyTransform(self.toVertexBuffer(mesh.verts), transform.position, transform.scale, transform.rotation);
@@ -372,7 +401,7 @@ angular.module('pulsar-warp', [])
             }
 
 
-            MScheduler.draw(() => {
+            MScheduler.draw((dt, et) => {
                 //Draw Ship
                 MEasel.context.fillStyle = '#f00';
                 WarpCamera.drawShape(Shapes.Triangle, pos, shipWidth, 1, bankAngle);
@@ -382,8 +411,31 @@ angular.module('pulsar-warp', [])
                 WarpCamera.drawShape(Shapes.Triangle, MM.vec3(pos.x, 0, 1.25), shipWidth * Math.cos(bankAngle), 1, 0);
 
                 var transform = new Geometry.Transform();
-                transform.position = MM.vec3(0, 2, 1.25);
-                WarpCamera.render(Geometry.meshes.XQuad, transform);
+                transform.position = MM.vec3(-5, 1, 1.3);
+                transform.rotation = MM.vec3(et / 1000);
+                transform.scale = MM.vec3(.35);
+
+                for(var i = 0; i < 20; i++){
+                    transform.position.x += .5;
+                    WarpCamera.render(Geometry.meshes.Cube, transform, "#f0f");
+                }
+
+                transform.position.y = 1.7;
+                transform.position.x = -5;
+                transform.position.z = 1.4;
+                for(i = 0; i < 20; i++){
+                    transform.position.x += .5;
+                    WarpCamera.render(Geometry.meshes.Cube, transform, "#ff0");
+                }
+
+                transform.position.y = 2.5;
+                transform.position.x = -5;
+                transform.position.z = 1.7;
+                for(i = 0; i < 20; i++){
+                    transform.position.x += .5;
+                    WarpCamera.render(Geometry.meshes.Cube, transform, "#0ff");
+                }
+
             }, 10);
         });
     }])
