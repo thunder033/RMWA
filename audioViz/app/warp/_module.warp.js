@@ -70,9 +70,27 @@ angular.module('pulsar-warp', [])
         Triangle: 'Triangle',
         Quadrilateral: 'Quadrilateral'
     }))
+    .factory('Geometry', ['MalletMath', function(MM){
+        function Transform(){
+            this.position = new MM.Vector3(0);
+            this.scale = new MM.Vector3(0);
+            this.rotation = new MM.Vector3(0);
+        }
+
+        function Mesh(verts, indices){
+            this.verts = verts;
+            this.indices = indices;
+        }
+
+        return {
+            Transform: Transform,
+            Mesh: Mesh
+        }
+    }])
     .service('WarpCamera', ['MalletMath', 'MEasel', 'Shapes', function (MM, MEasel, Shapes) {
 
-        var self = this;
+        var vertSize = 3,
+            self = this;
 
         this.getLensAngle = () => {
             var focalLength = 5;
@@ -83,7 +101,7 @@ angular.module('pulsar-warp', [])
         this.position = MM.vec3(0, .2, 0);
 
         this.toVertexBuffer = (verts) => {
-            var buffer = new Float32Array(verts.length * 3);
+            var buffer = new Float32Array(verts.length * vertSize);
             verts.forEach((vert, i) => {
                 buffer[i] = vert.x;
                 buffer[i + 1] = vert.y;
@@ -129,29 +147,62 @@ angular.module('pulsar-warp', [])
             return buffer;
         };
 
-        this.renderBuffer = (buffer) => {
+        this.renderBuffer = (buffer, indices) => {
             var tanLensAngle = Math.tan(self.getLensAngle()),
                 viewport = MM.vec2(ctx.canvas.width, ctx.canvas.height),
                 screenCenter = MM.vec2(viewport.x / 2, viewport.y / 2); //center of the viewport
 
-            var faceBuffer = new Float32Array(3);
-            for(var i = 0; i < buffer.length; i += 3) {
-                var x = buffer[i], y = buffer[i + 1], z = buffer[i + 2];
+            var faceBufferIndex = 0,
+                faceBuffer = new Float32Array(8);
 
-                var dispX = x - self.position.x,
-                    dispY = y - self.position.y,
-                    dispZ = z - self.position.z;
+            var faceSize = 3;
+            for(var i = 0; i < indices.length; i++) {
+                var index = indices[i];
+                if(index < 0){
+                    faceSize = 4;
+                    index = -index;
+                }
+
+                var b = index * vertSize,
+                    dispX = buffer[b] - self.position.x,
+                    dispY = buffer[b + 1] - self.position.y,
+                    dispZ = buffer[b + 2] - self.position.z;
 
                 var fieldScale = 1 / (dispZ * tanLensAngle),
                     screenX = dispX * fieldScale * viewport.x + screenCenter.x,
                     screenY = dispY * fieldScale * viewport.y + screenCenter.y;
 
-                //faceBuffer[i % 9]
+                faceBuffer[faceBufferIndex++] = screenX;
+                faceBuffer[faceBufferIndex++] = screenY;
 
-                if(i > 0 && i % 9 == 0){
-
+                if(i > 0 && i % faceSize == 0){
+                    self.drawFace(faceBuffer, faceSize * 2);
+                    faceSize = 3;
+                    faceBufferIndex = 0;
                 }
             }
+        };
+
+        this.drawFace = (buffer, end) => {
+            var ctx = MEasel.context;
+
+            ctx.beginPath();
+            ctx.moveTo(buffer[0], buffer[1]);
+
+            var i =0;
+            while(i < end){
+                ctx.lineTo(buffer[i++], buffer[i++]);
+            }
+
+            ctx.closePath();
+            ctx.fill();
+        };
+
+        this.render = (mesh, transform, color) => {
+            MEasel.context.fillStyle = color;
+            //Get a transformed vertex buffer for the mesh
+            var buffer = self.applyTransform(self.toVertexBuffer(mesh.verts), transform.position, transform.scale, transform.rotation);
+            self.renderBuffer(buffer, mesh.indices);
         };
 
         /**
