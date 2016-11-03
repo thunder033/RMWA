@@ -70,60 +70,6 @@ angular.module('pulsar-warp', [])
         Triangle: 'Triangle',
         Quadrilateral: 'Quadrilateral'
     }))
-    .factory('Geometry', ['MalletMath', function(MM){
-        function Transform(){
-            this.position = new MM.Vector3(0);
-            this.scale = new MM.Vector3(1);
-            this.rotation = new MM.Vector3(0);
-            Object.seal(this);
-        }
-
-        function Mesh(verts, indices){
-            this.verts = verts;
-            this.indices = indices;
-            Object.seal(this);
-        }
-
-        return {
-            Transform: Transform,
-            Mesh: Mesh,
-
-            meshes: {
-                XYQuad: new Mesh([
-                    MM.vec3(-.5, -.5, 0),
-                    MM.vec3(-.5, +.5, 0),
-                    MM.vec3(+.5, +.5, 0),
-                    MM.vec3(+.5, -.5, 0)],
-                    [-1, 2, 3, 4]),
-                XZQuad: new Mesh([
-                    MM.vec3(-.5, 0, -.5),
-                    MM.vec3(-.5, 0, +.5),
-                    MM.vec3(+.5, 0, +.5),
-                    MM.vec3(+.5, 0, -.5)],
-                    [-1, 2, 3, 4]),
-                Cube: new Mesh([
-                    MM.vec3(-.5, -.5, +.5), //LBF
-                    MM.vec3(-.5, +.5, +.5), //LTF
-                    MM.vec3(+.5, +.5, +.5), //RTF
-                    MM.vec3(+.5, -.5, +.5), //RBF
-
-                    MM.vec3(-.5, -.5, -.5), //LBB
-                    MM.vec3(-.5, +.5, -.5), //LTB
-                    MM.vec3(+.5, +.5, -.5), //RTB
-                    MM.vec3(+.5, -.5, -.5)],//RBB
-                    [
-                        -1, 2, 3, 4, //F
-                        -3, 4, 8, 7, //R
-                        -2, 3, 7, 6, //T
-
-                        -5, 6, 7, 8, //Back
-                        -1, 2, 6, 5, //L
-                        -1, 4, 8, 5 //Bottom
-                    ])
-            }
-        }
-    }])
-    
     .service('WarpShip', ['MScheduler', 'MCamera', 'MEasel', 'MalletMath', 'MKeyboard', 'MKeys', 'Shapes', 'WarpLevel', 'WarpState', 'Geometry', function(MScheduler, MCamera, MEasel, MM, MKeyboard, MKeys, Shapes, Warp, WarpState, Geometry){
         var self = this,
             velocity = MM.vec3(0),
@@ -224,7 +170,7 @@ angular.module('pulsar-warp', [])
     .factory('WarpBar', ['MalletMath', function(MM){
         return {
             //dimensions of the flanking bars
-            scale: MM.vec3(2, 1, 1),
+            scale: MM.vec3(1.5, 1, .9),
             margin: .01
         }
     }])
@@ -287,7 +233,6 @@ angular.module('pulsar-warp', [])
         tLane = new Transform();
         tLane.scale.x = mLaneWidth - mLanePadding;
         tLane.scale.z = 20;
-        tLane.rotation.x = Math.PI / 2;
         tLane.position.z = 1;
         tLane.position.y = -.1;
 
@@ -302,11 +247,12 @@ angular.module('pulsar-warp', [])
         }
 
         var tBar = new Transform();
+        tBar.origin.x = -1;
 
         function draw(dt){
             var ctx = MEasel.context,
-                startOffset = 0,
-                zRot = - Math.PI / 6; //rotation of loudness bars on the edges
+                startOffset = -4,
+                zRot = - Math.PI / 8; //rotation of loudness bars on the edges
 
             WarpLevel.barOffset += velocity * dt;
             //make the first bar yellow
@@ -321,64 +267,34 @@ angular.module('pulsar-warp', [])
                     ctx.fillStyle = 'rgba(255,255,255,' + (WarpLevel.barsVisible - i) / 5 + ')';
                 }
 
-                var drawWidth = Bar.scale.x * WarpLevel.getLoudness(i),
-                    depth = Bar.scale.z * WarpLevel.barQueue[i].speed,
+                var depth = Bar.scale.z * WarpLevel.barQueue[i].speed,
+                    zOffset = drawOffset - WarpLevel.barOffset;
 
-                    yOffset = (drawWidth / 2) * Math.sin(zRot),
-                    xOffset = (drawWidth / 2), // * Math.cos(zRot),
-                    zOffset = (drawOffset - WarpLevel.barOffset);
-
-                tBar.scale.x = drawWidth;
+                tBar.scale.x = Bar.scale.x * WarpLevel.getLoudness(i);
                 tBar.scale.z = depth;
 
-                tBar.position = MM.vec3(1 + xOffset, -.5, zOffset);
+                tBar.position = MM.vec3(mLaneWidth, 0, zOffset);
                 tBar.rotation.z = zRot;
                 MCamera.render(meshes.XZQuad, tBar, "#fff");
-
-                //tBar.postion = MM.vec3(-mLaneWidth * 4 * 1.5 - xOffset, yOffset, zOffset);
-                //tBar.rotation.z = -zRot;
-                //MCamera.render(meshes.XZQuad, tBar, "#fff");
-
-                //     yOffset = (drawWidth / 2) * Math.sin(zRot),
-                //     xOffset = (drawWidth / 2) * Math.cos(zRot),
-                //     zOffset = (drawOffset - WarpLevel.barOffset),
-                //
-                //     posRight = MM.vec3(laneWidth * 1.5 + xOffset, yOffset, zOffset),
-                //     posLeft = MM.vec3(-laneWidth * 1.5 - xOffset, yOffset, zOffset);
-                //
-                // MCamera.drawShape(Shapes.Quadrilateral, posRight, drawWidth, depth, - zRot);
-                // MCamera.drawShape(Shapes.Quadrilateral, posLeft, drawWidth, depth, zRot);
-
-
-                drawOffset += depth + Bar.margin ; //add the width the current bar (each bar has a different width)
-            }
-
-            tLane.position.x = -mLaneWidth;
-            MCamera.render(meshes.XYQuad, tLane, '#ccc');
-            tLane.position.x = 0;
-            MCamera.render(meshes.XYQuad, tLane, '#ccc');
-            tLane.position.x = mLaneWidth;
-            MCamera.render(meshes.XYQuad, tLane, '#ccc');
-
-            drawOffset = -Bar.scale.z + startOffset;
-            for(i = 0; i < WarpLevel.barsVisible; i++){
-
-                zOffset = (drawOffset - WarpLevel.barOffset);
-                depth = (Bar.scale.z * WarpLevel.barQueue[i].speed);
 
                 var sliceGems = (WarpLevel.warpField[WarpLevel.sliceIndex + i] || {}).gems || [];
                 gems[i].scale = MM.vec3(0);
                 for(var l = 0; l < 3; l++){
                     if(sliceGems[l] === 1){
                         gems[i].scale = MM.vec3(.25);
-                        gems[i].position = MM.vec3((l - 1) * mLaneWidth * 4, -.5, zOffset);
+                        gems[i].position = MM.vec3((l - 1) * mLaneWidth * 3, -.5, zOffset);
                     }
-                    //ctx.fillStyle = gems[l] === 1 ? "#0f0" : "#fff";
-                    //MCamera.drawShape(Shapes.Quadrilateral, MM.vec3((l - 1) * laneWidth, 0, zOffset), laneWidth - lanePadding, depth, 0);
                 }
 
                 drawOffset += depth + Bar.margin ; //add the width the current bar (each bar has a different width)
             }
+
+            tLane.position.x = -mLaneWidth;
+            MCamera.render(meshes.XZQuad, tLane, '#ccc');
+            tLane.position.x = 0;
+            MCamera.render(meshes.XZQuad, tLane, '#ccc');
+            tLane.position.x = mLaneWidth;
+            MCamera.render(meshes.XZQuad, tLane, '#ccc');
 
             MCamera.render(meshes.Cube, gems, '#0f0');
         }

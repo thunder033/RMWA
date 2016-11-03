@@ -31,12 +31,15 @@ angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', f
     /**
      *
      * @param buffer {Float32Array}
+     * @param size {Vector3}
      * @param pos {Vector3}
      * @param scale {Vector3}
      * @param rot {Vector3}
+     * @param origin {Vector3}
      * @returns {*}
      */
-    this.applyTransform = function (buffer, pos, scale, rot) {
+    this.applyTransform = function (buffer, size, pos, scale, rot, origin) {
+        origin = origin || new MM.vec3(0);
         var Cx = Math.cos(rot.x),
             Cy = Math.cos(rot.y),
             Cz = Math.cos(rot.z),
@@ -56,11 +59,13 @@ angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', f
             M31 = Sy, M32 = -Sx * Cy, M33 = Cx * Cy;
 
         for(var i = 0; i < buffer.length; i += 3){
-            var x = buffer[i], y = buffer[i + 1], z = buffer[i + 2];
+            var x = (buffer[i]     - origin.x * size.x / 2) * scale.x,
+                y = (buffer[i + 1] - origin.y * size.y / 2) * scale.y,
+                z = (buffer[i + 2] - origin.z * size.z / 2) * scale.z;
 
-            buffer[i + 0] = pos.x + (x * M11 + y * M12a + y * M12b + z * M13a + z * M13b) * scale.x;
-            buffer[i + 1] = pos.y + (x * M21 + y * M22a + y * M22b + z * M23a + z * M23b) * scale.y;
-            buffer[i + 2] = pos.z + (x * M31 + y * M32 + z * M33) * scale.z;
+            buffer[i + 0] = pos.x + (x * M11 + y * M12a + y * M12b + z * M13a + z * M13b);
+            buffer[i + 1] = pos.y + (x * M21 + y * M22a + y * M22b + z * M23a + z * M23b);
+            buffer[i + 2] = pos.z + (x * M31 + y * M32 + z * M33);
         }
 
         return buffer;
@@ -98,7 +103,7 @@ angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', f
             avgDist += dispZ / faceSize;
 
             //Transform the vertex into screen space
-            var fieldScale = 1 / (dispZ / 5 * tanLensAngle),
+            var fieldScale = Math.abs(1 / (dispZ / 5 * tanLensAngle)),
                 screenX = dispX * fieldScale * viewport.x / self.renderRatio + screenCenter.x,
                 screenY = dispY * fieldScale * viewport.y / self.renderRatio + screenCenter.y;
 
@@ -144,7 +149,7 @@ angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', f
             }
 
             //Get a transformed vertex buffer for the mesh
-            var buffer = self.applyTransform(self.toVertexBuffer(mesh.verts), transforms[t].position, transforms[t].scale, transforms[t].rotation);
+            var buffer = self.applyTransform(self.toVertexBuffer(mesh.verts), mesh.size, transforms[t].position, transforms[t].scale, transforms[t].rotation, transforms[t].origin);
             self.projectBuffer(buffer, mesh.indices, drawCalls);
         }
 

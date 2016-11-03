@@ -19,6 +19,14 @@ angular.module('mallet-math', []).service('MalletMath', [function(){
     }
 
     /**
+     * Creates a shallow copy of the vector
+     * @returns {Vector3}
+     */
+    Vector3.prototype.clone = function () {
+        return new Vector3(this.x, this.y, this.z);
+    };
+
+    /**
      * Add the given vector to this one
      * @param addend {Vector3}
      */
@@ -26,6 +34,17 @@ angular.module('mallet-math', []).service('MalletMath', [function(){
         this.x += addend.x;
         this.y += addend.y;
         this.z += addend.z;
+        return this;
+    };
+
+    /**
+     * Subtract the given vector to this one
+     * @param addend {Vector3}
+     */
+    Vector3.prototype.subtract = function(addend) {
+        this.x -= addend.x;
+        this.y -= addend.y;
+        this.z -= addend.z;
         return this;
     };
 
@@ -61,6 +80,16 @@ angular.module('mallet-math', []).service('MalletMath', [function(){
      */
     Vector3.add = (a, b) => {
         return new Vector3(a.x + b.x, a.y + b.y, a.z + b.z);
+    };
+
+    /**
+     * Subtract b from a
+     * @param a {Vector3}
+     * @param b {Vector3}
+     * @returns {Vector3}
+     */
+    Vector3.subtract = (a, b) => {
+        return new Vector3(a.x - b.x, a.y - b.y, a.z - b.z);
     };
 
     this.Vector3 = Vector3;
