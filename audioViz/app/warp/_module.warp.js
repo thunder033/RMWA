@@ -75,11 +75,13 @@ angular.module('pulsar-warp', [])
             this.position = new MM.Vector3(0);
             this.scale = new MM.Vector3(1);
             this.rotation = new MM.Vector3(0);
+            Object.seal(this);
         }
 
         function Mesh(verts, indices){
             this.verts = verts;
             this.indices = indices;
+            Object.seal(this);
         }
 
         return {
@@ -92,6 +94,12 @@ angular.module('pulsar-warp', [])
                     MM.vec3(-.5, +.5, 0),
                     MM.vec3(+.5, +.5, 0),
                     MM.vec3(+.5, -.5, 0)],
+                    [-1, 2, 3, 4]),
+                XZQuad: new Mesh([
+                    MM.vec3(-.5, 0, -.5),
+                    MM.vec3(-.5, 0, +.5),
+                    MM.vec3(+.5, 0, +.5),
+                    MM.vec3(+.5, 0, -.5)],
                     [-1, 2, 3, 4]),
                 Cube: new Mesh([
                     MM.vec3(-.5, -.5, +.5), //LBF
@@ -110,236 +118,20 @@ angular.module('pulsar-warp', [])
 
                         -5, 6, 7, 8, //Back
                         -1, 2, 6, 5, //L
-                        -1, 4, 8, 5, //Bottom
+                        -1, 4, 8, 5 //Bottom
                     ])
             }
         }
     }])
-    .service('WarpCamera', ['MalletMath', 'MEasel', 'Shapes', function (MM, MEasel, Shapes) {
-
-        var vertSize = 3,
-            self = this;
-
-        this.renderRatio = 100;
-
-        this.getLensAngle = () => {
-            var focalLength = 5;
-            return Math.atan(1 / focalLength);
-        };
-
-        //position of the camera in 3d space
-        this.position = MM.vec3(0, .2, 0);
-
-        this.toVertexBuffer = (verts) => {
-            var buffer = new Float32Array(verts.length * vertSize);
-            verts.forEach((vert, i) => {
-                buffer[i * vertSize] = vert.x;
-                buffer[i * vertSize + 1] = vert.y;
-                buffer[i * vertSize + 2] = vert.z;
-            });
-
-            return buffer;
-        };
-
-        /**
-         *
-         * @param buffer {Float32Array}
-         * @param pos {Vector3}
-         * @param scale {Vector3}
-         * @param rot {Vector3}
-         * @returns {*}
-         */
-        this.applyTransform = function (buffer, pos, scale, rot) {
-            var Cx = Math.cos(rot.x),
-                Cy = Math.cos(rot.y),
-                Cz = Math.cos(rot.z),
-                Sx = Math.sin(rot.x),
-                Sy = Math.sin(rot.y),
-                Sz = Math.sin(rot.z),
-
-                /*
-                 * Euler rotation matrix
-                 * http://what-when-how.com/advanced-methods-in-computer-graphics/quaternions-advanced-methods-in-computer-graphics-part-2/
-                 * [  Cy * Cz,  Cx * Sz + Sx * Sy * Cz, Sx * Sz - Cx * Sy * Cz ]
-                 * [ -Cy * Sz,  Cx * Cz - Sx * Sy * Sz, Sx * Cz + Cx * Sy * Sz ]
-                 * [  Sy,      -Sx * Cy,                Cx * Cy                ]
-                 */
-                M11 = +Cy * Cz, M12a = Cx * Sz, M12b = + Sx * Sy * Cz, M13a = Sx * Sz, M13b = - Cx * Sy * Cz,
-                M21 = -Cy * Sz, M22a = Cx * Cz, M22b = - Sx * Sy * Sz, M23a = Sx * Cz, M23b = + Cx * Sy * Sz,
-                M31 = Sy, M32 = -Sx * Cy, M33 = Cx * Cy;
-
-            for(var i = 0; i < buffer.length; i += 3){
-                var x = buffer[i], y = buffer[i + 1], z = buffer[i + 2];
-
-                buffer[i + 0] = pos.x + (x * M11 + y * M12a + y * M12b + z * M13a + z * M13b) * scale.x;
-                buffer[i + 1] = pos.y + (x * M21 + y * M22a + y * M22b + z * M23a + z * M23b) * scale.y;
-                buffer[i + 2] = pos.z + (x * M31 + y * M32 + z * M33) * scale.z;
-            }
-
-            return buffer;
-        };
-
-        this.renderBuffer = (buffer, indices) => {
-            var tanLensAngle = Math.tan(Math.atan(1 / 70)),
-                ctx = MEasel.context,
-                viewport = MM.vec2(ctx.canvas.height, ctx.canvas.height),
-                screenCenter = MM.vec2(ctx.canvas.width / 2, viewport.y / 2); //center of the viewport
-
-            var faceBufferIndex = 0,
-                faceBuffer = new Float32Array(8);
-
-            var drawQueue = new PriorityQueue(),
-                avgDist = 0;
-            var faceSize = 3;
-
-            for(var i = 0; i < indices.length; i++) {
-                var index = indices[i];
-                if(index < 0){ //A negative index indicates we are drawing a quad
-                    faceSize = 4;
-                    index = -index;
-                }
-
-                index--; //Input indices are 1 based
-
-                var b = index * vertSize,
-                    //Get the displacement of the vertex
-                    dispX = buffer[b] - self.position.x,
-                    dispY = -(buffer[b + 1] - self.position.y),
-                    dispZ = buffer[b + 2] - (-20);
-
-                avgDist += dispZ / faceSize;
-
-                //Transform the vertex into screen space
-                var fieldScale = 1 / (dispZ / 5 * tanLensAngle),
-                    screenX = dispX * fieldScale * viewport.x / self.renderRatio + screenCenter.x,
-                    screenY = dispY * fieldScale * viewport.y / self.renderRatio + screenCenter.y;
-
-                //Insert the screen coordinates into the screen buffer
-                faceBuffer[faceBufferIndex++] = screenX;
-                faceBuffer[faceBufferIndex++] = screenY;
-
-                //Push the vertices into face buffer
-                if((i + 1) % faceSize == 0){
-                    drawQueue.enqueue(1000 - avgDist, {buffer: faceBuffer.slice(), end: faceSize * 2});
-                    faceSize = 3;
-                    avgDist = 0;
-                    faceBufferIndex = 0;
-                }
-            }
-
-            //console.log(drawQueue.peek());
-            var face;
-            while(drawQueue.peek() != null){
-                face = drawQueue.dequeue();
-                self.drawFace(face.buffer, face.end);
-            }
-        };
-
-        this.drawFace = (buffer, end) => {
-            var ctx = MEasel.context;
-
-            ctx.strokeStyle = "#000";
-            ctx.lineWidth = 1;
-            ctx.beginPath();
-            ctx.moveTo(buffer[0], buffer[1]);
-
-            var i =0;
-            while(i < end){
-                ctx.lineTo(buffer[i++], buffer[i++]);
-            }
-
-            ctx.closePath();
-            ctx.fill();
-            ctx.stroke();
-        };
-
-        this.render = (mesh, transform, color) => {
-            MEasel.context.fillStyle = color;
-            //Get a transformed vertex buffer for the mesh
-            var buffer = self.applyTransform(self.toVertexBuffer(mesh.verts), transform.position, transform.scale, transform.rotation);
-            self.renderBuffer(buffer, mesh.indices);
-        };
-
-        /**
-         * Draws a rectangle in the Z plane - derived from Hammer code (Camera.cs)
-         * @param shape
-         * @param pos {Vector3}
-         * @param width {Number} size of shape on x-axis
-         * @param depth {Number} size of shape on z-axis
-         * @param zRot {Number} rotation on z-axis
-         */
-        this.drawShape = function(shape, pos, width, depth, zRot){
-            //Don't draw things that are in front of the camera
-            if(pos.z <= 0){
-                return;
-            }
-
-            var verts = [];
-
-            if(shape === Shapes.Triangle){
-                verts = [
-                    MM.vec3(-width / 2, 0, 0),
-                    MM.vec3(0, 0, depth),
-                    MM.vec3(+width / 2, 0, 0)];
-            }
-            else if(shape === Shapes.Quadrilateral){
-                verts = [
-                    MM.vec3(-width / 2, 0, 0),
-                    MM.vec3(-width / 2, 0, depth),
-                    MM.vec3(+width / 2, 0, depth),
-                    MM.vec3(+width / 2, 0, 0)];
-            }
-
-            zRot = zRot || 0;
-            var ctx = MEasel.context,
-                viewport = MM.vec2(ctx.canvas.width, ctx.canvas.height),
-                screenCenter = MM.vec2(viewport.x / 2, viewport.y / 2), //center of the viewport
-
-            //position of the object relative to the camera
-            //The Y position is inverted because screen space is reversed in Y
-                relPosition = MM.vec3(pos.x - self.position.x, -(pos.y - self.position.y), pos.z - self.position.z),
-                lensAngle = self.getLensAngle(); //the viewing angle of the lens, large is more stuff visible
-
-            ctx.save();
-            ctx.beginPath();
-
-            //Draw the shape with each point
-            verts.forEach((pt, index) => {
-                var screenPos = MM.vec2(
-                    /**
-                     * { cos -sin }
-                     * { sin  cos }
-                     */
-                    //x' = x * cos(theta) - y * sin(theta)
-                    pt.x * Math.cos(zRot) - pt.y * Math.sin(zRot) + relPosition.x,
-                    //y' = y * cos(theta) + x * sin(theta)
-                    pt.x * Math.sin(zRot) + pt.y * Math.cos(zRot) + relPosition.y
-                );
-                
-                var fieldRadius = (pos.z + pt.z) * Math.tan(lensAngle); //FOV radius at the point
-                //Transform the point into screen space
-                screenPos
-                    .scale(1 / fieldRadius) //1. Scale by the depth of the point
-                    .mult(viewport)         //2. Scale to the size of the viewport
-                    .add(screenCenter);     //3. Move relative to the screen center
-
-                //Add the point to the path (move for the first point)
-                (index === 0 ? ctx.moveTo : ctx.lineTo).call(ctx, screenPos.x, screenPos.y);
-            });
-
-            ctx.closePath();
-            ctx.fill();
-            ctx.restore();
-        }
-    }])
-    .service('WarpShip', ['MScheduler', 'WarpCamera', 'MEasel', 'MalletMath', 'MKeyboard', 'MKeys', 'Shapes', 'Warp', 'WarpState', 'Geometry', function(MScheduler, WarpCamera, MEasel, MM, MKeyboard, MKeys, Shapes, Warp, WarpState, Geometry){
+    
+    .service('WarpShip', ['MScheduler', 'MCamera', 'MEasel', 'MalletMath', 'MKeyboard', 'MKeys', 'Shapes', 'WarpLevel', 'WarpState', 'Geometry', function(MScheduler, MCamera, MEasel, MM, MKeyboard, MKeys, Shapes, Warp, WarpState, Geometry){
         var self = this,
             velocity = MM.vec3(0),
             destLane = 0,
             moveSpeed = 0.0003,
             laneWidth = .05,
             shipWidth = .03,
-            pos = MM.vec3(- laneWidth, .1, 1.25),
+            pos = MM.vec3(- laneWidth, .1, 20),
             bankAngle = 0,
             moving = false;
 
@@ -369,6 +161,15 @@ angular.module('pulsar-warp', [])
         //MKeyboard.onKeyUp(MKeys.Right, cancelLaneSwitch);
 
         WarpState.onState(WarpState.Loading, ()=>{self.score = 0});
+
+        var transforms = new Array(20);
+
+        for(var i = 0; i < 20; i++){
+            transforms[i] = new Geometry.Transform();
+            transforms[i].position = MM.vec3(-5 + i * .5, 0, 10.3);
+            transforms[i].scale = MM.vec3(.35);
+            //MCamera.render(Geometry.meshes.Cube, transform, "#f0f");
+        }
 
         MScheduler.schedule(dt => {
 
@@ -400,47 +201,32 @@ angular.module('pulsar-warp', [])
                 });
             }
 
-
             MScheduler.draw((dt, et) => {
                 //Draw Ship
                 MEasel.context.fillStyle = '#f00';
-                WarpCamera.drawShape(Shapes.Triangle, pos, shipWidth, 1, bankAngle);
+                MCamera.drawShape(Shapes.Triangle, pos, shipWidth, 10, bankAngle);
 
                 //Draw Shadow
                 MEasel.context.fillStyle = 'rgba(0,0,0,.25)';
-                WarpCamera.drawShape(Shapes.Triangle, MM.vec3(pos.x, 0, 1.25), shipWidth * Math.cos(bankAngle), 1, 0);
+                MCamera.drawShape(Shapes.Triangle, MM.vec3(pos.x, 0, 20), shipWidth * Math.cos(bankAngle), 10, 0);
 
-                var transform = new Geometry.Transform();
-                transform.position = MM.vec3(-5, 1, 1.3);
-                transform.rotation = MM.vec3(et / 1000);
-                transform.scale = MM.vec3(.35);
-
+                //var transform = new Geometry.Transform();
                 for(var i = 0; i < 20; i++){
-                    transform.position.x += .5;
-                    WarpCamera.render(Geometry.meshes.Cube, transform, "#f0f");
+                    transforms[i].rotation = MM.vec3(et / 1000);
+                    //MCamera.render(Geometry.meshes.Cube, transform, "#f0f");
                 }
 
-                transform.position.y = 1.7;
-                transform.position.x = -5;
-                transform.position.z = 1.4;
-                for(i = 0; i < 20; i++){
-                    transform.position.x += .5;
-                    WarpCamera.render(Geometry.meshes.Cube, transform, "#ff0");
-                }
-
-                transform.position.y = 2.5;
-                transform.position.x = -5;
-                transform.position.z = 1.7;
-                for(i = 0; i < 20; i++){
-                    transform.position.x += .5;
-                    WarpCamera.render(Geometry.meshes.Cube, transform, "#0ff");
-                }
+                //MCamera.render(Geometry.meshes.Cube, transforms, "#f0f");
 
             }, 10);
         });
     }])
-    .service('WarpAudio', [function(){
-
+    .factory('WarpBar', ['MalletMath', function(MM){
+        return {
+            //dimensions of the flanking bars
+            scale: MM.vec3(2, 1, 1),
+            margin: .01
+        }
     }])
     .service('WarpState', [function(){
 
@@ -487,22 +273,223 @@ angular.module('pulsar-warp', [])
 
         state = this.Loading;
     }])
-    .service('Warp', function (MKeyboard, MKeys, AudioClipService, AutoPlay, MediaStates, MScheduler, MEasel, AudioPlayerService, WaveformAnalyzer, WarpFieldCache, $q, WarpField, WarpCamera, MState, Shapes, MalletMath, WarpState) {
-        
-        var self = this,
-            barQueue = [],
-            barsVisible = 55,
-            velocity = 0,
-            timeStep = NaN; //this s NaN so that if it doesn't get set we don't get an endless while loop
+    .service('WarpFieldDraw', ['MScheduler', 'WarpLevel', 'MalletMath', 'MEasel', 'WarpState', 'MCamera', 'Shapes', 'Geometry', 'WarpBar', function(MScheduler, WarpLevel, MM, MEasel, WarpState, MCamera, Shapes, Geometry, Bar){
+        var velocity = 0,
+            meshes = Geometry.meshes,
+            Transform = Geometry.Transform;
+
+        var laneWidth = .05, //width of each lane
+            lanePadding = .0025, //padding on edge of each lane
+
+            mLaneWidth = .20,
+            mLanePadding = .01,
+
+        tLane = new Transform();
+        tLane.scale.x = mLaneWidth - mLanePadding;
+        tLane.scale.z = 20;
+        tLane.rotation.x = Math.PI / 2;
+        tLane.position.z = 1;
+        tLane.position.y = -.1;
+
+
+        var gems = new Array(WarpLevel.barsVisible);
+        for(var g = 0; g < gems.length; g++){
+            gems[g] = new Transform();
+            //gems[g].position.y = -.5;
+            gems[g].rotation.y = Math.PI / 4;
+            gems[g].rotation.x = Math.PI / 4;
+            gems[g].scale = MM.vec3(.25);
+        }
+
+        var tBar = new Transform();
+
+        function draw(dt){
+            var ctx = MEasel.context,
+                startOffset = 0,
+                zRot = - Math.PI / 6; //rotation of loudness bars on the edges
+
+            WarpLevel.barOffset += velocity * dt;
+            //make the first bar yellow
+            ctx.fillStyle = '#ff0';
+
+            var drawOffset = -Bar.scale.z + startOffset; //this spaces the bars correctly across the screen, 200 is based on how far above the plane the camera is
+            for(var i = 0; i < WarpLevel.barsVisible; i++){
+                if(i === 2){
+                    ctx.fillStyle = '#fff';
+                }
+                else if(i + 5 > WarpLevel.barsVisible){
+                    ctx.fillStyle = 'rgba(255,255,255,' + (WarpLevel.barsVisible - i) / 5 + ')';
+                }
+
+                var drawWidth = Bar.scale.x * WarpLevel.getLoudness(i),
+                    depth = Bar.scale.z * WarpLevel.barQueue[i].speed,
+
+                    yOffset = (drawWidth / 2) * Math.sin(zRot),
+                    xOffset = (drawWidth / 2), // * Math.cos(zRot),
+                    zOffset = (drawOffset - WarpLevel.barOffset);
+
+                tBar.scale.x = drawWidth;
+                tBar.scale.z = depth;
+
+                tBar.position = MM.vec3(1 + xOffset, -.5, zOffset);
+                tBar.rotation.z = zRot;
+                MCamera.render(meshes.XZQuad, tBar, "#fff");
+
+                //tBar.postion = MM.vec3(-mLaneWidth * 4 * 1.5 - xOffset, yOffset, zOffset);
+                //tBar.rotation.z = -zRot;
+                //MCamera.render(meshes.XZQuad, tBar, "#fff");
+
+                //     yOffset = (drawWidth / 2) * Math.sin(zRot),
+                //     xOffset = (drawWidth / 2) * Math.cos(zRot),
+                //     zOffset = (drawOffset - WarpLevel.barOffset),
+                //
+                //     posRight = MM.vec3(laneWidth * 1.5 + xOffset, yOffset, zOffset),
+                //     posLeft = MM.vec3(-laneWidth * 1.5 - xOffset, yOffset, zOffset);
+                //
+                // MCamera.drawShape(Shapes.Quadrilateral, posRight, drawWidth, depth, - zRot);
+                // MCamera.drawShape(Shapes.Quadrilateral, posLeft, drawWidth, depth, zRot);
+
+
+                drawOffset += depth + Bar.margin ; //add the width the current bar (each bar has a different width)
+            }
+
+            tLane.position.x = -mLaneWidth;
+            MCamera.render(meshes.XYQuad, tLane, '#ccc');
+            tLane.position.x = 0;
+            MCamera.render(meshes.XYQuad, tLane, '#ccc');
+            tLane.position.x = mLaneWidth;
+            MCamera.render(meshes.XYQuad, tLane, '#ccc');
+
+            drawOffset = -Bar.scale.z + startOffset;
+            for(i = 0; i < WarpLevel.barsVisible; i++){
+
+                zOffset = (drawOffset - WarpLevel.barOffset);
+                depth = (Bar.scale.z * WarpLevel.barQueue[i].speed);
+
+                var sliceGems = (WarpLevel.warpField[WarpLevel.sliceIndex + i] || {}).gems || [];
+                gems[i].scale = MM.vec3(0);
+                for(var l = 0; l < 3; l++){
+                    if(sliceGems[l] === 1){
+                        gems[i].scale = MM.vec3(.25);
+                        gems[i].position = MM.vec3((l - 1) * mLaneWidth * 4, -.5, zOffset);
+                    }
+                    //ctx.fillStyle = gems[l] === 1 ? "#0f0" : "#fff";
+                    //MCamera.drawShape(Shapes.Quadrilateral, MM.vec3((l - 1) * laneWidth, 0, zOffset), laneWidth - lanePadding, depth, 0);
+                }
+
+                drawOffset += depth + Bar.margin ; //add the width the current bar (each bar has a different width)
+            }
+
+            MCamera.render(meshes.Cube, gems, '#0f0');
+        }
+
+        this.init = () => {
+            MScheduler.schedule(()=>{
+                if(WarpState.current !== WarpState.Playing) {
+                    return;
+                }
+
+                MScheduler.draw(draw);
+            });
+        }
+
+    }])
+    .service('WarpLevel', ['MScheduler', 'WarpState', 'WaveformAnalyzer', 'WarpBar', function(MScheduler, WarpState, WaveformAnalyzer, Bar){
+        var self = this;
+        this.barQueue = [0];
+        this.barsVisible = 55;
+        self.timeStep = NaN; //this s NaN so that if it doesn't get set we don't get an endless while loop
 
         this.warpField = null;
         this.sliceIndex = 0; //where we are in the level
 
-        var elapsed = 0, //elapsed time since last bar was rendered
-            barOffset = 0, //this value allows the bar to "flow" instead of "jump"
+        var elapsed = 0; //elapsed time since last bar was rendered
+        this.barOffset = 0;  //this value allows the bar to "flow" instead of "jump"
 
-            frequencies = [], //the set of waveform frequencies to average to determine bar width/speed
-            frequencySamples = 10; //how many waveform frequencies to average
+        this.frequencies = []; //the set of waveform frequencies to average to determine bar width/speed
+        var frequencySamples = 10; //how many waveform frequencies to average
+
+        this.reset = function(){
+            //reset level variables
+            self.barQueue = [0, 0, 0];
+            elapsed = 0;
+            self.sliceIndex = 0;
+            self.frequencies = [];
+            self.timeStep = NaN;
+            self.barOffset = 0;
+        };
+
+        this.load = warpField => {
+            self.timeStep = warpField.timeStep;
+            console.log(self.timeStep);
+            self.warpField = warpField.level;
+        };
+
+        this.getLoudness = relativeIndex => {
+            return (self.warpField[self.sliceIndex + relativeIndex] || {}).loudness || 0;
+        };
+
+        /**
+         * Get the average value of an array of numbers
+         * @param arr
+         * @returns {*}
+         */
+        function getAvg(arr) {
+            return arr.reduce((avg, value) => avg + value / arr.length, 0);
+        }
+
+        /**
+         * Update the various properties of the game level
+         */
+        MScheduler.schedule((dt) => {
+            if(WarpState.current !== WarpState.Playing) {
+                return;
+            }
+
+            //advance through the level
+            elapsed += dt;
+            /**
+             * This creates a sort of independent fixed update the ensures the level follows the song
+             * Each bar the screen represents a fixed amount of time, and no matter how wide, can only
+             * remain on screen for the duration for everything to stay in sync
+             */
+            while(elapsed > self.timeStep / 1000){
+                elapsed -= (self.timeStep || NaN); //break if timeStep is not set
+                self.sliceIndex++;
+                self.barOffset = 0; //reset the bar offset
+
+                //remove the bar that just moved off screen
+                self.barQueue.shift();
+
+                var waveform = WaveformAnalyzer.getMetrics();
+                //Create a new bar
+                while(self.barQueue.length < self.barsVisible){
+                    //get the current waveform frequency and remove the oldest value
+                    self.frequencies.push(((1 / waveform.period) / 10));
+                    if(self.frequencies.length > frequencySamples){
+                        self.frequencies.shift();
+                    }
+
+                    //add a new bar to the queue
+                    self.barQueue.push({
+                        speed: .9 + .1 * getAvg(self.frequencies) //this value is basically fudged to work well
+                    });
+                }
+            }
+
+            //how fast the set of bars is moving across the screen
+            var velocity = (Bar.scale.z * self.barQueue[2].speed + Bar.margin) / self.timeStep;
+            self.barOffset += dt * velocity;
+
+            if(self.sliceIndex > self.warpField.length){
+                WarpState.current = WarpState.LevelComplete;
+            }
+        });
+    }])
+    //Still a little ugly, but this is workable...
+    .service('Warp', function (WarpFieldDraw, WarpLevel, WarpState, MState, MKeyboard, MKeys, AudioClipService, AutoPlay, MediaStates, MScheduler, AudioPlayerService, WarpFieldCache, $q, WarpField) {
+        
+        var self = this;
 
         function getWarpField(clip) {
             var cachedField = WarpFieldCache.retrieve(clip);
@@ -526,22 +513,13 @@ angular.module('pulsar-warp', [])
             }
 
             WarpState.current = WarpState.Loading;
-
-            //reset level variables
-            barQueue = [0];
-            elapsed = 0;
-            velocity = 0;
-            self.sliceIndex = 0;
-            frequencies = [];
-            timeStep = NaN;
-            barOffset = 0;
+            WarpLevel.reset();
 
             //Stop any song that's playing
             AudioPlayerService.stop();
 
             getWarpField(clip).then(function(warpField){
-                timeStep = warpField.timeStep;
-                self.warpField = warpField.level;
+               WarpLevel.load(warpField);
 
                 //Play the clip - this can take time to initialize
                 return AudioPlayerService.playClip(clip.id).then(()=>{
@@ -560,9 +538,9 @@ angular.module('pulsar-warp', [])
          * Initialize Game
          */
         this.init = () => {
+            WarpFieldDraw.init();
             MScheduler.suspendOnBlur(); //Suspend the event loop when the window is blurred
             AudioPlayerService.registerPlayer(); //init the audio player service
-            MScheduler.schedule(update); //when the clip actually begins playing start the level
             AudioClipService.getClipList() //wait for clips to load
                 .then(AudioClipService.loadAudioClips)
                 .then(function() {
@@ -590,171 +568,4 @@ angular.module('pulsar-warp', [])
                 }
             });
         };
-
-        /**
-         * Get the average value of an array of numbers
-         * @param arr
-         * @returns {*}
-         */
-        function getAvg(arr) {
-            return arr.reduce((avg, value) => avg + value / arr.length, 0);
-        }
-
-        /**
-         * This is the main loop function for Warp
-         * @param dt deltaTime
-         */
-        function update(dt) {
-
-            if(WarpState.current !== WarpState.Playing) {
-                return;
-            }
-
-            //advance through the level
-            elapsed += dt;
-            /**
-             * This creates a sort of independent fixed update the ensures the level follows the song
-             * Each bar the screen represents a fixed amount of time, and no matter how wide, can only
-             * remain on screen for the duration for everything to stay in sync
-             */
-            while(elapsed > timeStep / 1000){
-                elapsed -= (timeStep || NaN); //break if timeStep is not set
-                self.sliceIndex++;
-                barOffset = 0; //reset the bar offset
-
-                //remove the bar that just moved off screen
-                barQueue.shift();
-
-                var waveform = WaveformAnalyzer.getMetrics();
-                //Create a new bar
-                while(barQueue.length < barsVisible){
-                    //get the current waveform frequency and remove the oldest value
-                    frequencies.push(((1 / waveform.period) / 10));
-                    if(frequencies.length > frequencySamples){
-                        frequencies.shift();
-                    }
-
-                    //add a new bar to the queue
-                    barQueue.push({
-                        speed: .7 + .3 * getAvg(frequencies) //this value is basically fudged to work well
-                    });
-                }
-            }
-
-            if(self.sliceIndex > self.warpField.length){
-                WarpState.current = WarpState.LevelComplete;
-            }
-
-            //Add a draw command for the frame
-            MScheduler.draw(()=>{
-                var ctx = MEasel.context,
-                    startOffset = 185,
-                    barDepth = ctx.canvas.height / barsVisible,
-                    barMargin = 10, //space between bars
-                    laneWidth = .05, //width of each lane
-                    lanePadding = .0025, //padding on edge of each lane
-                    barWidth = .2, //width of the bars
-                    zRot = Math.PI / 4; //rotation of loudness bars on the edges
-
-                //how fast the set of bars is moving across the screen
-                velocity = (barDepth * barQueue[0].speed + barMargin) / timeStep;
-                barOffset += velocity * dt;
-                //make the first bar yellow
-                ctx.fillStyle = '#ff0';
-                var drawOffset = startOffset; //this spaces the bars correctly across the screen, 200 is based on how far above the plane the camera is
-                for(var i = 0; i < barsVisible; i++){
-                    if(i === 2){
-                        ctx.fillStyle = '#fff';
-                    }
-                    else if(i + 5 > barsVisible){
-                        ctx.fillStyle = 'rgba(255,255,255,' + (barsVisible - i) / 5 + ')';
-                    }
-
-                    var drawWidth = barWidth * (self.warpField[self.sliceIndex + i] || {}).loudness || 0,
-                        yOffset = (drawWidth / 2) * Math.sin(zRot),
-                        xOffset = (drawWidth / 2) * Math.cos(zRot),
-                        zOffset = (drawOffset - barOffset) / 100,
-                        depth = (barDepth * barQueue[i].speed) / 100,
-                        posRight = MalletMath.vec3(laneWidth * 1.5 + xOffset, yOffset, zOffset),
-                        posLeft = MalletMath.vec3(-laneWidth * 1.5 - xOffset, yOffset, zOffset);
-
-                    WarpCamera.drawShape(Shapes.Quadrilateral, posRight, drawWidth, depth, - zRot);
-                    WarpCamera.drawShape(Shapes.Quadrilateral, posLeft, drawWidth, depth, zRot);
-
-                    drawOffset += barDepth * barQueue[i].speed + barMargin; //add the width the current bar (each bar has a different width)
-                }
-
-                drawOffset = startOffset;
-                for(i = 0; i < barsVisible; i++){
-
-                    zOffset = (drawOffset - barOffset) / 100;
-                    depth = (barDepth * barQueue[i].speed) / 100;
-
-                    for(var l = 0; l < 3; l++){
-                        ctx.fillStyle = ((self.warpField[self.sliceIndex + i] || {}).gems || [])[l] === 1 ? "#0f0" : "#fff";
-                        WarpCamera.drawShape(Shapes.Quadrilateral, MalletMath.vec3((l - 1) * laneWidth, 0, zOffset), laneWidth - lanePadding, depth, 0);
-                    }
-
-                    drawOffset += barDepth * barQueue[i].speed + barMargin; //add the width the current bar (each bar has a different width)
-                }
-            }, 5);
-        }
-
-        /**
-         * Debugging stuff
-         */
-        var imgData;
-        function debugDraw() {
-            MScheduler.postProcess(() => {
-                var ctx = MEasel.context;
-
-                if(!self.warpField.length)
-                    return;
-
-                var start = 0,
-                    rows = 750;
-                // i) get all of the rgba pixel data of the canvas by grabbing the imageData Object
-                imgData = imgData || ctx.getImageData(100, 100, 512, rows);
-
-                var data = imgData.data,
-                    length = data.length;
-
-                //Renders FFT data
-                // for(var i = start; i < self.warpField.length; i += 5){
-                //     for(var f = 0; f < self.warpField[i].length; f++){
-                //         var value = 255 * self.warpField[i][f] * 10;
-                //         var row = (i - start) * 512 * 4 / 5;
-                //         data[row + f * 4] = value;
-                //         data[row + f * 4 + 1] = value;
-                //         data[row + f * 4 + 2] = value;
-                //         data[row + f * 4 + 3] = 255;
-                //     }
-                //
-                //     if(i > start + rows * 5){
-                //         break;
-                //     }
-                // }
-
-                //Renders loudness Data
-                for(var i = start; i < self.warpField.length; i += 5){
-                    for(var f = 0; f < 512; f++){
-                        var value = 255 * self.warpField[i];
-                        var row = (i - start) * 512 * 4 / 5;
-                        data[row + f * 4] = value;
-                        data[row + f * 4 + 1] = value;
-                        data[row + f * 4 + 2] = value;
-                        data[row + f * 4 + 3] = 255;
-                    }
-
-                    if(i > start + rows * 5){
-                        break;
-                    }
-                }
-
-                ctx.putImageData(imgData, 200, 100);
-            });
-        }
-
-        //MScheduler.schedule(debugDraw);
-
     });

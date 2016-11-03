@@ -15,6 +15,7 @@ angular.module('mallet-math', []).service('MalletMath', [function(){
         this.x = x;
         this.y = typeof y !== 'undefined' ? y : x;
         this.z = typeof z !== 'undefined' ? z : x;
+        Object.seal(this);
     }
 
     /**
@@ -73,6 +74,7 @@ angular.module('mallet-math', []).service('MalletMath', [function(){
     function Vector2(x, y){
         this.x = x;
         this.y = typeof y !== 'undefined' ? y : x;
+        Object.seal(this);
     }
 
     /**
