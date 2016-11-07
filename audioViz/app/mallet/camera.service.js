@@ -16,7 +16,7 @@ angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', '
 
     //position of the camera in 3d space
     this.position = MM.vec3(0, .2, 10);
-    var light = MM.vec3(-1, -1, -1).normalize();
+    var light = MM.vec3(-1, 0, 0).normalize();
 
     this.toVertexBuffer = (verts) => {
         var buffer = new Float32Array(verts.length * Mesh.vertSize);
@@ -173,7 +173,12 @@ angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', '
                 var normalX = normals[faceIndex * 3],
                     normalY = normals[faceIndex * 3 + 1],
                     normalZ = normals[faceIndex * 3 + 2],
-                    lightAmt = Math.min(.2 + Math.abs(light.x * normalX + light.y * normalY + light.z * normalZ), 1);
+                    dot = light.x * normalX + light.y * normalY + light.z * normalZ,
+                    //Clamp the light amount to 1 and make sure it is positive
+                    lightAmt = Math.min(.2 + Math.max(0, dot), 1);
+
+                console.log(`${normalX} ${normalY} ${normalZ}`);
+
                 drawQueue.enqueue(1000 - avgDist, {buffer: faceBuffer.slice(), end: faceSize * 2, color: lightAmt});
                 avgDist = 0;
                 faceBufferIndex = 0;
@@ -227,6 +232,7 @@ angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', '
             callCount++;
             //console.log('draw call');
             face = drawCalls.dequeue();
+            ctx.fillStyle = 'hsla(0, 0%, ' + face.color * 100 + '%, 1)';
             self.drawFace(MEasel.context, face.buffer, face.end);
         }
     };
