@@ -146,7 +146,7 @@ angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', '
 
         for(var i = 0; i < indices.length; i ++) {
             //If the face is facing away from the camera, don't render it
-            if(culledFaces[(i - (i % 3)) / 3] === 0){
+            if(culledFaces[(i - (i % faceSize)) / faceSize] === 0){
                 continue;
             }
 
@@ -160,6 +160,7 @@ angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', '
             avgDist += dispZ / faceSize;
 
             //Transform the vertex into screen space
+            //TODO: Calculate based on distance instead of Z displacement
             var fieldScale = Math.abs(1 / (dispZ / 5 * tanLensAngle)),
                 screenX = dispX * fieldScale * viewport.x / self.renderRatio + screenCenter.x,
                 screenY = dispY * fieldScale * viewport.y / self.renderRatio + screenCenter.y;
@@ -170,15 +171,13 @@ angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', '
 
             //Push the vertices into face buffer
             if((i + 1) % faceSize == 0){
-                faceIndex = (i - (i % 3)) / 3;
+                faceIndex = (i - (i % faceSize)) / faceSize;
                 var normalX = normals[faceIndex * 3],
                     normalY = normals[faceIndex * 3 + 1],
                     normalZ = normals[faceIndex * 3 + 2],
                     dot = light.x * normalX + light.y * normalY + light.z * normalZ,
                     //Clamp the light amount to 1 and make sure it is positive
                     lightAmt = Math.min(.2 + Math.max(0, dot), 1);
-
-                console.log(`${normalX} ${normalY} ${normalZ}`);
 
                 drawQueue.enqueue(1000 - avgDist, {buffer: faceBuffer.slice(), end: faceSize * 2, color: lightAmt});
                 avgDist = 0;
@@ -189,12 +188,18 @@ angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', '
         return drawQueue;
     };
 
+    /**
+     * Draws a set of screen vertices using canvas path
+     * @param ctx
+     * @param buffer {Float32Array}
+     * @param end {number}
+     */
     this.drawFace = (ctx, buffer, end) => {
 
         ctx.beginPath();
         ctx.moveTo(buffer[0], buffer[1]);
 
-        var i =0;
+        var i = 2;
         while(i < end){
             ctx.lineTo(buffer[i++], buffer[i++]);
         }
@@ -204,35 +209,45 @@ angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', '
         //ctx.stroke();
     };
 
+    /**
+     * Render an instance of the mesh for each transform provided, with the given color
+     * @param mesh {Mesh}
+     * @param transforms {Transform|Array<Transform>}
+     * @param color {Vector3}
+     */
     this.render = (mesh, transforms, color) => {
 
+        //wrap a raw transform in an array
         transforms = (transforms instanceof Array) ? transforms : [transforms];
+        //create a queue to store the draw commands generated
         var drawCalls = new PriorityQueue();
 
         for(var t = 0; t < transforms.length; t++){
+            //Don't render things that are behind the camera
+            //TODO: this needs to be changed be based off camera camera position/perspective
             if(self.position.z - transforms[t].position.z < 0){
                 continue;
             }
 
             //Get a transformed vertex buffer for the mesh
             var buffer = self.applyTransform(mesh.getVertexBuffer(), mesh.size, transforms[t].position, transforms[t].scale, transforms[t].rotation, transforms[t].origin),
-                rawBuffer = self.toVertexBuffer(mesh.normals),
-                normalsBuffer = self.applyTransform(rawBuffer, MM.Vector3.Zero, MM.Vector3.Zero, MM.Vector3.One, transforms[t].rotation, MM.Vector3.Zero),
+                //Generate a buffer of the transformed face normals
+                normalsBuffer = self.applyTransform(self.toVertexBuffer(mesh.normals), MM.Vector3.Zero, MM.Vector3.Zero, MM.Vector3.One, transforms[t].rotation, MM.Vector3.Zero),
+                //Determine which faces will be cull (don't render back faces)
                 culledFaces = self.getCulledFaces(buffer, normalsBuffer, mesh.indices);
+
+            //Project the buffer into the camera's viewport
             self.projectBuffer(buffer, culledFaces, normalsBuffer, mesh.indices, drawCalls);
         }
 
-        var ctx = MEasel.context;
-        ctx.fillStyle = color;
-        ctx.strokeStyle = '#000';
-        ctx.lineWidth = 1;
-
-        var face, callCount = 0;
+        var ctx = MEasel.context, face, callCount = 0;
+        //Execute each draw call to display the scene
         while(drawCalls.peek() != null){
             callCount++;
-            //console.log('draw call');
             face = drawCalls.dequeue();
+            //Apply lighting calculations to the mesh color
             ctx.fillStyle = Color.rgbaFromVector(MM.Vector3.scale(color, face.color));
+            //Draw the face
             self.drawFace(MEasel.context, face.buffer, face.end);
         }
     };
