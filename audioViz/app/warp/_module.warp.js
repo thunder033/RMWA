@@ -164,7 +164,7 @@ angular.module('pulsar-warp', [])
 
                 transforms[0].position.x = -1;
                 transforms[0].scale = MM.vec3(2);
-                MCamera.render(Geometry.meshes.Cube, transforms[0], "#f0f");
+                MCamera.render(Geometry.meshes.Cube, transforms[0], MM.vec3(255, 0, 255));
 
             }, 10);
         });

@@ -72,6 +72,11 @@ angular.module('mallet-math', []).service('MalletMath', [function(){
         return this;
     };
 
+    /**
+     * Calculates the cross produce of the vector and b
+     * @param b {Vector3}
+     * @returns {Vector3}
+     */
     Vector3.prototype.cross = function(b) {
         return new Vector3(
             this.y * b.z - this.z * b.y,
@@ -80,18 +85,35 @@ angular.module('mallet-math', []).service('MalletMath', [function(){
         );
     };
 
+    /**
+     * Calcuate the dot product of the vector and b
+     * @param b {Vector3}
+     * @returns {number}
+     */
     Vector3.prototype.dot = function(b) {
         return this.x * b.x + this.y * b.y + this.z * b.z;
     };
 
+    /**
+     * Get the length of the vector
+     * @returns {number}
+     */
     Vector3.prototype.len = function () {
         return Math.sqrt(this.len2());
     };
 
+    /**
+     * Get the lengths squared of the vector
+     * @returns {number}
+     */
     Vector3.prototype.len2 = function(){
         return this.x * this.x + this.y * this.y + this.z * this.z;
     };
 
+    /**
+     * Normalize the vector
+     * @returns {Vector3}
+     */
     Vector3.prototype.normalize = function(){
         var len = this.len();
         return new Vector3(
@@ -100,6 +122,10 @@ angular.module('mallet-math', []).service('MalletMath', [function(){
             this.z / len);
     };
 
+    /**
+     * Create a unit vector from this vector (normalized and positive)
+     * @returns {Vector3}
+     */
     Vector3.prototype.unit = function(){
         var len = this.len();
         return new Vector3(
@@ -108,6 +134,10 @@ angular.module('mallet-math', []).service('MalletMath', [function(){
             Math.abs(this.z / len));
     };
 
+    /**
+     * Create a string representation of the vector
+     * @returns {string}
+     */
     Vector3.prototype.toString = function(){
         return '{' + this.x + ', ' + this.y + ', ' + this.z + '}'
     };
@@ -134,6 +164,26 @@ angular.module('mallet-math', []).service('MalletMath', [function(){
      */
     Vector3.subtract = (a, b) => {
         return new Vector3(a.x - b.x, a.y - b.y, a.z - b.z);
+    };
+
+    /**
+     * Creates a new vector by multiplying a and b
+     * @param a {Vector3}
+     * @param b {Vector3}
+     * @returns {Vector3}
+     */
+    Vector3.mult = (a, b) => {
+        return new Vector3(a.x * b.x, a.y * b.y, a.z * b.z);
+    };
+
+    /**
+     * Creates a new vector by scaling a by scalar
+     * @param a {Vector3}
+     * @param scalar {number}
+     * @returns {Vector3}
+     */
+    Vector3.scale = (a, scalar) => {
+        return new Vector3(a.x * scalar, a.y * scalar, a.z * scalar);
     };
 
     Vector3.Zero = Object.freeze(new Vector3(0));

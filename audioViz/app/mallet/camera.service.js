@@ -2,7 +2,7 @@
  * Created by Greg on 11/2/2016.
  */
 "use strict";
-angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', 'Geometry', function (MM, MEasel, Shapes, Geometry) {
+angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', 'Geometry', 'MColor', function (MM, MEasel, Shapes, Geometry, Color) {
 
     var Mesh = Geometry.Mesh,
         self = this;
@@ -16,7 +16,7 @@ angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', '
 
     //position of the camera in 3d space
     this.position = MM.vec3(0, .2, 10);
-    var light = MM.vec3(-1, 0, 0).normalize();
+    var light = MM.vec3(-1, -1, -1).normalize();
 
     this.toVertexBuffer = (verts) => {
         var buffer = new Float32Array(verts.length * Mesh.vertSize);
@@ -170,6 +170,7 @@ angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', '
 
             //Push the vertices into face buffer
             if((i + 1) % faceSize == 0){
+                faceIndex = (i - (i % 3)) / 3;
                 var normalX = normals[faceIndex * 3],
                     normalY = normals[faceIndex * 3 + 1],
                     normalZ = normals[faceIndex * 3 + 2],
@@ -182,7 +183,6 @@ angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', '
                 drawQueue.enqueue(1000 - avgDist, {buffer: faceBuffer.slice(), end: faceSize * 2, color: lightAmt});
                 avgDist = 0;
                 faceBufferIndex = 0;
-                faceIndex++;
             }
         }
 
@@ -201,7 +201,7 @@ angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', '
 
         ctx.closePath();
         ctx.fill();
-        ctx.stroke();
+        //ctx.stroke();
     };
 
     this.render = (mesh, transforms, color) => {
@@ -232,7 +232,7 @@ angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', '
             callCount++;
             //console.log('draw call');
             face = drawCalls.dequeue();
-            ctx.fillStyle = 'hsla(0, 0%, ' + face.color * 100 + '%, 1)';
+            ctx.fillStyle = Color.rgbaFromVector(MM.Vector3.scale(color, face.color));
             self.drawFace(MEasel.context, face.buffer, face.end);
         }
     };
