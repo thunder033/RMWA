@@ -72,6 +72,50 @@ angular.module('mallet-math', []).service('MalletMath', [function(){
         return this;
     };
 
+    Vector3.prototype.cross = function(b) {
+        return new Vector3(
+            this.y * b.z - this.z * b.y,
+            this.z * b.x - this.x * b.z,
+            this.x * b.y - this.y * b.x
+        );
+    };
+
+    Vector3.prototype.dot = function(b) {
+        return this.x * b.x + this.y * b.y + this.z * b.z;
+    };
+
+    Vector3.prototype.len = function () {
+        return Math.sqrt(this.len2());
+    };
+
+    Vector3.prototype.len2 = function(){
+        return this.x * this.x + this.y * this.y + this.z * this.z;
+    };
+
+    Vector3.prototype.normalize = function(){
+        var len = this.len();
+        return new Vector3(
+            this.x / len,
+            this.y / len,
+            this.z / len);
+    };
+
+    Vector3.prototype.unit = function(){
+        var len = this.len();
+        return new Vector3(
+            Math.abs(this.x / len),
+            Math.abs(this.y / len),
+            Math.abs(this.z / len));
+    };
+
+    Vector3.prototype.toString = function(){
+        return '{' + this.x + ', ' + this.y + ', ' + this.z + '}'
+    };
+
+    Vector3.prototype.toBuffer = function(){
+        return [this.x, this.y, this.z];
+    };
+
     /**
      * Add the 2 vectors
      * @param a {Vector3}
@@ -91,6 +135,9 @@ angular.module('mallet-math', []).service('MalletMath', [function(){
     Vector3.subtract = (a, b) => {
         return new Vector3(a.x - b.x, a.y - b.y, a.z - b.z);
     };
+
+    Vector3.Zero = Object.freeze(new Vector3(0));
+    Vector3.One = Object.freeze(new Vector3(1));
 
     this.Vector3 = Vector3;
 

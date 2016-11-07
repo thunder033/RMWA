@@ -77,7 +77,7 @@ angular.module('pulsar-warp', [])
             moveSpeed = 0.0003,
             laneWidth = .05,
             shipWidth = .03,
-            pos = MM.vec3(- laneWidth, .1, 20),
+            pos = MM.vec3(- laneWidth, .1, -10),
             bankAngle = 0,
             moving = false;
 
@@ -112,7 +112,7 @@ angular.module('pulsar-warp', [])
 
         for(var i = 0; i < 20; i++){
             transforms[i] = new Geometry.Transform();
-            transforms[i].position = MM.vec3(-5 + i * .5, 0, 10.3);
+            transforms[i].position = MM.vec3(-5 + i * .5, 0, -10.3);
             transforms[i].scale = MM.vec3(.35);
             //MCamera.render(Geometry.meshes.Cube, transform, "#f0f");
         }
@@ -128,12 +128,12 @@ angular.module('pulsar-warp', [])
                     bankAngle = 0;
                 }
             } else {
-                if(MKeyboard.isKeyDown(MKeys.Left) && self.lane > 0){
-                    destLane = self.lane - 1;
+                if(MKeyboard.isKeyDown(MKeys.Left) && destLane > 0){
+                    destLane--;
                 }
 
-                if(MKeyboard.isKeyDown(MKeys.Right) && self.lane < 2){
-                    destLane = self.lane + 1;
+                if(MKeyboard.isKeyDown(MKeys.Right) && destLane < 2){
+                    destLane++;
                 }
             }
 
@@ -154,15 +154,17 @@ angular.module('pulsar-warp', [])
 
                 //Draw Shadow
                 MEasel.context.fillStyle = 'rgba(0,0,0,.25)';
-                MCamera.drawShape(Shapes.Triangle, MM.vec3(pos.x, 0, 20), shipWidth * Math.cos(bankAngle), 10, 0);
+                MCamera.drawShape(Shapes.Triangle, MM.vec3(pos.x, 0, pos.z), shipWidth * Math.cos(bankAngle), 10, 0);
 
                 //var transform = new Geometry.Transform();
-                for(var i = 0; i < 20; i++){
+                for(var i = 0; i < 1; i++){
                     transforms[i].rotation = MM.vec3(et / 1000);
                     //MCamera.render(Geometry.meshes.Cube, transform, "#f0f");
                 }
 
-                //MCamera.render(Geometry.meshes.Cube, transforms, "#f0f");
+                transforms[0].position.x = -1;
+                transforms[0].scale = MM.vec3(2);
+                MCamera.render(Geometry.meshes.Cube, transforms[0], "#f0f");
 
             }, 10);
         });
@@ -275,7 +277,7 @@ angular.module('pulsar-warp', [])
 
                 tBar.position = MM.vec3(mLaneWidth, 0, zOffset);
                 tBar.rotation.z = zRot;
-                MCamera.render(meshes.XZQuad, tBar, "#fff");
+                //MCamera.render(meshes.XZQuad, tBar, "#fff");
 
                 var sliceGems = (WarpLevel.warpField[WarpLevel.sliceIndex + i] || {}).gems || [];
                 gems[i].scale = MM.vec3(0);
@@ -290,13 +292,13 @@ angular.module('pulsar-warp', [])
             }
 
             tLane.position.x = -mLaneWidth;
-            MCamera.render(meshes.XZQuad, tLane, '#ccc');
+            //MCamera.render(meshes.XZQuad, tLane, '#ccc');
             tLane.position.x = 0;
-            MCamera.render(meshes.XZQuad, tLane, '#ccc');
+            //MCamera.render(meshes.XZQuad, tLane, '#ccc');
             tLane.position.x = mLaneWidth;
-            MCamera.render(meshes.XZQuad, tLane, '#ccc');
+            //MCamera.render(meshes.XZQuad, tLane, '#ccc');
 
-            MCamera.render(meshes.Cube, gems, '#0f0');
+            //MCamera.render(meshes.Cube, gems, '#0f0');
         }
 
         this.init = () => {
@@ -337,7 +339,6 @@ angular.module('pulsar-warp', [])
 
         this.load = warpField => {
             self.timeStep = warpField.timeStep;
-            console.log(self.timeStep);
             self.warpField = warpField.level;
         };
 

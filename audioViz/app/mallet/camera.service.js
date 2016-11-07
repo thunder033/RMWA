@@ -2,9 +2,9 @@
  * Created by Greg on 11/2/2016.
  */
 "use strict";
-angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', function (MM, MEasel, Shapes) {
+angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', 'Geometry', function (MM, MEasel, Shapes, Geometry) {
 
-    var vertSize = 3,
+    var Mesh = Geometry.Mesh,
         self = this;
 
     this.renderRatio = 100;
@@ -15,16 +15,17 @@ angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', f
     };
 
     //position of the camera in 3d space
-    this.position = MM.vec3(0, .2, -10);
+    this.position = MM.vec3(0, .2, 10);
+    var light = MM.vec3(-1, -1, -1).normalize();
 
     this.toVertexBuffer = (verts) => {
-        var buffer = new Float32Array(verts.length * vertSize);
+        var buffer = new Float32Array(verts.length * Mesh.vertSize);
         verts.forEach((vert, i) => {
-            buffer[i * vertSize] = vert.x;
-            buffer[i * vertSize + 1] = vert.y;
-            buffer[i * vertSize + 2] = vert.z;
+            buffer[i * Mesh.vertSize] = vert.x;
+            buffer[i * Mesh.vertSize + 1] = vert.y;
+            buffer[i * Mesh.vertSize + 2] = vert.z;
         });
-
+    
         return buffer;
     };
 
@@ -58,10 +59,12 @@ angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', f
             M21 = -Cy * Sz, M22a = Cx * Cz, M22b = - Sx * Sy * Sz, M23a = Sx * Cz, M23b = + Cx * Sy * Sz,
             M31 = Sy, M32 = -Sx * Cy, M33 = Cx * Cy;
 
-        for(var i = 0; i < buffer.length; i += 3){
+        for(var i = 0; i < buffer.length; i += Mesh.vertSize){
             var x = (buffer[i]     - origin.x * size.x / 2) * scale.x,
                 y = (buffer[i + 1] - origin.y * size.y / 2) * scale.y,
                 z = (buffer[i + 2] - origin.z * size.z / 2) * scale.z;
+
+            //console.log(`${x} ${y} ${z}`);
 
             buffer[i + 0] = pos.x + (x * M11 + y * M12a + y * M12b + z * M13a + z * M13b);
             buffer[i + 1] = pos.y + (x * M21 + y * M22a + y * M22b + z * M23a + z * M23b);
@@ -71,34 +74,88 @@ angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', f
         return buffer;
     };
 
-    this.projectBuffer = (buffer, indices, drawQueue) => {
+    /**
+     * Calculate which faces are facing the camera and should be rendered
+     * @param buffer {Float32Array} a buffer of vertices
+     * @param normals {Float32Array} a buffer of the normals
+     * @param indices {Array|Int8Array} listing of indices that form the faces
+     * @returns {Int8Array} array containing 0 (don't render) or 1 (render) for each face
+     */
+    this.getCulledFaces = (buffer, normals, indices) => {
+
+        var culledFaces = new Int8Array(~~(indices.length / 3));
+        for(var i = 0; i < indices.length; i += 3) {
+            var v1 = indices[i] * Mesh.vertSize,
+                v2 = indices[i + 1] * Mesh.vertSize,
+                v3 = indices[i + 2] * Mesh.vertSize,
+
+                //Get the coordinates of each point in the tri
+                aX = buffer[v1], aY = buffer[v1 + 1], aZ = buffer[v1 + 2], //P1
+                bX = buffer[v2], bY = buffer[v2 + 1], bZ = buffer[v2 + 2], //P2
+                cX = buffer[v3], cY = buffer[v3 + 1], cZ = buffer[v3 + 2], //P3
+                
+                //Calculate centroid
+                centroidX = (aX + bX + cX) / 3,
+                centroidY = (aY + bY + cY) / 3, 
+                centroidZ = (aZ + bZ + cZ) / 3,
+                
+                //Calculate to triangle vector
+                toTriX = self.position.x - centroidX,
+                toTriY = self.position.y - centroidY,
+                toTriZ = self.position.z - centroidZ;
+
+            //Not sure if we need to normalize or not, but doesn't appear so...
+                //toTriLen = Math.sqrt(toTriX * toTriX + toTriY * toTriY + toTriZ * toTriZ);
+
+            //toTriX /= toTriLen;
+            //toTriY /= toTriLen;
+            //toTriZ /= toTriLen;
+
+            var normalX = normals[i],
+                normalY = normals[i + 1],
+                normalZ = normals[i + 2],
+
+                //Calculate the dot product of the displacement vector and the face normal
+                dot = toTriX * normalX + toTriY * normalY + toTriZ * normalZ;
+
+            //If the dot product is great than or equal to zero, the face will not be rendered
+            //A 0 dot product means the faces is perpendicular and will not be seen
+            //A do product of great than one means the face is facing away from the camera
+            var faceIndex = ~~(i / 3);
+            culledFaces[faceIndex] = (dot >= 0) ? 0 : 1;
+        }
+
+        return culledFaces;
+    };
+
+    this.projectBuffer = (buffer, culledFaces, normals, indices, drawQueue) => {
         var tanLensAngle = Math.tan(self.getLensAngle()),
             ctx = MEasel.context,
             viewport = MM.vec2(ctx.canvas.height, ctx.canvas.height),
             screenCenter = MM.vec2(ctx.canvas.width / 2, viewport.y / 2); //center of the viewport
 
         var faceBufferIndex = 0,
-            faceBuffer = new Float32Array(8);
+            faceIndex = 0,
+            //Each 2D project face will have 6 coordinates
+            faceBuffer = new Float32Array(6);
 
         drawQueue = drawQueue || new PriorityQueue();
 
         var avgDist = 0,
             faceSize = 3;
 
-        for(var i = 0; i < indices.length; i++) {
-            var index = indices[i];
-            if(index < 0){ //A negative index indicates we are drawing a quad
-                faceSize = 4;
-                index = -index;
+        for(var i = 0; i < indices.length; i ++) {
+            //If the face is facing away from the camera, don't render it
+            if(culledFaces[(i - (i % 3)) / 3] === 0){
+                continue;
             }
 
-            index--; //Input indices are 1 based
-
-            var b = index * vertSize,
+            var b = indices[i] * Mesh.vertSize,
             //Get the displacement of the vertex
                 dispX = buffer[b] - self.position.x,
+            //negative because screen space is inverted
                 dispY = -(buffer[b + 1] - self.position.y),
-                dispZ = buffer[b + 2] - self.position.z;
+                dispZ = self.position.z - buffer[b + 2];
 
             avgDist += dispZ / faceSize;
 
@@ -113,10 +170,14 @@ angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', f
 
             //Push the vertices into face buffer
             if((i + 1) % faceSize == 0){
-                drawQueue.enqueue(1000 - avgDist, {buffer: faceBuffer.slice(), end: faceSize * 2});
-                faceSize = 3;
+                var normalX = normals[faceIndex * 3],
+                    normalY = normals[faceIndex * 3 + 1],
+                    normalZ = normals[faceIndex * 3 + 2],
+                    lightAmt = Math.min(.2 + Math.abs(light.x * normalX + light.y * normalY + light.z * normalZ), 1);
+                drawQueue.enqueue(1000 - avgDist, {buffer: faceBuffer.slice(), end: faceSize * 2, color: lightAmt});
                 avgDist = 0;
                 faceBufferIndex = 0;
+                faceIndex++;
             }
         }
 
@@ -144,13 +205,16 @@ angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', f
         var drawCalls = new PriorityQueue();
 
         for(var t = 0; t < transforms.length; t++){
-            if(transforms[t].position.z < self.position.z){
+            if(self.position.z - transforms[t].position.z < 0){
                 continue;
             }
 
             //Get a transformed vertex buffer for the mesh
-            var buffer = self.applyTransform(self.toVertexBuffer(mesh.verts), mesh.size, transforms[t].position, transforms[t].scale, transforms[t].rotation, transforms[t].origin);
-            self.projectBuffer(buffer, mesh.indices, drawCalls);
+            var buffer = self.applyTransform(mesh.getVertexBuffer(), mesh.size, transforms[t].position, transforms[t].scale, transforms[t].rotation, transforms[t].origin),
+                rawBuffer = self.toVertexBuffer(mesh.normals),
+                normalsBuffer = self.applyTransform(rawBuffer, MM.Vector3.Zero, MM.Vector3.Zero, MM.Vector3.One, transforms[t].rotation, MM.Vector3.Zero),
+                culledFaces = self.getCulledFaces(buffer, normalsBuffer, mesh.indices);
+            self.projectBuffer(buffer, culledFaces, normalsBuffer, mesh.indices, drawCalls);
         }
 
         var ctx = MEasel.context;
@@ -165,8 +229,6 @@ angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', f
             face = drawCalls.dequeue();
             self.drawFace(MEasel.context, face.buffer, face.end);
         }
-
-        console.log(callCount);
     };
 
     /**
@@ -178,10 +240,6 @@ angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', f
      * @param zRot {Number} rotation on z-axis
      */
     this.drawShape = function(shape, pos, width, depth, zRot){
-        //Don't draw things that are in front of the camera
-        if(pos.z <= 0){
-            return;
-        }
 
         var verts = [];
 
@@ -206,8 +264,13 @@ angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', f
 
         //position of the object relative to the camera
         //The Y position is inverted because screen space is reversed in Y
-            relPosition = MM.vec3(pos.x - self.position.x, -(pos.y - self.position.y), pos.z - self.position.z),
+            relPosition = MM.vec3(pos.x - self.position.x, -(pos.y - self.position.y), self.position.z - pos.z),
             lensAngle = self.getLensAngle(); //the viewing angle of the lens, large is more stuff visible
+
+        //Don't draw things that are in front of the camera
+        if(relPosition.z <= 0){
+            return;
+        }
 
         ctx.save();
         ctx.beginPath();
@@ -225,7 +288,7 @@ angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', f
                 pt.x * Math.sin(zRot) + pt.y * Math.cos(zRot) + relPosition.y
             );
 
-            var fieldRadius = (pos.z + pt.z) * Math.tan(lensAngle); //FOV radius at the point
+            var fieldRadius = (relPosition.z + pt.z) * Math.tan(lensAngle); //FOV radius at the point
             //Transform the point into screen space
             screenPos
                 .scale(1 / fieldRadius) //1. Scale by the depth of the point
