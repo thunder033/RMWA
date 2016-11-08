@@ -98,14 +98,44 @@ angular.module('mallet') .factory('Geometry', ['MalletMath', function(MM){
                 MM.vec3(-.5, -.5, 0),
                 MM.vec3(-.5, +.5, 0),
                 MM.vec3(+.5, +.5, 0),
-                MM.vec3(+.5, -.5, 0)],
-            [0, 1, 2,  0, 2, 3]),
+                MM.vec3(+.5, -.5, 0)], [
+                0, 1, 2,  0, 2, 3,
+                0, 2, 1,  0, 3, 2]), //We don't want the quad to disappear when it rotates
         XZQuad: new Mesh([
+                /**  1  +---+ 2
+                 *    /   /
+                 * 0 +---+ 3
+                 */
                 MM.vec3(-.5, 0, -.5),
                 MM.vec3(-.5, 0, +.5),
                 MM.vec3(+.5, 0, +.5),
-                MM.vec3(+.5, 0, -.5)],
-            [0, 1, 2,  0, 2, 3]),
+                MM.vec3(+.5, 0, -.5)], [
+                0, 2, 1,  0, 3, 2,
+                0, 1, 2,  0, 2, 3]), //We don't want the quad to disappear when it rotates
+        Ship: new Mesh([
+            /**
+             *      2 +
+             *      / | \
+             *    /   +  \
+             * 0 + '  1 ` + 3
+             */
+            MM.vec3(-.5, +.15, +.50),
+            MM.vec3(+.0, +.35, +.35),
+            MM.vec3(+.0, +.00, -.50),
+            MM.vec3(+.5, +.15, +.50),
+            MM.vec3(+.0, -.35, +.35)
+        ], [
+            0, 1, 2,
+            0, 2, 1, //Duplicate so certain rotations render
+
+            1, 3, 2, //Duplicate so certain rotations render
+            1, 2, 3,
+
+            0, 1, 4,
+            4, 1, 3,
+            0, 4, 2,
+            4, 3, 2
+        ]),
         Cube: new Mesh([
                 /**  5  +---+ 6
                  *    /   / |

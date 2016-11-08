@@ -74,12 +74,15 @@ angular.module('pulsar-warp', [])
         var self = this,
             velocity = MM.vec3(0),
             destLane = 0,
-            moveSpeed = 0.0003,
-            laneWidth = .05,
+            moveSpeed = 0.0035,
+            laneWidth = 1.1,
             shipWidth = .03,
-            pos = MM.vec3(- laneWidth, .1, -10),
             bankAngle = 0,
+            tShip = new Geometry.Transform(),
             moving = false;
+
+        tShip.position = MM.vec3(-laneWidth, -1, -2);
+        tShip.scale = MM.vec3(.75, .5, .75);
 
         this.lane = 0;
         this.score = 0;
@@ -94,13 +97,27 @@ angular.module('pulsar-warp', [])
 
         function hasReachedLane(){
             var lanePos = (destLane - 1) * laneWidth;
-            return getSwitchDirection() > 0 ? pos.x >= lanePos : pos.x <= lanePos;
+            return getSwitchDirection() > 0 ? tShip.position.x >= lanePos : tShip.position.x <= lanePos;
+        }
+
+        function getLaneSwitchPct() {
+            if(destLane === self.lane){
+                return 0;
+            }
+
+            var disp = (destLane - self.lane) * laneWidth,
+                relPos = (tShip.position.x + laneWidth) % laneWidth;
+            return disp < 1 ? 1 - (relPos) / Math.abs(disp) : (relPos) / Math.abs(disp);
+        }
+
+        function getCollectLane(){
+            return getLaneSwitchPct() > .5 ? destLane : self.lane;
         }
 
         function cancelLaneSwitch(dir){
             destLane = self.lane;
             bankAngle = 0;
-            pos.x = (self.lane - 1) * laneWidth;
+            tShip.position.x = (self.lane - 1) * laneWidth;
         }
 
         //MKeyboard.onKeyUp(MKeys.Left, ()=>cancelLaneSwitch);
@@ -121,9 +138,9 @@ angular.module('pulsar-warp', [])
 
             if(isSwitchingLanes()){
                 bankAngle = getSwitchDirection() * Math.PI / 4;
-                pos.x += getSwitchDirection() * moveSpeed * dt;
+                tShip.position.x += getSwitchDirection() * moveSpeed * dt;
                 if(hasReachedLane()){
-                    pos.x = (destLane - 1) * laneWidth;
+                    tShip.position.x = (destLane - 1) * laneWidth;
                     self.lane = destLane;
                     bankAngle = 0;
                 }
@@ -138,9 +155,10 @@ angular.module('pulsar-warp', [])
             }
 
             var collectOffset = 2;
+                collectLane = getCollectLane();
             if(Warp.warpField && Warp.warpField[Warp.sliceIndex + collectOffset]){
                 Warp.warpField[Warp.sliceIndex + collectOffset].gems.forEach((gem, lane) => {
-                    if(gem === 1 && lane === self.lane){
+                    if(gem === 1 && lane === collectLane){
                         self.score++;
                         Warp.warpField[Warp.sliceIndex + collectOffset].gems[lane] = 2;
                     }
@@ -150,11 +168,16 @@ angular.module('pulsar-warp', [])
             MScheduler.draw((dt, et) => {
                 //Draw Ship
                 MEasel.context.fillStyle = '#f00';
-                MCamera.drawShape(Shapes.Triangle, pos, shipWidth, 10, bankAngle);
+                var bankPct =  Math.sin(getLaneSwitchPct() * Math.PI);
+                tShip.rotation.z = bankPct * bankAngle;
+                tShip.rotation.y = bankPct * bankAngle / 6;
+                tShip.rotation.x = - Math.PI / 9 - bankPct * Math.abs(bankAngle) / 3;
+                MCamera.render(Geometry.meshes.Ship, tShip, MM.vec3(255, 0, 0));
+                //MCamera.drawShape(Shapes.Triangle, pos, shipWidth, 10, bankAngle);
 
                 //Draw Shadow
                 MEasel.context.fillStyle = 'rgba(0,0,0,.25)';
-                MCamera.drawShape(Shapes.Triangle, MM.vec3(pos.x, 0, pos.z), shipWidth * Math.cos(bankAngle), 10, 0);
+                MCamera.drawShape(Shapes.Triangle, MM.vec3(tShip.position.x, 0, tShip.position.z), shipWidth * Math.cos(bankAngle), 10, 0);
 
                 //var transform = new Geometry.Transform();
                 for(var i = 0; i < 1; i++){
@@ -164,7 +187,7 @@ angular.module('pulsar-warp', [])
 
                 transforms[0].position.x = -1;
                 transforms[0].scale = MM.vec3(2);
-                MCamera.render(Geometry.meshes.Cube, transforms[0], MM.vec3(255, 0, 255));
+                //MCamera.render(Geometry.meshes.Cube, transforms[0], MM.vec3(255, 0, 255));
 
             }, 10);
         });
