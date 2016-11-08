@@ -160,8 +160,8 @@ angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', '
             avgDist += dispZ / faceSize;
 
             //Transform the vertex into screen space
-            //TODO: Calculate based on distance instead of Z displacement
-            var fieldScale = Math.abs(1 / (dispZ / 5 * tanLensAngle)),
+            var distance = Math.sqrt(dispX * dispX + dispY * dispY + dispZ * dispZ);
+            var fieldScale = Math.abs(1 / (distance / 5 * tanLensAngle)),
                 screenX = dispX * fieldScale * viewport.x / self.renderRatio + screenCenter.x,
                 screenY = dispY * fieldScale * viewport.y / self.renderRatio + screenCenter.y;
 
@@ -206,7 +206,7 @@ angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', '
 
         ctx.closePath();
         ctx.fill();
-        //ctx.stroke();
+        ctx.stroke();
     };
 
     /**
@@ -226,6 +226,7 @@ angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', '
             //Don't render things that are behind the camera
             //TODO: this needs to be changed be based off camera camera position/perspective
             if(self.position.z - transforms[t].position.z < 0){
+                console.warn('Mesh at ' + transforms[t].position + ' was skipped');
                 continue;
             }
 
@@ -241,12 +242,13 @@ angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', '
         }
 
         var ctx = MEasel.context, face, callCount = 0;
+        ctx.lineWidth = 1;
         //Execute each draw call to display the scene
         while(drawCalls.peek() != null){
             callCount++;
             face = drawCalls.dequeue();
             //Apply lighting calculations to the mesh color
-            ctx.fillStyle = Color.rgbaFromVector(MM.Vector3.scale(color, face.color));
+            ctx.fillStyle = ctx.strokeStyle = Color.rgbaFromVector(MM.Vector3.scale(color, face.color));
             //Draw the face
             self.drawFace(MEasel.context, face.buffer, face.end);
         }
