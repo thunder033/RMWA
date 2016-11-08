@@ -154,7 +154,7 @@ angular.module('pulsar-warp', [])
                 }
             }
 
-            var collectOffset = 2;
+            var collectOffset = 5,
                 collectLane = getCollectLane();
             if(Warp.warpField && Warp.warpField[Warp.sliceIndex + collectOffset]){
                 Warp.warpField[Warp.sliceIndex + collectOffset].gems.forEach((gem, lane) => {
@@ -196,7 +196,7 @@ angular.module('pulsar-warp', [])
         return {
             //dimensions of the flanking bars
             scale: MM.vec3(1.5, 1, .9),
-            margin: .01
+            margin: .1
         }
     }])
     .service('WarpState', [function(){
@@ -246,21 +246,23 @@ angular.module('pulsar-warp', [])
     }])
     .service('WarpFieldDraw', ['MScheduler', 'WarpLevel', 'MalletMath', 'MEasel', 'WarpState', 'MCamera', 'Shapes', 'Geometry', 'WarpBar', function(MScheduler, WarpLevel, MM, MEasel, WarpState, MCamera, Shapes, Geometry, Bar){
         var velocity = 0,
+            sliceOffset = 3, //how many slice to draw behind the ship (that have already passed)
             meshes = Geometry.meshes,
             Transform = Geometry.Transform;
 
-        var laneWidth = .05, //width of each lane
-            lanePadding = .0025, //padding on edge of each lane
-
-            mLaneWidth = .20,
-            mLanePadding = .01,
+        var mLaneWidth = .20, //width of each lane
+            mLanePadding = .01, //padding on edge of each lane
 
         tLane = new Transform();
         tLane.scale.x = mLaneWidth - mLanePadding;
-        tLane.scale.z = 20;
-        tLane.position.z = 1;
+        tLane.scale.z = 60;
+        tLane.position.z = -37;
         tLane.position.y = -.1;
+        tLane.origin.z = -.5;
 
+        var tZero = new Transform();
+        tZero.scale.x = mLaneWidth * 3;
+        tZero.position = MM.vec3(0, -.1, 6);
 
         var gems = new Array(WarpLevel.barsVisible);
         for(var g = 0; g < gems.length; g++){
@@ -268,28 +270,37 @@ angular.module('pulsar-warp', [])
             //gems[g].position.y = -.5;
             gems[g].rotation.y = Math.PI / 4;
             gems[g].rotation.x = Math.PI / 4;
-            gems[g].scale = MM.vec3(.25);
+            gems[g].scale = MM.vec3(.15);
         }
 
         var tBar = new Transform();
         tBar.origin.x = -1;
+        tBar.origin.z = 1;
 
-        function draw(dt){
+        function getStartOffset(barBuffer){
+            var startOffset = 6;
+            for(var i = 0; i < sliceOffset; i++){
+                startOffset += barBuffer[i].speed * Bar.scale.z + Bar.margin;
+            }
+
+            return startOffset;
+        }
+
+        function draw(dt, tt){
             var ctx = MEasel.context,
-                startOffset = -4,
+                startOffset = 6,
                 zRot = - Math.PI / 8; //rotation of loudness bars on the edges
 
             WarpLevel.barOffset += velocity * dt;
             //make the first bar yellow
-            ctx.fillStyle = '#ff0';
+            //ctx.fillStyle = '#ff0';
+            var color = MM.vec3(100,255,255);
 
-            var drawOffset = -Bar.scale.z + startOffset; //this spaces the bars correctly across the screen, 200 is based on how far above the plane the camera is
+            var drawOffset = getStartOffset(WarpLevel.barQueue); //this spaces the bars correctly across the screen, based on how far above the plane the camera is
             for(var i = 0; i < WarpLevel.barsVisible; i++){
-                if(i === 2){
-                    ctx.fillStyle = '#fff';
-                }
-                else if(i + 5 > WarpLevel.barsVisible){
-                    ctx.fillStyle = 'rgba(255,255,255,' + (WarpLevel.barsVisible - i) / 5 + ')';
+                if(i + 10 > WarpLevel.barsVisible){
+                    var sliceValue = 1 - (WarpLevel.barsVisible - i) / 10;
+                    color = MM.vec3(100 + sliceValue * 110, 255 - sliceValue * 45, 255 - sliceValue * 45);
                 }
 
                 var depth = Bar.scale.z * WarpLevel.barQueue[i].speed,
@@ -298,30 +309,39 @@ angular.module('pulsar-warp', [])
                 tBar.scale.x = Bar.scale.x * WarpLevel.getLoudness(i);
                 tBar.scale.z = depth;
 
+                tBar.position = MM.vec3(-mLaneWidth, 0, zOffset);
+                tBar.rotation.z = (-Math.PI) - zRot;
+                MCamera.render(meshes.XZQuad, tBar, color);
+
                 tBar.position = MM.vec3(mLaneWidth, 0, zOffset);
                 tBar.rotation.z = zRot;
-                //MCamera.render(meshes.XZQuad, tBar, "#fff");
+                MCamera.render(meshes.XZQuad, tBar, color);
 
                 var sliceGems = (WarpLevel.warpField[WarpLevel.sliceIndex + i] || {}).gems || [];
                 gems[i].scale = MM.vec3(0);
                 for(var l = 0; l < 3; l++){
-                    if(sliceGems[l] === 1){
-                        gems[i].scale = MM.vec3(.25);
+                    if(sliceGems[l] === 1 && (WarpLevel.sliceIndex +i) % 2 === 0){
+                        gems[i].scale = MM.vec3(.15);
+                        gems[i].rotation.y = tt / 1000;
                         gems[i].position = MM.vec3((l - 1) * mLaneWidth * 3, -.5, zOffset);
                     }
                 }
 
-                drawOffset += depth + Bar.margin ; //add the width the current bar (each bar has a different width)
+                drawOffset -= depth + Bar.margin ; //add the width the current bar (each bar has a different width)
             }
 
             tLane.position.x = -mLaneWidth;
-            //MCamera.render(meshes.XZQuad, tLane, '#ccc');
+            var grey = MM.vec3(225,225,225);
+            MCamera.render(meshes.XZQuad, tLane, grey);
             tLane.position.x = 0;
-            //MCamera.render(meshes.XZQuad, tLane, '#ccc');
+            MCamera.render(meshes.XZQuad, tLane, grey);
             tLane.position.x = mLaneWidth;
-            //MCamera.render(meshes.XZQuad, tLane, '#ccc');
+            MCamera.render(meshes.XZQuad, tLane, grey);
 
-            //MCamera.render(meshes.Cube, gems, '#0f0');
+            //MCamera.render(meshes.XZQuad, tZero, MM.vec3(255,0,0));
+
+            var green = MM.vec3(0,255,0);
+            MCamera.render(meshes.Cube, gems, green);
         }
 
         this.init = () => {
@@ -412,14 +432,14 @@ angular.module('pulsar-warp', [])
 
                     //add a new bar to the queue
                     self.barQueue.push({
-                        speed: .9 + .1 * getAvg(self.frequencies) //this value is basically fudged to work well
+                        speed: .95 + .05 * getAvg(self.frequencies) //this value is basically fudged to work well
                     });
                 }
             }
 
             //how fast the set of bars is moving across the screen
             var velocity = (Bar.scale.z * self.barQueue[2].speed + Bar.margin) / self.timeStep;
-            self.barOffset += dt * velocity;
+            self.barOffset -= dt * velocity;
 
             if(self.sliceIndex > self.warpField.length){
                 WarpState.current = WarpState.LevelComplete;
