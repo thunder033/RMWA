@@ -6,18 +6,7 @@
  * The particle emitter provider maintains position, velocity, and other properties of each particle drawn
  * on the screen. It provides an interface to change how particles are emitted and when.
  */
-angular.module('mallet').service('MParticleEmitter', ['MScheduler','MEasel','ScaleFactor', function(Scheduler, Easel, ScaleFactor){
-
-    /**
-     * A simple vector class
-     * @param x
-     * @param y
-     * @constructor
-     */
-    function Vector(x, y){
-        this.x = x;
-        this.y = typeof y !== 'undefined' ? y : x;
-    }
+angular.module('mallet').service('MParticleEmitter', ['MScheduler','MEasel','ScaleFactor', 'MalletMath', function(Scheduler, Easel, ScaleFactor, MM){
 
     /**
      * Maintains the properties of a single particle
@@ -55,7 +44,7 @@ angular.module('mallet').service('MParticleEmitter', ['MScheduler','MEasel','Sca
         //Create a temporary canvas
         Easel.createNewCanvas('particle', radius * 2, radius * 2);
         var cacheCtx = Easel.getContext('particle'),
-            origin = new Vector(cacheCtx.canvas.width / 2);
+            origin = MM.vec3(cacheCtx.canvas.width / 2);
 
         //Create a gradient for the particle
         var gradient = cacheCtx.createRadialGradient(origin.x, origin.y, radius / 4, origin.x, origin.y, radius);
@@ -115,11 +104,11 @@ angular.module('mallet').service('MParticleEmitter', ['MScheduler','MEasel','Sca
             emit(){
                 var canvas = Easel.context.canvas,
                     aspectRatio = canvas.width / canvas.height;
-                var origin = new Vector(canvas.width / 2, canvas.height / 2);
+                var origin = MM.vec3(canvas.width / 2, canvas.height / 2);
                 particles.push(new Particle(
-                    new Vector(origin.x, origin.y),
+                    MM.vec3(origin.x, origin.y),
                     //Make particles evenly spread across canvas by taking aspect ratio into account
-                    new Vector((.166 - Math.random() / 3) * aspectRatio, (.166 - Math.random() / 3)),
+                    MM.vec3((.166 - Math.random() / 3) * aspectRatio, (.166 - Math.random() / 3)),
                     initEnergy,
                     Math.random() * size
                 ));
