@@ -209,6 +209,22 @@ angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', '
         ctx.stroke();
     };
 
+    this.billboardRender = (image, transforms) => {
+        //wrap a raw transform in an array
+        transforms = (transforms instanceof Array) ? transforms : [transforms];
+
+        //create a queue to store the draw commands generated
+        var drawCalls = new PriorityQueue();
+
+        for(var t = 0; t < transforms.length; t++) {
+            if (transforms[t] === null || typeof transforms[t] !== 'object') {
+                continue;
+            }
+
+
+        }
+    };
+
     /**
      * Render an instance of the mesh for each transform provided, with the given color
      * @param mesh {Mesh}
@@ -223,6 +239,10 @@ angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', '
         var drawCalls = new PriorityQueue();
 
         for(var t = 0; t < transforms.length; t++){
+            if(transforms[t] === null || typeof transforms[t] !== 'object'){
+                continue;
+            }
+
             //Don't render things that are behind the camera
             //TODO: this needs to be changed be based off camera camera position/perspective
             if(self.position.z - transforms[t].position.z < 0){

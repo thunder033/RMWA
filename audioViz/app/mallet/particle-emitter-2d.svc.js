@@ -1,12 +1,11 @@
 /**
  * Created by Greg on 10/5/2016.
- */
-
-/**
+ *
  * The particle emitter provider maintains position, velocity, and other properties of each particle drawn
  * on the screen. It provides an interface to change how particles are emitted and when.
  */
-angular.module('mallet').service('MParticleEmitter', ['MScheduler','MEasel','ScaleFactor', 'MalletMath', function(Scheduler, Easel, ScaleFactor, MM){
+"use strict";
+angular.module('mallet').service('MParticleEmitter2D', ['MScheduler','MEasel','ScaleFactor', 'MalletMath', function(Scheduler, Easel, ScaleFactor, MM){
 
     /**
      * Maintains the properties of a single particle
@@ -14,13 +13,16 @@ angular.module('mallet').service('MParticleEmitter', ['MScheduler','MEasel','Sca
      * @param velocity
      * @param energy
      * @param size
+     * @param image
      * @constructor
      */
-    function Particle(position, velocity, energy, size) {
+    function Particle(position, velocity, energy, size, image) {
         this.position = position;
         this.velocity = velocity;
         this.energy = energy * 1000;
         this.size = size;
+        this.active = true;
+        this.image = image;
     }
 
     /**
@@ -29,6 +31,10 @@ angular.module('mallet').service('MParticleEmitter', ['MScheduler','MEasel','Sca
      * @param velocityScale
      */
     Particle.prototype.update = function(dt, velocityScale){
+        if(!this.active){
+            return;
+        }
+
         this.position.x += this.velocity.x * dt * .25 + this.velocity.x * velocityScale * .75;
         this.position.y += this.velocity.y * dt * .25 + this.velocity.y * velocityScale * .75;
 
@@ -128,7 +134,7 @@ angular.module('mallet').service('MParticleEmitter', ['MScheduler','MEasel','Sca
             ctx.scale(particles[i].size, particles[i].size);
             //Make the particles fade as they near the end of their life
             ctx.globalAlpha = Math.min(particles[i].energy / 500, .75);
-            ctx.drawImage(particleImage, 0, 0);
+            ctx.drawImage(particles[i].image, 0, 0);
             ctx.restore();
         }
     }
