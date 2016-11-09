@@ -110,6 +110,11 @@ angular.module('pulsar-warp', [])
             return disp < 1 ? 1 - (relPos) / Math.abs(disp) : (relPos) / Math.abs(disp);
         }
 
+        function getLaneCoord() {
+            var relPos = (tShip.position.x + laneWidth) % laneWidth;
+            return relPos / laneWidth;
+        }
+
         function getCollectLane(){
             return getLaneSwitchPct() > .5 ? destLane : self.lane;
         }
@@ -120,8 +125,7 @@ angular.module('pulsar-warp', [])
             tShip.position.x = (self.lane - 1) * laneWidth;
         }
 
-        //MKeyboard.onKeyUp(MKeys.Left, ()=>cancelLaneSwitch);
-        //MKeyboard.onKeyUp(MKeys.Right, cancelLaneSwitch);
+
 
         WarpState.onState(WarpState.Loading, ()=>{self.score = 0});
 
@@ -134,23 +138,52 @@ angular.module('pulsar-warp', [])
             //MCamera.render(Geometry.meshes.Cube, transform, "#f0f");
         }
 
+        var activeCtrl = null;
+        MKeyboard.onKeyDown(MKeys.Left, ()=>activeCtrl=MKeys.Left);
+        MKeyboard.onKeyDown(MKeys.Right, ()=>activeCtrl=MKeys.Right);
+
+        function isInBounds() {
+            var minBound = -laneWidth - laneWidth / 20,
+                maxBound = +laneWidth + laneWidth / 20;
+            return tShip.position.x <= maxBound && tShip.position.x >= minBound;
+        }
+
         MScheduler.schedule(dt => {
 
-            if(isSwitchingLanes()){
-                bankAngle = getSwitchDirection() * Math.PI / 4;
+            // if(isSwitchingLanes()){
+            //     bankAngle = getSwitchDirection() * Math.PI / 4;
+            //     tShip.position.x += getSwitchDirection() * moveSpeed * dt;
+            //     if(hasReachedLane()){
+            //         tShip.position.x = (destLane - 1) * laneWidth;
+            //         self.lane = destLane;
+            //         bankAngle = 0;
+            //     }
+            // }
+
+            if(activeCtrl !== null && MKeyboard.isKeyDown(activeCtrl) && isInBounds()) {
+                tShip.position.x += moveSpeed * dt * (activeCtrl === MKeys.Left ? -1 : 1);
+            }
+            else if(activeCtrl !== null) {
+                var rightBound = 0;
+                while((rightBound - 1) * laneWidth < tShip.position.x){
+                    rightBound++;
+                }
+
+                var laneCoord = getLaneCoord();
+                destLane = (laneCoord > .5) ? rightBound : rightBound - 1;
+                self.lane = (laneCoord > .5) ? rightBound - 1 : rightBound;
+
+                destLane = Math.min(Math.max(destLane, 0), 2);
+                console.log(destLane);
+
+                activeCtrl = null;
+            }
+            else if(isSwitchingLanes()) {
                 tShip.position.x += getSwitchDirection() * moveSpeed * dt;
                 if(hasReachedLane()){
                     tShip.position.x = (destLane - 1) * laneWidth;
                     self.lane = destLane;
                     bankAngle = 0;
-                }
-            } else {
-                if(MKeyboard.isKeyDown(MKeys.Left) && destLane > 0){
-                    destLane--;
-                }
-
-                if(MKeyboard.isKeyDown(MKeys.Right) && destLane < 2){
-                    destLane++;
                 }
             }
 
