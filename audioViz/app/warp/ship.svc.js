@@ -12,7 +12,7 @@ angular.module('pulsar-warp').service('warp.ship', ['MScheduler', 'MCamera', 'ME
         moveSpeed = 0.004,
         laneWidth = 1.1,
 
-        bankAngle = Math.PI / 4,
+        bankAngle = MM.vec3(Math.PI / 12, Math.PI / 24, Math.PI / 4),
         bankPct = 0,
         bankRate = 0.008;
 
@@ -117,7 +117,7 @@ angular.module('pulsar-warp').service('warp.ship', ['MScheduler', 'MCamera', 'ME
         /**
          * Move the ship if
          * - there's an active control
-         * - the control is still pressed
+         * - and the control is still pressed
          * - and the target position is in the lane bounds
          */
         if(activeCtrl !== null && MKeyboard.isKeyDown(activeCtrl) && isInBounds(moveSpeed * dt)) {
@@ -187,11 +187,12 @@ angular.module('pulsar-warp').service('warp.ship', ['MScheduler', 'MCamera', 'ME
         }
 
         MScheduler.draw(() => {
-            //Draw Ship
-            MEasel.context.fillStyle = '#f00';
-            tShip.rotation.z = bankPct * bankAngle;
-            tShip.rotation.y = bankPct * bankAngle / 6;
-            tShip.rotation.x = - Math.PI / 9 - Math.abs(bankPct * bankAngle) / 3;
+            //Rotate ship
+            tShip.rotation.x = - Math.PI / 9 - Math.abs(bankPct * bankAngle.x);
+            tShip.rotation.y = bankPct * bankAngle.y;
+            tShip.rotation.z = bankPct * bankAngle.z;
+
+            //Render in slightly muted red
             MCamera.render(Geometry.meshes.Ship, tShip, MM.vec3(225, 20, 20));
 
             //Draw Shadow
