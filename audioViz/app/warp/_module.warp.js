@@ -77,7 +77,9 @@ angular.module('pulsar-warp', [])
             moveSpeed = 0.0035,
             laneWidth = 1.1,
             shipWidth = .03,
-            bankAngle = 0,
+            bankAngle = Math.PI / 4,
+            bankPct = 0,
+            bankRate = 0.003,
             tShip = new Geometry.Transform(),
             moving = false;
 
@@ -115,6 +117,12 @@ angular.module('pulsar-warp', [])
             return relPos / laneWidth;
         }
 
+        function move(dt, dir) {
+            tShip.position.x += moveSpeed * dt * dir;
+            bankPct += bankRate * dt * dir;
+            bankPct = Math.min(Math.max(bankPct, -1), 1);
+        }
+
         function getLaneFromPos(){
             var rightBound = 0;
             while((rightBound - 1) * laneWidth <= tShip.position.x){
@@ -148,7 +156,7 @@ angular.module('pulsar-warp', [])
         MScheduler.schedule(dt => {
 
             if(activeCtrl !== null && MKeyboard.isKeyDown(activeCtrl) && isInBounds(moveSpeed * dt)) {
-                tShip.position.x += moveSpeed * dt * (activeCtrl === MKeys.Left ? -1 : 1);
+                move(dt, activeCtrl === MKeys.Left ? -1 : 1);
             }
             else if(activeCtrl !== null) {
                 var rightBound = 0;
@@ -172,11 +180,21 @@ angular.module('pulsar-warp', [])
                 activeCtrl = null;
             }
             else if(isSwitchingLanes()) {
-                tShip.position.x += getSwitchDirection() * moveSpeed * dt;
+                move(dt, getSwitchDirection());
                 if(hasReachedLane()){
                     tShip.position.x = (destLane - 1) * laneWidth;
                     self.lane = destLane;
-                    bankAngle = 0;
+                    bankPct = 0;
+                }
+            }
+
+            if(bankPct != 0) {
+                var sign = bankPct && bankPct / Math.abs(bankPct);
+                bankPct += bankRate * 2 * dt * sign;
+
+                var newSign = bankPct && bankPct / Math.abs(bankPct);
+                if(newSign !== sign){
+                    bankPct = 0;
                 }
             }
 
@@ -194,10 +212,9 @@ angular.module('pulsar-warp', [])
             MScheduler.draw((dt, et) => {
                 //Draw Ship
                 MEasel.context.fillStyle = '#f00';
-                var bankPct =  Math.sin(getLaneSwitchPct() * Math.PI);
                 tShip.rotation.z = bankPct * bankAngle;
                 tShip.rotation.y = bankPct * bankAngle / 6;
-                tShip.rotation.x = - Math.PI / 9 - bankPct * Math.abs(bankAngle) / 3;
+                tShip.rotation.x = - Math.PI / 9 - Math.abs(bankPct * bankAngle) / 3;
                 MCamera.render(Geometry.meshes.Ship, tShip, MM.vec3(255, 0, 0));
                 //MCamera.drawShape(Shapes.Triangle, pos, shipWidth, 10, bankAngle);
 
