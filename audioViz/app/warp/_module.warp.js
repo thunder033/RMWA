@@ -115,17 +115,14 @@ angular.module('pulsar-warp', [])
             return relPos / laneWidth;
         }
 
-        function getCollectLane(){
-            return getLaneSwitchPct() > .5 ? destLane : self.lane;
+        function getLaneFromPos(){
+            var rightBound = 0;
+            while((rightBound - 1) * laneWidth <= tShip.position.x){
+                rightBound++;
+            }
+
+            return getLaneCoord() > .5 ? rightBound : rightBound - 1;
         }
-
-        function cancelLaneSwitch(dir){
-            destLane = self.lane;
-            bankAngle = 0;
-            tShip.position.x = (self.lane - 1) * laneWidth;
-        }
-
-
 
         WarpState.onState(WarpState.Loading, ()=>{self.score = 0});
 
@@ -142,30 +139,20 @@ angular.module('pulsar-warp', [])
         MKeyboard.onKeyDown(MKeys.Left, ()=>activeCtrl=MKeys.Left);
         MKeyboard.onKeyDown(MKeys.Right, ()=>activeCtrl=MKeys.Right);
 
-        function isInBounds() {
-            var minBound = -laneWidth - laneWidth / 20,
-                maxBound = +laneWidth + laneWidth / 20;
+        function isInBounds(moveDistance) {
+            var minBound = -laneWidth - moveDistance,
+                maxBound = +laneWidth + moveDistance;
             return tShip.position.x <= maxBound && tShip.position.x >= minBound;
         }
 
         MScheduler.schedule(dt => {
 
-            // if(isSwitchingLanes()){
-            //     bankAngle = getSwitchDirection() * Math.PI / 4;
-            //     tShip.position.x += getSwitchDirection() * moveSpeed * dt;
-            //     if(hasReachedLane()){
-            //         tShip.position.x = (destLane - 1) * laneWidth;
-            //         self.lane = destLane;
-            //         bankAngle = 0;
-            //     }
-            // }
-
-            if(activeCtrl !== null && MKeyboard.isKeyDown(activeCtrl) && isInBounds()) {
+            if(activeCtrl !== null && MKeyboard.isKeyDown(activeCtrl) && isInBounds(moveSpeed * dt)) {
                 tShip.position.x += moveSpeed * dt * (activeCtrl === MKeys.Left ? -1 : 1);
             }
             else if(activeCtrl !== null) {
                 var rightBound = 0;
-                while((rightBound - 1) * laneWidth < tShip.position.x){
+                while((rightBound - 1) * laneWidth <= tShip.position.x){
                     rightBound++;
                 }
 
@@ -173,8 +160,14 @@ angular.module('pulsar-warp', [])
                 destLane = (laneCoord > .5) ? rightBound : rightBound - 1;
                 self.lane = (laneCoord > .5) ? rightBound - 1 : rightBound;
 
-                destLane = Math.min(Math.max(destLane, 0), 2);
-                console.log(destLane);
+                if(destLane > 2){
+                    destLane = 2;
+                    self.lane = 1;
+                }
+                else if(destLane < 0){
+                    destLane = 0;
+                    self.lane = 1;
+                }
 
                 activeCtrl = null;
             }
@@ -188,7 +181,7 @@ angular.module('pulsar-warp', [])
             }
 
             var collectOffset = 5,
-                collectLane = getCollectLane();
+                collectLane = getLaneFromPos();
             if(Warp.warpField && Warp.warpField[Warp.sliceIndex + collectOffset]){
                 Warp.warpField[Warp.sliceIndex + collectOffset].gems.forEach((gem, lane) => {
                     if(gem === 1 && lane === collectLane){
