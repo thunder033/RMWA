@@ -254,4 +254,12 @@ angular.module('mallet-math', []).service('MalletMath', [function(){
     this.vec3 = (x, y, z) => {
         return new Vector3(x, y, z);
     };
+
+    this.clamp = (value, min, max) => {
+        return Math.min(Math.max(value, min), max);
+    };
+
+    this.sign = (value) => {
+        return value && value / Math.abs(value);
+    };
 }]);

@@ -1,57 +1,78 @@
 /**
  * Created by gjrwcs on 11/10/2016.
  */
+"use strict";
+/**
+ * Controls behavior of the ship and handles scoring
+ */
 angular.module('pulsar-warp').service('warp.ship', ['MScheduler', 'MCamera', 'MEasel', 'MalletMath', 'MKeyboard', 'MKeys', 'WarpLevel', 'WarpState', 'Geometry', function(MScheduler, MCamera, MEasel, MM, MKeyboard, MKeys, Warp, WarpState, Geometry){
     var self = this,
         velocity = MM.vec3(0),
         destLane = 0,
-        moveSpeed = 0.0035,
+        moveSpeed = 0.004,
         laneWidth = 1.1,
+
         bankAngle = Math.PI / 4,
         bankPct = 0,
-        bankRate = 0.003,
-        tShip = new Geometry.Transform();
+        bankRate = 0.008;
 
+    //create the ship's transform
+    var tShip = new Geometry.Transform();
     tShip.position = MM.vec3(-laneWidth, -1, -2);
     tShip.scale = MM.vec3(.75, .5, .75);
 
     this.lane = 0;
     this.score = 0;
 
+    /**
+     * Determines if the ship is switching lanes
+     * @returns {boolean}
+     */
     function isSwitchingLanes() {
         return destLane !== self.lane;
     }
 
+    /**
+     * Gets the direction of lane switch
+     * @returns {number}
+     */
     function getSwitchDirection(){
-        return (destLane - self.lane)
+        return MM.sign(destLane - self.lane);
     }
 
+    /**
+     * Checks position of the ship to determine if it has reached the destination lane
+     * @returns {boolean}
+     */
     function hasReachedLane(){
         var lanePos = (destLane - 1) * laneWidth;
         return getSwitchDirection() > 0 ? tShip.position.x >= lanePos : tShip.position.x <= lanePos;
     }
 
-    function getLaneSwitchPct() {
-        if(destLane === self.lane){
-            return 0;
-        }
-
-        var disp = (destLane - self.lane) * laneWidth,
-            relPos = (tShip.position.x + laneWidth) % laneWidth;
-        return disp < 1 ? 1 - (relPos) / Math.abs(disp) : (relPos) / Math.abs(disp);
-    }
-
+    /**
+     * Calculates how far between the start and dest lanes the ship is
+     * @returns {number} 0 to 1
+     */
     function getLaneCoord() {
         var relPos = (tShip.position.x + laneWidth) % laneWidth;
         return relPos / laneWidth;
     }
 
+    /**
+     * Sets the velocity for movement and increases the bank angle
+     * @param dt {number} delta time
+     * @param dir {number} sign of direction
+     */
     function move(dt, dir) {
-        tShip.position.x += moveSpeed * dt * dir;
+        velocity.x = moveSpeed * dir;
         bankPct += bankRate * dt * dir;
-        bankPct = Math.min(Math.max(bankPct, -1), 1);
+        bankPct = MM.clamp(bankPct, -1, 1);
     }
 
+    /**
+     * Determines what lane the ship is in from it's position
+     * @returns {number} 0 - 2
+     */
     function getLaneFromPos(){
         var rightBound = 0;
         while((rightBound - 1) * laneWidth <= tShip.position.x){
@@ -63,19 +84,25 @@ angular.module('pulsar-warp').service('warp.ship', ['MScheduler', 'MCamera', 'ME
 
     WarpState.onState(WarpState.Loading, ()=>{self.score = 0});
 
-    var transforms = new Array(20);
-
-    for(var i = 0; i < 20; i++){
-        transforms[i] = new Geometry.Transform();
-        transforms[i].position = MM.vec3(-5 + i * .5, 0, -10.3);
-        transforms[i].scale = MM.vec3(.35);
-        //MCamera.render(Geometry.meshes.Cube, transform, "#f0f");
+    function setDestLane(lane){
+        destLane = MM.clamp(lane, 0, 2);
     }
 
     var activeCtrl = null;
-    MKeyboard.onKeyDown(MKeys.Left, ()=>activeCtrl=MKeys.Left);
-    MKeyboard.onKeyDown(MKeys.Right, ()=>activeCtrl=MKeys.Right);
+    function switchLane(key){
+        activeCtrl = key;
+        setDestLane(key === MKeys.Left ? destLane - 1 : destLane + 1);
+    }
 
+
+    MKeyboard.onKeyDown(MKeys.Left, ()=>switchLane(MKeys.Left));
+    MKeyboard.onKeyDown(MKeys.Right, ()=>switchLane(MKeys.Right));
+
+    /**
+     * Determines if the destination position is in lane bounds
+     * @param {number} moveDistance
+     * @returns {boolean}
+     */
     function isInBounds(moveDistance) {
         var minBound = -laneWidth - moveDistance,
             maxBound = +laneWidth + moveDistance;
@@ -84,19 +111,41 @@ angular.module('pulsar-warp').service('warp.ship', ['MScheduler', 'MCamera', 'ME
 
     MScheduler.schedule(dt => {
 
+        //Clear out the velocity
+        velocity.scale(0);
+
+        /**
+         * Move the ship if
+         * - there's an active control
+         * - the control is still pressed
+         * - and the target position is in the lane bounds
+         */
         if(activeCtrl !== null && MKeyboard.isKeyDown(activeCtrl) && isInBounds(moveSpeed * dt)) {
             move(dt, activeCtrl === MKeys.Left ? -1 : 1);
-        }
+        } //Otherwise, if there's still an active lane switch
+        else if(isSwitchingLanes()) {
+            move(dt, getSwitchDirection());
+            if(hasReachedLane()){ //move until we reach the target lane
+                tShip.position.x = (destLane - 1) * laneWidth;
+                self.lane = destLane;
+                velocity.scale(0);
+                activeCtrl = null;
+            }
+        } //Finally if there's an active control but the key was released
         else if(activeCtrl !== null) {
-            var rightBound = 0;
+            //"snaps" the ship to the middle of a lane when the user is releases all controls
+            var rightBound = 0; //figure out which lane ship is left of
             while((rightBound - 1) * laneWidth <= tShip.position.x){
                 rightBound++;
             }
 
+            //Determine if the ship is close to the left or right lane
+            //Then set the destination and current lanes accordingly
             var laneCoord = getLaneCoord();
             destLane = (laneCoord > .5) ? rightBound : rightBound - 1;
             self.lane = (laneCoord > .5) ? rightBound - 1 : rightBound;
 
+            //Conditionally clamp the destination and start lanes
             if(destLane > 2){
                 destLane = 2;
                 self.lane = 1;
@@ -106,60 +155,48 @@ angular.module('pulsar-warp').service('warp.ship', ['MScheduler', 'MCamera', 'ME
                 self.lane = 1;
             }
 
+            //cancel the active movement
             activeCtrl = null;
         }
-        else if(isSwitchingLanes()) {
-            move(dt, getSwitchDirection());
-            if(hasReachedLane()){
-                tShip.position.x = (destLane - 1) * laneWidth;
-                self.lane = destLane;
-                bankPct = 0;
-            }
-        }
 
-        if(bankPct != 0) {
-            var sign = bankPct && bankPct / Math.abs(bankPct);
-            bankPct += bankRate * 2 * dt * sign;
+        //Gradually return the ship to resting rotation if there's no movement
+        if(bankPct != 0 && velocity.len2() === 0) {
+            var sign = MM.sign(bankPct);
+            bankPct -= bankRate * dt * sign;
+            bankPct = MM.clamp(bankPct, -1, 1);
 
-            var newSign = bankPct && bankPct / Math.abs(bankPct);
+            var newSign = MM.sign(bankPct);
             if(newSign !== sign){
                 bankPct = 0;
             }
         }
 
-        var collectOffset = 5,
-            collectLane = getLaneFromPos();
-        if(Warp.warpField && Warp.warpField[Warp.sliceIndex + collectOffset]){
-            Warp.warpField[Warp.sliceIndex + collectOffset].gems.forEach((gem, lane) => {
-                if(gem === 1 && lane === collectLane){
+        tShip.position.add(MM.Vector3.scale(velocity, dt));
+
+        var collectOffset = 5, //how many slices ahead of the current slice we're collecting from
+            collectSliceIndex = collectOffset + Warp.sliceIndex,
+            currentLane = getLaneFromPos();
+
+        if(Warp.warpField && Warp.warpField[collectSliceIndex]){
+            Warp.warpField[collectSliceIndex].gems.forEach((gem, lane) => {
+                if(gem === 1 && lane === currentLane){
                     self.score++;
-                    Warp.warpField[Warp.sliceIndex + collectOffset].gems[lane] = 2;
+                    Warp.warpField[collectSliceIndex].gems[lane] = 2;
                 }
             });
         }
 
-        MScheduler.draw((dt, et) => {
+        MScheduler.draw(() => {
             //Draw Ship
             MEasel.context.fillStyle = '#f00';
             tShip.rotation.z = bankPct * bankAngle;
             tShip.rotation.y = bankPct * bankAngle / 6;
             tShip.rotation.x = - Math.PI / 9 - Math.abs(bankPct * bankAngle) / 3;
-            MCamera.render(Geometry.meshes.Ship, tShip, MM.vec3(255, 0, 0));
-            //MCamera.drawShape(Shapes.Triangle, pos, shipWidth, 10, bankAngle);
+            MCamera.render(Geometry.meshes.Ship, tShip, MM.vec3(225, 20, 20));
 
             //Draw Shadow
             MEasel.context.fillStyle = 'rgba(0,0,0,.25)';
             //MCamera.drawShape(Shapes.Triangle, MM.vec3(tShip.position.x, 0, tShip.position.z), shipWidth * Math.cos(bankAngle), 10, 0);
-
-            //var transform = new Geometry.Transform();
-            for(var i = 0; i < 1; i++){
-                transforms[i].rotation = MM.vec3(et / 1000);
-                //MCamera.render(Geometry.meshes.Cube, transform, "#f0f");
-            }
-
-            transforms[0].position.x = -1;
-            transforms[0].scale = MM.vec3(2);
-            //MCamera.render(Geometry.meshes.Cube, transforms[0], MM.vec3(255, 0, 255));
 
         }, 10);
     });
