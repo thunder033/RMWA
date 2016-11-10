@@ -2,7 +2,7 @@
  * Created by Greg on 11/2/2016.
  */
 "use strict";
-angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', 'Geometry', 'MColor', function (MM, MEasel, Shapes, Geometry, Color) {
+angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', 'Geometry', 'MColor', 'MScheduler', function (MM, MEasel, Shapes, Geometry, Color, MScheduler) {
 
     var Mesh = Geometry.Mesh,
         self = this;
@@ -128,6 +128,27 @@ angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', '
         return culledFaces;
     };
 
+    this.projectPoint = function(buffer){
+        var tanLensAngle = Math.tan(self.getLensAngle()),
+            ctx = MEasel.context,
+            viewport = MM.vec2(ctx.canvas.height, ctx.canvas.height),
+            screenCenter = MM.vec2(ctx.canvas.width / 2, viewport.y / 2); //center of the viewport
+
+        //Get the displacement of the vertex
+        var dispX = buffer[0] - self.position.x,
+            //negative because screen space is inverted
+            dispY = -(buffer[1] - self.position.y),
+            dispZ = self.position.z - buffer[2];
+
+        //Transform the vertex into screen space
+        var distance = Math.sqrt(dispX * dispX + dispY * dispY + dispZ * dispZ);
+        var fieldScale = Math.abs(1 / (distance / 5 * tanLensAngle)),
+            screenX = dispX * fieldScale * viewport.x / self.renderRatio + screenCenter.x,
+            screenY = dispY * fieldScale * viewport.y / self.renderRatio + screenCenter.y;
+
+        return [screenX, screenY];
+    };
+
     this.projectBuffer = (buffer, culledFaces, normals, indices, drawQueue) => {
         var tanLensAngle = Math.tan(self.getLensAngle()),
             ctx = MEasel.context,
@@ -209,19 +230,46 @@ angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', '
         ctx.stroke();
     };
 
-    this.billboardRender = (image, transforms) => {
+    /**
+     *
+     * @param {Image} image
+     * @param {Transform[]} transforms
+     * @param {Transform} [parent]
+     */
+    this.billboardRender = (image, transforms, parent) => {
         //wrap a raw transform in an array
         transforms = (transforms instanceof Array) ? transforms : [transforms];
+        parent = parent || null;
 
         //create a queue to store the draw commands generated
-        var drawCalls = new PriorityQueue();
+        var ctx = MEasel.context,
+            drawCalls = new PriorityQueue(),
+            culledFace = [1],
+            normals = [0, 0, 1],
+            indices = [0];
 
         for(var t = 0; t < transforms.length; t++) {
             if (transforms[t] === null || typeof transforms[t] !== 'object') {
                 continue;
             }
 
+            var buffer =transforms[t].position.toBuffer();
 
+            if(parent !== null){
+                buffer[0] += parent.position.x;
+                buffer[1] += parent.position.y;
+                buffer[2] += parent.position.z;
+            }
+
+            var screenCoords = self.projectPoint(buffer);
+
+            ctx.save();
+            ctx.translate(screenCoords[0], screenCoords[1]);
+            ctx.scale(transforms[t].scale.x, transforms[t].scale.y);
+            //Make the particles fade as they near the end of their life
+            //ctx.globalAlpha = Math.min(particles[i].energy / 500, .75);
+            ctx.drawImage(image, 0, 0);
+            ctx.restore();
         }
     };
 
@@ -345,5 +393,9 @@ angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', '
         ctx.closePath();
         ctx.fill();
         ctx.restore();
-    }
+    };
+
+    MScheduler.draw(()=>{
+
+    });
 }]);

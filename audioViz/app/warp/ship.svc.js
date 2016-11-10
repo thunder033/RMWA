@@ -5,7 +5,7 @@
 /**
  * Controls behavior of the ship and handles scoring
  */
-angular.module('pulsar-warp').service('warp.ship', ['MScheduler', 'MCamera', 'MEasel', 'MalletMath', 'MKeyboard', 'MKeys', 'WarpLevel', 'WarpState', 'Geometry', function(MScheduler, MCamera, MEasel, MM, MKeyboard, MKeys, Warp, WarpState, Geometry){
+angular.module('pulsar-warp').service('warp.ship', ['MScheduler', 'MCamera', 'MEasel', 'MalletMath', 'MKeyboard', 'MKeys', 'WarpLevel', 'WarpState', 'Geometry', 'MParticle', function(MScheduler, MCamera, MEasel, MM, MKeyboard, MKeys, Warp, WarpState, Geometry, MParticle){
     var self = this,
         velocity = MM.vec3(0),
         destLane = 0,
@@ -15,6 +15,18 @@ angular.module('pulsar-warp').service('warp.ship', ['MScheduler', 'MCamera', 'ME
         bankAngle = MM.vec3(Math.PI / 12, Math.PI / 24, Math.PI / 4),
         bankPct = 0,
         bankRate = 0.008;
+
+    var tEmitter = new Geometry.Transform()
+        .translate(.5, .5, 0);
+    var emitter = new MParticle.Emitter({
+        maxParticleCount: 10,
+        transform: tEmitter,
+        priority: 1000,
+
+        energy: 400,
+        sizeDecay: 0.1,
+        speed: 1
+    });
 
     //create the ship's transform
     var tShip = new Geometry.Transform();
@@ -185,6 +197,8 @@ angular.module('pulsar-warp').service('warp.ship', ['MScheduler', 'MCamera', 'ME
                 }
             });
         }
+
+        emitter.emit();
 
         MScheduler.draw(() => {
             //Rotate ship

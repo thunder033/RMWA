@@ -1,32 +1,73 @@
 /**
  * Created by gjr8050 on 11/9/2016.
  */
-angular.module('mallet').factory('MParticle', ['MalletMath', 'MCamera', 'Geometry', 'MScheduler', function(MM, MCamera, Geometry, MScheduler){
+angular.module('mallet').factory('MParticle', ['MalletMath', 'MCamera', 'Geometry', 'MScheduler', 'MEasel', function(MM, MCamera, Geometry, MScheduler, MEasel){
     "use strict";
+
+    var particleSpeed = .001;
 
     function Particle(params){
         this.transform = new Geometry.Transform();
         this.velocity = MM.vec3(0);
         this.acceleration = MM.vec3(0);
         this.active = true;
-        this.energy = params.energy || 1;
+        this.startEnergy = params.energy || 0;
+        this.sizeDecay = params.sizeDecay || 0;
+        this.speed = params.speed || 1;
     }
 
     Particle.prototype.die = function(){
         this.active = false;
+        this.transform.scale.scale(0);
     };
 
     Particle.prototype.setActive = function(){
         this.active = true;
+        this.energy = this.startEnergy;
+        this.transform.position.scale(0);
+        this.transform.scale = MM.vec3(1);
+        this.velocity = MM.vec3(
+            (.5 - Math.random()) * particleSpeed * this.speed,
+            (.5 - Math.random()) * particleSpeed * this.speed,
+            0);
     };
 
     Particle.prototype.update = function (dt) {
         this.velocity.add(MM.Vector3.scale(this.acceleration, dt));
         this.transform.position.add(MM.Vector3.scale(this.velocity, dt));
+        this.transform.scale.scale(1 - this.sizeDecay);
 
         this.energy -= dt;
     };
 
+    /**
+     * Temporary generation function; makes green square
+     * @returns {*|HTMLCanvasElement}
+     */
+    function blitParticle(){
+        var size = 10;
+        //Create a temporary canvas
+        MEasel.createNewCanvas('particle', size, size);
+        var cacheCtx = MEasel.getContext('particle');
+        cacheCtx.fillStyle = '#0f0';
+        cacheCtx.fillRect(0, 0, size, size);
+
+        //Return the rendered image
+        return cacheCtx.canvas;
+    }
+
+    /**
+     *
+     * @param {Object} params
+     * @param {number} [params.energy=100]
+     * @param {Image} [params.image]
+     * @param {number} [params.maxParticleCount=100]
+     * @param {number} [params.priority=0]
+     * @param {Transform} params.transform
+     * @param {number} [params.sizeDecay=0] rate at which particle will decay in size
+     * @param {number} [params.speed=1] speed of particles
+     * @constructor
+     */
     function Emitter(params) {
         this.transform = params.transform || new Geometry.Transform();
 
@@ -39,9 +80,12 @@ angular.module('mallet').factory('MParticle', ['MalletMath', 'MCamera', 'Geometr
 
         this.emitPosition = 1;
         this.endPosition = 0;
+        this.image = params.image || blitParticle();
 
         this.paritcleParams = {
-            energy: params.energy
+            energy: params.energy || 100,
+            sizeDecay: params.sizeDecay || 0,
+            speed: params.speed || 1
         };
 
         MScheduler.schedule((dt) => {
@@ -62,8 +106,9 @@ angular.module('mallet').factory('MParticle', ['MalletMath', 'MCamera', 'Geometr
             }
 
             this.particles[p].setActive();
+            this.transforms[p] = this.particles[p].transform;
 
-            if(++this.emitPosition > this.particles.length){
+            if(++this.emitPosition >= this.particles.length){
                 this.emitPosition = 0;
             }
         }
@@ -72,21 +117,30 @@ angular.module('mallet').factory('MParticle', ['MalletMath', 'MCamera', 'Geometr
         }
     };
 
-    Emitter.prototype.draw = function(dt) {
-
-
+    Emitter.prototype.draw = function() {
+        MCamera.billboardRender(this.image, this.transforms, this.transform);
     };
-
     Emitter.prototype.update = function (dt) {
-        for(var p = this.endPosition; p < this.emitPosition; p++){
-            if(p > this.particles.length){
+        console.log(this.endPosition + ' ' + this.emitPosition);
+        var count = Math.abs(this.endPosition - this.emitPosition) || this.particles.length;
+        for(var p = this.endPosition, c = 0; c < count; p++, c++){
+            if(p >= this.particles.length){
                 p = 0;
             }
 
+            if(this.particles[p] === null){
+                continue;
+            }
+
             this.particles[p].update(dt);
-            if(this.particles[p].energy <= 0){
+            if(this.particles[p].energy <= 0 && this.particles[p].active === true){
                 this.particles[p].die();
-                this.endPosition++;
+                this.transforms[p] = null;
+
+                if(++this.endPosition >= this.particles.length){
+                    this.endPosition = 0;
+                }
+
             }
         }
 

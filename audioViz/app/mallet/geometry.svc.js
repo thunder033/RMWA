@@ -11,6 +11,25 @@ angular.module('mallet') .factory('Geometry', ['MalletMath', function(MM){
         Object.seal(this);
     }
 
+    /**
+     * move the transform by the given amount
+     * @param {number|Vector3} x
+     * @param {number} y
+     * @param {number} z
+     * @returns {Transform}
+     */
+    Transform.prototype.translate = function(x, y, z){
+        if(x instanceof MM.Vector3){
+            this.position.add(x);
+        }
+        else {
+            this.position.x += x;
+            this.position.y += y;
+            this.position.z += z;
+        }
+        return this;
+    };
+
     function Mesh(verts, indices){
         this.verts = verts;
         this.indices = indices;
