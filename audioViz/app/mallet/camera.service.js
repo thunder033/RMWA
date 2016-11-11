@@ -146,7 +146,7 @@ angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', '
             screenX = dispX * fieldScale * viewport.x / self.renderRatio + screenCenter.x,
             screenY = dispY * fieldScale * viewport.y / self.renderRatio + screenCenter.y;
 
-        return [screenX, screenY];
+        return [screenX, screenY, fieldScale];
     };
 
     this.projectBuffer = (buffer, culledFaces, normals, indices, drawQueue) => {
@@ -259,11 +259,14 @@ angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', '
             //buffer[1] += parent.position.y;
             //buffer[2] += parent.position.z;
 
-            var screenCoords = self.projectPoint(buffer);
+            var screenCoords = self.projectPoint(buffer),
+                fieldScale = screenCoords[2] / 30;
 
             ctx.save();
-            ctx.translate(screenCoords[0], screenCoords[1]);
-            ctx.scale(transforms[t].scale.x * parent.scale.x, transforms[t].scale.y * parent.scale.y);
+            ctx.translate(screenCoords[0] - (image.width / 2) * fieldScale, screenCoords[1] - (image.height / 2) * fieldScale);
+            ctx.scale(
+                transforms[t].scale.x * parent.scale.x * fieldScale,
+                transforms[t].scale.y * parent.scale.y * fieldScale);
             //Make the particles fade as they near the end of their life
             //ctx.globalAlpha = Math.min(particles[i].energy / 500, .75);
             ctx.drawImage(image, 0, 0);

@@ -16,6 +16,7 @@ angular.module('mallet').factory('MParticle', ['MalletMath', 'MCamera', 'Geometr
         this.startVelocity = params.startVelocity;
         this.sizeDecay = params.sizeDecay || 0;
         this.speed = params.speed || 1;
+        this.spread = params.spread;
     }
 
     Particle.prototype.die = function(){
@@ -27,11 +28,15 @@ angular.module('mallet').factory('MParticle', ['MalletMath', 'MCamera', 'Geometr
         this.active = true;
         this.energy = this.startEnergy;
         this.transform.position.set(spawnPosition);
-        this.transform.scale = MM.vec3(1);
-        this.velocity = MM.vec3(
-            (.5 - Math.random()) * particleSpeed * this.speed,
-            (.5 - Math.random()) * particleSpeed * this.speed,
-            0).add(this.startVelocity);
+        this.transform.scale.set(1);
+
+        this.velocity.set(
+            .5 - Math.random(),
+            .5 - Math.random(),
+            .5 - Math.random())
+            .mult(this.spread)
+            .scale(particleSpeed * this.speed)
+            .add(this.startVelocity);
     };
 
     Particle.prototype.update = function (dt) {
@@ -65,8 +70,10 @@ angular.module('mallet').factory('MParticle', ['MalletMath', 'MCamera', 'Geometr
      * @param {Image} [params.image]
      * @param {number} [params.maxParticleCount=100]
      * @param {number} [params.priority=0]
+     * @param {number} [params.rate] default emission rate
      * @param {number} [params.sizeDecay=0] rate at which particle will decay in size
      * @param {number} [params.speed=1] speed of particles
+     * @param {Vector3} [params.spread] the relative speeds of particles in each heading (determines shape)
      * @param {Vector3} [params.startVelocity] velocity to add to all particles when they spawn
      * @param {Transform} params.transform
      * @constructor
@@ -85,13 +92,20 @@ angular.module('mallet').factory('MParticle', ['MalletMath', 'MCamera', 'Geometr
         this.endPosition = 0;
         this.image = params.image || blitParticle();
 
+        this.rate = (params.rate === Emitter.Uniform) ? 1000 / (params.energy / params.maxParticleCount) : params.rate || 0;
+
+        this.emittedElapsed = 0;
+        this.emissionTrigger = 1000 / this.rate;
+
         this.paritcleParams = {
             energy: params.energy || 100,
             sizeDecay: params.sizeDecay || 0,
             speed: params.speed || 1,
-            startVelocity: params.startVelocity || MM.vec3(0)
+            startVelocity: params.startVelocity || MM.vec3(0),
+            spread: params.spread || MM.vec3(1)
         };
 
+        this.priority = params.priority;
         MScheduler.schedule((dt) => {
             this.update(dt);
         }, params.priority);
@@ -116,15 +130,21 @@ angular.module('mallet').factory('MParticle', ['MalletMath', 'MCamera', 'Geometr
                 this.emitPosition = 0;
             }
         }
-        else {
-
-        }
     };
 
     Emitter.prototype.draw = function() {
         MCamera.billboardRender(this.image, this.transforms, this.transform);
     };
+
     Emitter.prototype.update = function (dt) {
+        if(this.rate > 0){
+            this.emittedElapsed += dt;
+            if(this.emittedElapsed > this.emissionTrigger){
+                this.emittedElapsed = 0;
+                this.emit();
+            }
+        }
+
         //console.log(this.endPosition + ' ' + this.emitPosition);
         var count = this.particles.length;
         for(var p = this.endPosition, c = 0; c < count; p++, c++){
@@ -150,8 +170,10 @@ angular.module('mallet').factory('MParticle', ['MalletMath', 'MCamera', 'Geometr
 
         MScheduler.draw(dt => {
             this.draw(dt);
-        });
+        }, this.priority);
     };
+
+    Emitter.Uniform = -1;
 
     return {
         Emitter: Emitter

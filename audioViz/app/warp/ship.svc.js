@@ -20,12 +20,48 @@ angular.module('pulsar-warp').service('warp.ship', ['MScheduler', 'MCamera', 'ME
     var emitter = new MParticle.Emitter({
         maxParticleCount: 30,
         transform: tEmitter,
-        priority: 1000,
+        priority: 9,
+        rate: 0,
 
         energy: 500,
         sizeDecay: 0.08,
         speed: 1.5,
-        startVelocity: MM.vec3(0, 0, 0.01)
+        startVelocity: MM.vec3(0, 0, 0.01),
+        spread: MM.vec3(1, 1, .5)
+    });
+
+    function blitTrail(){
+        var height = 20,
+            width = height * 4;
+        //Create a temporary canvas
+        MEasel.createNewCanvas('trail', width, height);
+        var cacheCtx = MEasel.getContext('trail');
+        cacheCtx.fillStyle = 'rgba(255, 20, 20, .5)';
+        //cacheCtx.fillStyle = 'rgba(255, 255, 255, .5)';
+        cacheCtx.beginPath();
+        cacheCtx.moveTo(0, height);
+        cacheCtx.lineTo(width / 4, 0);
+        cacheCtx.lineTo(3 * width / 4, 0);
+        cacheCtx.lineTo(width, height);
+        cacheCtx.closePath();
+        cacheCtx.fill();
+
+        //Return the rendered image
+        return cacheCtx.canvas;
+    }
+
+    var tTrail = new Geometry.Transform();
+    var trailEmitter = new MParticle.Emitter({
+        maxParticleCount: 7,
+        transform: tTrail,
+        priority: 1001,
+        rate: MParticle.Emitter.Uniform,
+
+        energy: 600,
+        speed: .85,
+        startVelocity: MM.vec3(0, .0006, 0.01),
+        spread: MM.vec3(0),
+        image: blitTrail()
     });
 
     //create the ship's transform
@@ -211,6 +247,11 @@ angular.module('pulsar-warp').service('warp.ship', ['MScheduler', 'MCamera', 'ME
         tEmitter.position.x = tShip.position.x;
         tEmitter.position.y = tShip.position.y + .2;
         tEmitter.position.z = tShip.position.z;
+
+        tTrail.position.set(
+            tShip.position.x,
+            tShip.position.y,
+            tShip.position.z + .5);
 
         MScheduler.draw(() => {
             //Rotate ship

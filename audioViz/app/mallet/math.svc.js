@@ -136,7 +136,7 @@ angular.module('mallet-math', []).service('MalletMath', [function(){
      * @returns {Vector3}
      */
     Vector3.prototype.normalize = function(){
-        var len = this.len();
+        var len = this.len() || 1;
         return new Vector3(
             this.x / len,
             this.y / len,
