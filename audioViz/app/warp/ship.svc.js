@@ -126,6 +126,10 @@ angular.module('pulsar-warp').service('warp.ship', ['MScheduler', 'MCamera', 'ME
         //Clear out the velocity
         velocity.scale(0);
 
+        if(!isInBounds(0)){ //If ship is out of bounds, clamp it back in
+            tShip.position.x -= tShip.position.x - MM.sign(tShip.position.x) * laneWidth;
+        }
+
         /**
          * Move the ship if
          * - there's an active control
