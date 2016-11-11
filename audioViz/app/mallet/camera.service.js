@@ -2,7 +2,7 @@
  * Created by Greg on 11/2/2016.
  */
 "use strict";
-angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', 'Geometry', 'MColor', 'MScheduler', function (MM, MEasel, Shapes, Geometry, Color, MScheduler) {
+angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', 'Geometry', 'MColor', 'MScheduler', 'MState', function (MM, MEasel, Shapes, Geometry, Color, MScheduler, MState) {
 
     var Mesh = Geometry.Mesh,
         self = this;
@@ -294,7 +294,10 @@ angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', '
             //Don't render things that are behind the camera
             //TODO: this needs to be changed be based off camera camera position/perspective
             if(self.position.z - transforms[t].position.z < 0){
-                console.warn('Mesh at ' + transforms[t].position + ' was skipped');
+                if(MState.is(MState.Debug)){
+                    console.warn('Mesh at ' + transforms[t].position + ' was skipped');
+                }
+
                 continue;
             }
 

@@ -1,6 +1,7 @@
 <div class="hud">
     <span class="score" ng-bind="warp.score"></span>
     <span class="song-title" ng-bind="player.playing.name"></span>
+    <button ng-click="toggleMute()" class="volume-btn" ng-bind-html="toTrusted(muted ? '&#128263;' : '&#128266;')"></button>
 
     <div ng-if="!warpState.is(warpState.Playing)" class="menu">
         <h1>Warp</h1>

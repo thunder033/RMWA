@@ -117,6 +117,10 @@ angular.module('pulsar-audio').service('AudioPlayerService', function(SampleCoun
         }
     };
 
+    this.setOutputGain = volume => {
+        outputGainNode.gain.value = volume;
+    };
+
     /**
      * play the clip with the given ID
      * @param clipId

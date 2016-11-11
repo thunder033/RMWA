@@ -50,3 +50,18 @@
     font-size: 1.2em;
     font-weight: bold;
 }
+
+.volume-btn {
+    position: fixed;
+    top: 1em;
+    right: 1em;
+    color: #fff;
+    background: rgba(100,100,100,.6);
+    padding: .5em;
+    border-radius: .5em;
+    border: 0;
+}
+
+.volume-btn:hover {
+    background: rgba(130,130,130,.6);;
+}
