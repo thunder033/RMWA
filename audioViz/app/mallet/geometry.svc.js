@@ -30,6 +30,18 @@ angular.module('mallet') .factory('Geometry', ['MalletMath', function(MM){
         return this;
     };
 
+    Transform.prototype.scaleBy = function(x, y, z){
+        if(x instanceof MM.Vector3){
+            this.scale.scale(x);
+        }
+        else {
+            this.scale.x *= x;
+            this.scale.y *= typeof y === 'number' ? y : x;
+            this.scale.z *= typeof z === 'number' ? z : x;
+        }
+        return this;
+    };
+
     function Mesh(verts, indices){
         this.verts = verts;
         this.indices = indices;

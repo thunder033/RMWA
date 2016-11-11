@@ -27,6 +27,27 @@ angular.module('mallet-math', []).service('MalletMath', [function(){
     };
 
     /**
+     * Set the vector components to those provided
+     * @param {number|Vector3} x
+     * @param {number} [y]
+     * @param {number} [z]
+     * @returns {Vector3}
+     */
+    Vector3.prototype.set = function(x, y, z){
+        if(x instanceof Vector3){
+            this.x = x.x;
+            this.y = x.y;
+            this.z = x.z;
+        }
+        else {
+            this.x = x;
+            this.y = typeof y === 'number' ? y : x;
+            this.z = typeof z === 'number' ? z : x;
+        }
+        return this;
+    };
+
+    /**
      * Add the given vector to this one
      * @param addend {Vector3}
      */

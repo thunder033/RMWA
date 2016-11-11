@@ -10,28 +10,28 @@ angular.module('pulsar-warp').service('warp.ship', ['MScheduler', 'MCamera', 'ME
         velocity = MM.vec3(0),
         destLane = 0,
         moveSpeed = 0.004,
-        laneWidth = 1.1,
+        laneWidth = 1.15,
 
         bankAngle = MM.vec3(Math.PI / 12, Math.PI / 24, Math.PI / 4),
         bankPct = 0,
         bankRate = 0.008;
 
-    var tEmitter = new Geometry.Transform()
-        .translate(.5, .5, 0);
+    var tEmitter = new Geometry.Transform().scaleBy(3.5);
     var emitter = new MParticle.Emitter({
-        maxParticleCount: 10,
+        maxParticleCount: 30,
         transform: tEmitter,
         priority: 1000,
 
-        energy: 400,
-        sizeDecay: 0.1,
-        speed: 1
+        energy: 500,
+        sizeDecay: 0.08,
+        speed: 1.5,
+        startVelocity: MM.vec3(0, 0, 0.01)
     });
 
     //create the ship's transform
     var tShip = new Geometry.Transform();
-    tShip.position = MM.vec3(-laneWidth, -1, -2);
-    tShip.scale = MM.vec3(.75, .5, .75);
+    tShip.position.set(-laneWidth, -1, -2);
+    tShip.scale.set(.75, .5, .75);
 
     this.lane = 0;
     this.score = 0;
@@ -198,11 +198,19 @@ angular.module('pulsar-warp').service('warp.ship', ['MScheduler', 'MCamera', 'ME
                 if(gem === 1 && lane === currentLane){
                     self.score++;
                     Warp.warpField[collectSliceIndex].gems[lane] = 2;
+
+                    if(Warp.sliceIndex % 2 === 1){
+                        for(var i = 0; i < 10; i++){
+                            emitter.emit();
+                        }
+                    }
                 }
             });
         }
 
-        emitter.emit();
+        tEmitter.position.x = tShip.position.x;
+        tEmitter.position.y = tShip.position.y + .2;
+        tEmitter.position.z = tShip.position.z;
 
         MScheduler.draw(() => {
             //Rotate ship

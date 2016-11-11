@@ -218,7 +218,7 @@ angular.module('pulsar-warp', [])
 
             //MCamera.render(meshes.XZQuad, tZero, MM.vec3(255,0,0));
 
-            var green = MM.vec3(0,255,0);
+            var green = MM.vec3(0,225,40);
             MCamera.render(meshes.Cube, gems, green);
         }
 

@@ -239,7 +239,7 @@ angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', '
     this.billboardRender = (image, transforms, parent) => {
         //wrap a raw transform in an array
         transforms = (transforms instanceof Array) ? transforms : [transforms];
-        parent = parent || null;
+        parent = parent || new Geometry.Transform();
 
         //create a queue to store the draw commands generated
         var ctx = MEasel.context,
@@ -253,19 +253,17 @@ angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', '
                 continue;
             }
 
-            var buffer =transforms[t].position.toBuffer();
+            var buffer = transforms[t].position.toBuffer();
 
-            if(parent !== null){
-                buffer[0] += parent.position.x;
-                buffer[1] += parent.position.y;
-                buffer[2] += parent.position.z;
-            }
+            //buffer[0] += parent.position.x;
+            //buffer[1] += parent.position.y;
+            //buffer[2] += parent.position.z;
 
             var screenCoords = self.projectPoint(buffer);
 
             ctx.save();
             ctx.translate(screenCoords[0], screenCoords[1]);
-            ctx.scale(transforms[t].scale.x, transforms[t].scale.y);
+            ctx.scale(transforms[t].scale.x * parent.scale.x, transforms[t].scale.y * parent.scale.y);
             //Make the particles fade as they near the end of their life
             //ctx.globalAlpha = Math.min(particles[i].energy / 500, .75);
             ctx.drawImage(image, 0, 0);
