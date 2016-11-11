@@ -2,7 +2,7 @@
  * Created by gjrwcs on 9/15/2016.
  */
 "use strict";
-angular.module('mallet').directive('mEasel', ['MEasel','MScheduler', 'MState', function(MEasel, Scheduler, MState){
+angular.module('mallet').directive('mEasel', ['MEasel','MScheduler', 'mallet.state', function(MEasel, Scheduler, MState){
 
     var canvas, ctx, scale = 1;
 

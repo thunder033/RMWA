@@ -11,7 +11,7 @@
  * @property Suspended
  * @property Debug
  */
-angular.module('mallet').service('MState', ['$location', function($location){
+angular.module('mallet').service('mallet.state', ['$location', function($location){
 
     var self = this,
         stateListeners = [],

@@ -5,7 +5,7 @@
 /**
  * Provides access to audio data and processing utilities
  */
-angular.module('pulsar-audio').service('AudioData', function (MScheduler, SampleRate, SampleCount, AudioPlayer, $q) {
+angular.module('pulsar.audio').service('AudioData', function (MScheduler, SampleRate, SampleCount, AudioPlayer, $q) {
 
     var self = this,
         waveformData = new Uint8Array(SampleCount / 2),

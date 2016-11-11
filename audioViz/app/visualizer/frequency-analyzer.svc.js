@@ -5,7 +5,7 @@
 /**
  * Performs analysis on frequency data each frame to generate metrics
  */
-angular.module('pulsar-visualizer').service('FrequencyAnalyzer', function (MScheduler, AudioData, FrequencyRanges, MaxFrequency, AudioPlayer) {
+angular.module('pulsar.visualizer').service('FrequencyAnalyzer', function (MScheduler, AudioData, FrequencyRanges, MaxFrequency, AudioPlayer) {
     var results = {
         avgLoudness: 0,
         //keep track of how many indices in the data array actually have values

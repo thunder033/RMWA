@@ -134,7 +134,7 @@ angular.module('mallet').service('MParticleEmitter2D', ['MScheduler','MEasel','S
             ctx.scale(particles[i].size, particles[i].size);
             //Make the particles fade as they near the end of their life
             ctx.globalAlpha = Math.min(particles[i].energy / 500, .75);
-            ctx.drawImage(particles[i].image, 0, 0);
+            ctx.drawImage(particleImage, 0, 0);
             ctx.restore();
         }
     }

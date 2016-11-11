@@ -4,9 +4,9 @@
 "use strict";
 var app = angular.module('pulsar', [
     'mallet',
-    'pulsar-visualizer',
-    'pulsar-audio',
-    'pulsar-warp',
+    'pulsar.visualizer',
+    'pulsar.audio',
+    'pulsar.warp',
     'checklist-model',
     'ui.router'
 ]).config(function($stateProvider, $urlRouterProvider) {
@@ -21,11 +21,7 @@ var app = angular.module('pulsar', [
     }).state('warp', {
         url: '/warp',
         template: '<m-easel id="warp"></m-easel><warp-hud></warp-hud>',
-        controller: function WarpCtrl(Warp, MEasel,$timeout) {
-            Warp.init();
-            $timeout(()=>MEasel.context.canvas.style.backgroundImage = 'radial-gradient(#b2b2b2, #000)');
-
-        }
+        controller: 'warp.GameController'
     });
 
 

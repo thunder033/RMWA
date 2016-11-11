@@ -2,7 +2,7 @@
 /**
  * Created by gjrwcs on 9/15/2016.
  */
-angular.module('pulsar-visualizer').directive('controlPanel', function(Visualizer, Effects, MScheduler, AudioClipService, AudioPlayer, MediaType){
+angular.module('pulsar.visualizer').directive('controlPanel', function(Visualizer, Effects, MScheduler, MediaLibrary, AudioPlayer, MediaType){
     return {
         restrict: 'E',
         replace: true,
@@ -12,7 +12,7 @@ angular.module('pulsar-visualizer').directive('controlPanel', function(Visualize
             scope.effects = Effects;
 
             scope.reverbEffect = {name: 'None', id: 9999};
-            scope.reverbEffects = AudioClipService.getAudioClips(MediaType.ReverbImpulse);
+            scope.reverbEffects = MediaLibrary.getAudioClips(MediaType.ReverbImpulse);
             scope.reverbEffects.push({name: 'None', id: 9999});
             
             scope.setCircleRadius = function(value){
@@ -24,7 +24,7 @@ angular.module('pulsar-visualizer').directive('controlPanel', function(Visualize
                     AudioPlayer.disableConvolverNode();
                 }
                 else {
-                    var clipData = AudioClipService.getAudioClip(scope.reverbEffect.name).clip;
+                    var clipData = MediaLibrary.getAudioClip(scope.reverbEffect.name).clip;
                     AudioPlayer.setConvolverImpulse(clipData);
                 }
             };

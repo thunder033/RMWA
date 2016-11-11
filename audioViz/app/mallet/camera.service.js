@@ -2,7 +2,7 @@
  * Created by Greg on 11/2/2016.
  */
 "use strict";
-angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', 'Geometry', 'MColor', 'MScheduler', 'MState', function (MM, MEasel, Shapes, Geometry, Color, MScheduler, MState) {
+angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', 'Geometry', 'MColor', 'MScheduler', 'mallet.state', function (MM, MEasel, Shapes, Geometry, Color, MScheduler, MState) {
 
     var Mesh = Geometry.Mesh,
         self = this;

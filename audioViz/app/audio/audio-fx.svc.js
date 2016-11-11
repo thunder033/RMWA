@@ -2,7 +2,7 @@
  * Created by gjr8050 on 11/11/2016.
  */
 "use strict";
-angular.module('pulsar-audio').factory('audio.audioFx',['AudioClipService', 'AudioData', '$q', function (AudioClip, AudioData, $q) {
+angular.module('pulsar.audio').factory('audio.audioFx',['MediaLibrary', 'AudioData', '$q', function (AudioClip, AudioData, $q) {
 
     var audioCtx = new (window.AudioContext || window.webkitAudioContext),
         autoId = 0,

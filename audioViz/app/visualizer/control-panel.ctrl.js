@@ -2,11 +2,11 @@
 /**
  * Created by gjrwcs on 9/15/2016.
  */
-angular.module('pulsar-visualizer').controller('ControlPanelCtrl', function($scope, $timeout, AudioClipService, AutoPlay, AudioPlayer, MediaStates){
+angular.module('pulsar.visualizer').controller('ControlPanelCtrl', function($scope, $timeout, MediaLibrary, AutoPlay, AudioPlayer, MediaStates){
     //Ensure all components render before we start trying to load songs
         $timeout(()=>{
-            AudioClipService.getClipList()
-                .then(AudioClipService.loadAudioClips)
+            MediaLibrary.getClipList()
+                .then(MediaLibrary.loadAudioClips)
                 //Were using the progress event so we don't wait for everything to load
                 .then(null, null, function(clip){
                     //Play AutoPlay clip when it finishes loading

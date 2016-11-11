@@ -2,7 +2,7 @@
  * Created by gjr8050 on 9/16/2016.
  */
 "use strict";
-angular.module('pulsar-audio').service('AudioPlayer', function(SampleCount, AudioClipService, $q, MediaStates){
+angular.module('pulsar.audio').service('AudioPlayer', function(SampleCount, MediaLibrary, $q, MediaStates){
 
     var states = Object.freeze({
         LOADING: 'LOADING',
@@ -132,7 +132,7 @@ angular.module('pulsar-audio').service('AudioPlayer', function(SampleCount, Audi
 
         var playOp = $q.defer();
         ready.promise.then(function () {
-            playing = AudioClipService.getAudioClip(clipId);
+            playing = MediaLibrary.getAudioClip(clipId);
             state = states.LOADING;
 
             if(playing && playing.buffer){

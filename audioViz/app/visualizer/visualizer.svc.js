@@ -2,7 +2,7 @@
  * Created by Greg on 9/18/2016.
  */
 "use strict";
-angular.module('pulsar-visualizer').service('Visualizer', function (MScheduler, MEasel, SampleCount, Effects, FrequencyRanges, MColor, WaveformAnalyzer, FrequencyAnalyzer, FrequencyPinwheel, MParticleEmitter2D) {
+angular.module('pulsar.visualizer').service('Visualizer', function (MScheduler, MEasel, SampleCount, Effects, FrequencyRanges, MColor, WaveformAnalyzer, FrequencyAnalyzer, FrequencyPinwheel, MParticleEmitter2D) {
 
     //pulse values - these don't strictly need priority queues, but they work
     var radialPulses = new PriorityQueue(), //pulses generated from waveform - drawn as circles
@@ -252,9 +252,9 @@ angular.module('pulsar-visualizer').service('Visualizer', function (MScheduler, 
         //Update the particle emitter
         var avgLoudness = FrequencyAnalyzer.getMetrics().avgLoudness;
         //Particles should exist short when things are more active or if frame rate is bad
-        MParticleEmitter.setInitEnergy((MScheduler.FPS / 12.5) * .8 - (avgLoudness / 256));
-        MParticleEmitter.incrementEmission(avgLoudness / 5);
-        MParticleEmitter.setParticleSpeed(visualizer.velocity * 1200);
+        MParticleEmitter2D.setInitEnergy((MScheduler.FPS / 12.5) * .8 - (avgLoudness / 256));
+        MParticleEmitter2D.incrementEmission(avgLoudness / 5);
+        MParticleEmitter2D.setParticleSpeed(visualizer.velocity * 1200);
 
         var canvas = MEasel.context.canvas,
             origin = {x: canvas.width / 2, y: canvas.height / 2};

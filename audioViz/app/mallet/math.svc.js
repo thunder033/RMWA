@@ -276,11 +276,31 @@ angular.module('mallet-math', []).service('MalletMath', [function(){
         return new Vector3(x, y, z);
     };
 
+    /**
+     * Clamps the value between the min and max
+     * @param {number} value
+     * @param {number} min
+     * @param {number} max
+     * @returns {number} the clamped value
+     */
     this.clamp = (value, min, max) => {
         return Math.min(Math.max(value, min), max);
     };
 
+    /**
+     * Returns the sign (1, 0, or -1) of the value
+     * @param {number} value
+     * @returns {*|number}
+     */
     this.sign = (value) => {
         return value && value / Math.abs(value);
     };
+
+    /**
+     * Finds the mean of the values and returns the result
+     * @param {number[]} values
+     */
+    this.average = (values) => {
+        return values.reduce((avg, value) => avg + value / values.length, 0);
+    }
 }]);

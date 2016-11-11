@@ -1,272 +1,278 @@
 /**
  * Created by gjrwcs on 11/10/2016.
  */
-"use strict";
-/**
- * Controls behavior of the ship and handles scoring
- */
-angular.module('pulsar-warp').service('warp.ship', ['MScheduler', 'MCamera', 'MEasel', 'MalletMath', 'MKeyboard', 'MKeys', 'WarpLevel', 'WarpState', 'Geometry', 'MParticle', function(MScheduler, MCamera, MEasel, MM, MKeyboard, MKeys, Warp, WarpState, Geometry, MParticle){
-
-    var self = this,
-        velocity = MM.vec3(0),
-        destLane = 0,
-        moveSpeed = 0.004,
-        laneWidth = 1.15,
-
-        bankAngle = MM.vec3(Math.PI / 12, Math.PI / 24, Math.PI / 4),
-        bankPct = 0,
-        bankRate = 0.008;
-
-    var tEmitter = new Geometry.Transform().scaleBy(3.5);
-    var emitter = new MParticle.Emitter({
-        maxParticleCount: 30,
-        transform: tEmitter,
-        priority: 9,
-        rate: 0,
-
-        energy: 500,
-        sizeDecay: 0.08,
-        speed: 1.5,
-        startVelocity: MM.vec3(0, 0, 0.01),
-        spread: MM.vec3(1, 1, .5)
-    });
-
-    function blitTrail(){
-        var height = 20,
-            width = height * 4;
-        //Create a temporary canvas
-        MEasel.createNewCanvas('trail', width, height);
-        var cacheCtx = MEasel.getContext('trail');
-        cacheCtx.fillStyle = 'rgba(255, 20, 20, .5)';
-        //cacheCtx.fillStyle = 'rgba(255, 255, 255, .5)';
-        cacheCtx.beginPath();
-        cacheCtx.moveTo(0, height);
-        cacheCtx.lineTo(width / 4, 0);
-        cacheCtx.lineTo(3 * width / 4, 0);
-        cacheCtx.lineTo(width, height);
-        cacheCtx.closePath();
-        cacheCtx.fill();
-
-        //Return the rendered image
-        return cacheCtx.canvas;
-    }
-
-    var tTrail = new Geometry.Transform();
-    var trailEmitter = new MParticle.Emitter({
-        maxParticleCount: 7,
-        transform: tTrail,
-        priority: 1001,
-        rate: MParticle.Emitter.Uniform,
-
-        energy: 600,
-        speed: .85,
-        startVelocity: MM.vec3(0, .0006, 0.01),
-        spread: MM.vec3(0),
-        image: blitTrail()
-    });
-
-    //create the ship's transform
-    var tShip = new Geometry.Transform();
-    tShip.position.set(-laneWidth, -1, -2);
-    tShip.scale.set(.75, .5, .75);
-
-    this.lane = 0;
-    this.score = 0;
+(()=>{
+    "use strict";
 
     /**
-     * Determines if the ship is switching lanes
-     * @returns {boolean}
+     * Controls behavior of the ship and handles scoring
      */
-    function isSwitchingLanes() {
-        return destLane !== self.lane;
-    }
+    angular.module('pulsar.warp')
+        .service('warp.Ship', ['MScheduler', 'MCamera', 'MEasel', 'MalletMath', 'MKeyboard', 'MKeys', 'warp.Level', 'warp.State', 'Geometry', 'MParticle', Ship]);
 
-    /**
-     * Gets the direction of lane switch
-     * @returns {number}
-     */
-    function getSwitchDirection(){
-        return MM.sign(destLane - self.lane);
-    }
+    function Ship(MScheduler, MCamera, MEasel, MM, MKeyboard, MKeys, Warp, WarpState, Geometry, MParticle){
 
-    /**
-     * Checks position of the ship to determine if it has reached the destination lane
-     * @returns {boolean}
-     */
-    function hasReachedLane(){
-        var lanePos = (destLane - 1) * laneWidth;
-        return getSwitchDirection() > 0 ? tShip.position.x >= lanePos : tShip.position.x <= lanePos;
-    }
+        var self = this,
+            velocity = MM.vec3(0),
+            destLane = 0,
+            moveSpeed = 0.004,
+            laneWidth = 1.15,
 
-    /**
-     * Calculates how far between the start and dest lanes the ship is
-     * @returns {number} 0 to 1
-     */
-    function getLaneCoord() {
-        var relPos = (tShip.position.x + laneWidth) % laneWidth;
-        return relPos / laneWidth;
-    }
+            bankAngle = MM.vec3(Math.PI / 12, Math.PI / 24, Math.PI / 4),
+            bankPct = 0,
+            bankRate = 0.008;
 
-    /**
-     * Sets the velocity for movement and increases the bank angle
-     * @param dt {number} delta time
-     * @param dir {number} sign of direction
-     */
-    function move(dt, dir) {
-        velocity.x = moveSpeed * dir;
-        bankPct += bankRate * dt * dir;
-        bankPct = MM.clamp(bankPct, -1, 1);
-    }
+        var tEmitter = new Geometry.Transform().scaleBy(3.5);
+        var emitter = new MParticle.Emitter({
+            maxParticleCount: 30,
+            transform: tEmitter,
+            priority: 9,
+            rate: 0,
 
-    /**
-     * Determines what lane the ship is in from it's position
-     * @returns {number} 0 - 2
-     */
-    function getLaneFromPos(){
-        var rightBound = 0;
-        while((rightBound - 1) * laneWidth <= tShip.position.x){
-            rightBound++;
+            energy: 500,
+            sizeDecay: 0.08,
+            speed: 1.5,
+            startVelocity: MM.vec3(0, 0, 0.01),
+            spread: MM.vec3(1, 1, .5)
+        });
+
+        function blitTrail(){
+            var height = 20,
+                width = height * 4;
+            //Create a temporary canvas
+            MEasel.createNewCanvas('trail', width, height);
+            var cacheCtx = MEasel.getContext('trail');
+            cacheCtx.fillStyle = 'rgba(255, 20, 20, .5)';
+            //cacheCtx.fillStyle = 'rgba(255, 255, 255, .5)';
+            cacheCtx.beginPath();
+            cacheCtx.moveTo(0, height);
+            cacheCtx.lineTo(width / 4, 0);
+            cacheCtx.lineTo(3 * width / 4, 0);
+            cacheCtx.lineTo(width, height);
+            cacheCtx.closePath();
+            cacheCtx.fill();
+
+            //Return the rendered image
+            return cacheCtx.canvas;
         }
 
-        return getLaneCoord() > .5 ? rightBound : rightBound - 1;
-    }
+        var tTrail = new Geometry.Transform();
+        var trailEmitter = new MParticle.Emitter({
+            maxParticleCount: 7,
+            transform: tTrail,
+            priority: 1001,
+            rate: MParticle.Emitter.Uniform,
 
-    WarpState.onState(WarpState.Loading, ()=>{self.score = 0});
+            energy: 600,
+            speed: .85,
+            startVelocity: MM.vec3(0, .0006, 0.01),
+            spread: MM.vec3(0),
+            image: blitTrail()
+        });
 
-    function setDestLane(lane){
-        destLane = MM.clamp(lane, 0, 2);
-    }
+        //create the ship's transform
+        var tShip = new Geometry.Transform();
+        tShip.position.set(-laneWidth, -1, -2);
+        tShip.scale.set(.75, .5, .75);
 
-    var activeCtrl = null;
-    function switchLane(key){
-        activeCtrl = key;
-        setDestLane(key === MKeys.Left ? destLane - 1 : destLane + 1);
-    }
+        this.lane = 0;
+        this.score = 0;
 
-
-    MKeyboard.onKeyDown(MKeys.Left, ()=>switchLane(MKeys.Left));
-    MKeyboard.onKeyDown(MKeys.Right, ()=>switchLane(MKeys.Right));
-
-    /**
-     * Determines if the destination position is in lane bounds
-     * @param {number} moveDistance
-     * @returns {boolean}
-     */
-    function isInBounds(moveDistance) {
-        var minBound = -laneWidth - moveDistance,
-            maxBound = +laneWidth + moveDistance;
-        return tShip.position.x <= maxBound && tShip.position.x >= minBound;
-    }
-
-    MScheduler.schedule(dt => {
-
-        //Clear out the velocity
-        velocity.scale(0);
-
-        if(!isInBounds(0)){ //If ship is out of bounds, clamp it back in
-            tShip.position.x -= tShip.position.x - MM.sign(tShip.position.x) * laneWidth;
+        /**
+         * Determines if the ship is switching lanes
+         * @returns {boolean}
+         */
+        function isSwitchingLanes() {
+            return destLane !== self.lane;
         }
 
         /**
-         * Move the ship if
-         * - there's an active control
-         * - and the control is still pressed
-         * - and the target position is in the lane bounds
+         * Gets the direction of lane switch
+         * @returns {number}
          */
-        if(activeCtrl !== null && MKeyboard.isKeyDown(activeCtrl) && isInBounds(moveSpeed * dt)) {
-            move(dt, activeCtrl === MKeys.Left ? -1 : 1);
-        } //Otherwise, if there's still an active lane switch
-        else if(isSwitchingLanes()) {
-            move(dt, getSwitchDirection());
-            if(hasReachedLane()){ //move until we reach the target lane
-                tShip.position.x = (destLane - 1) * laneWidth;
-                self.lane = destLane;
-                velocity.scale(0);
-                activeCtrl = null;
-            }
-        } //Finally if there's an active control but the key was released
-        else if(activeCtrl !== null) {
-            //"snaps" the ship to the middle of a lane when the user is releases all controls
-            var rightBound = 0; //figure out which lane ship is left of
+        function getSwitchDirection(){
+            return MM.sign(destLane - self.lane);
+        }
+
+        /**
+         * Checks position of the ship to determine if it has reached the destination lane
+         * @returns {boolean}
+         */
+        function hasReachedLane(){
+            var lanePos = (destLane - 1) * laneWidth;
+            return getSwitchDirection() > 0 ? tShip.position.x >= lanePos : tShip.position.x <= lanePos;
+        }
+
+        /**
+         * Calculates how far between the start and dest lanes the ship is
+         * @returns {number} 0 to 1
+         */
+        function getLaneCoord() {
+            var relPos = (tShip.position.x + laneWidth) % laneWidth;
+            return relPos / laneWidth;
+        }
+
+        /**
+         * Sets the velocity for movement and increases the bank angle
+         * @param dt {number} delta time
+         * @param dir {number} sign of direction
+         */
+        function move(dt, dir) {
+            velocity.x = moveSpeed * dir;
+            bankPct += bankRate * dt * dir;
+            bankPct = MM.clamp(bankPct, -1, 1);
+        }
+
+        /**
+         * Determines what lane the ship is in from it's position
+         * @returns {number} 0 - 2
+         */
+        function getLaneFromPos(){
+            var rightBound = 0;
             while((rightBound - 1) * laneWidth <= tShip.position.x){
                 rightBound++;
             }
 
-            //Determine if the ship is close to the left or right lane
-            //Then set the destination and current lanes accordingly
-            var laneCoord = getLaneCoord();
-            destLane = (laneCoord > .5) ? rightBound : rightBound - 1;
-            self.lane = (laneCoord > .5) ? rightBound - 1 : rightBound;
-
-            //Conditionally clamp the destination and start lanes
-            if(destLane > 2){
-                destLane = 2;
-                self.lane = 1;
-            }
-            else if(destLane < 0){
-                destLane = 0;
-                self.lane = 1;
-            }
-
-            //cancel the active movement
-            activeCtrl = null;
+            return getLaneCoord() > .5 ? rightBound : rightBound - 1;
         }
 
-        //Gradually return the ship to resting rotation if there's no movement
-        if(bankPct != 0 && velocity.len2() === 0) {
-            var sign = MM.sign(bankPct);
-            bankPct -= bankRate * dt * sign;
-            bankPct = MM.clamp(bankPct, -1, 1);
+        WarpState.onState(WarpState.Loading, ()=>{self.score = 0});
 
-            var newSign = MM.sign(bankPct);
-            if(newSign !== sign){
-                bankPct = 0;
-            }
+        function setDestLane(lane){
+            destLane = MM.clamp(lane, 0, 2);
         }
 
-        tShip.position.add(MM.Vector3.scale(velocity, dt));
+        var activeCtrl = null;
+        function switchLane(key){
+            activeCtrl = key;
+            setDestLane(key === MKeys.Left ? destLane - 1 : destLane + 1);
+        }
 
-        var collectOffset = 5, //how many slices ahead of the current slice we're collecting from
-            collectSliceIndex = collectOffset + Warp.sliceIndex,
-            currentLane = getLaneFromPos();
 
-        if(Warp.warpField && Warp.warpField[collectSliceIndex]){
-            Warp.warpField[collectSliceIndex].gems.forEach((gem, lane) => {
-                if(gem === 1 && lane === currentLane){
-                    self.score++;
-                    Warp.warpField[collectSliceIndex].gems[lane] = 2;
+        MKeyboard.onKeyDown(MKeys.Left, ()=>switchLane(MKeys.Left));
+        MKeyboard.onKeyDown(MKeys.Right, ()=>switchLane(MKeys.Right));
 
-                    if(Warp.sliceIndex % 2 === 1){
-                        for(var i = 0; i < 10; i++){
-                            emitter.emit();
+        /**
+         * Determines if the destination position is in lane bounds
+         * @param {number} moveDistance
+         * @returns {boolean}
+         */
+        function isInBounds(moveDistance) {
+            var minBound = -laneWidth - moveDistance,
+                maxBound = +laneWidth + moveDistance;
+            return tShip.position.x <= maxBound && tShip.position.x >= minBound;
+        }
+
+        MScheduler.schedule(dt => {
+
+            //Clear out the velocity
+            velocity.scale(0);
+
+            if(!isInBounds(0)){ //If ship is out of bounds, clamp it back in
+                tShip.position.x -= tShip.position.x - MM.sign(tShip.position.x) * laneWidth;
+            }
+
+            /**
+             * Move the ship if
+             * - there's an active control
+             * - and the control is still pressed
+             * - and the target position is in the lane bounds
+             */
+            if(activeCtrl !== null && MKeyboard.isKeyDown(activeCtrl) && isInBounds(moveSpeed * dt)) {
+                move(dt, activeCtrl === MKeys.Left ? -1 : 1);
+            } //Otherwise, if there's still an active lane switch
+            else if(isSwitchingLanes()) {
+                move(dt, getSwitchDirection());
+                if(hasReachedLane()){ //move until we reach the target lane
+                    tShip.position.x = (destLane - 1) * laneWidth;
+                    self.lane = destLane;
+                    velocity.scale(0);
+                    activeCtrl = null;
+                }
+            } //Finally if there's an active control but the key was released
+            else if(activeCtrl !== null) {
+                //"snaps" the ship to the middle of a lane when the user is releases all controls
+                var rightBound = 0; //figure out which lane ship is left of
+                while((rightBound - 1) * laneWidth <= tShip.position.x){
+                    rightBound++;
+                }
+
+                //Determine if the ship is close to the left or right lane
+                //Then set the destination and current lanes accordingly
+                var laneCoord = getLaneCoord();
+                destLane = (laneCoord > .5) ? rightBound : rightBound - 1;
+                self.lane = (laneCoord > .5) ? rightBound - 1 : rightBound;
+
+                //Conditionally clamp the destination and start lanes
+                if(destLane > 2){
+                    destLane = 2;
+                    self.lane = 1;
+                }
+                else if(destLane < 0){
+                    destLane = 0;
+                    self.lane = 1;
+                }
+
+                //cancel the active movement
+                activeCtrl = null;
+            }
+
+            //Gradually return the ship to resting rotation if there's no movement
+            if(bankPct != 0 && velocity.len2() === 0) {
+                var sign = MM.sign(bankPct);
+                bankPct -= bankRate * dt * sign;
+                bankPct = MM.clamp(bankPct, -1, 1);
+
+                var newSign = MM.sign(bankPct);
+                if(newSign !== sign){
+                    bankPct = 0;
+                }
+            }
+
+            tShip.position.add(MM.Vector3.scale(velocity, dt));
+
+            var collectOffset = 5, //how many slices ahead of the current slice we're collecting from
+                collectSliceIndex = collectOffset + Warp.sliceIndex,
+                currentLane = getLaneFromPos();
+
+            if(Warp.warpField && Warp.warpField[collectSliceIndex]){
+                Warp.warpField[collectSliceIndex].gems.forEach((gem, lane) => {
+                    if(gem === 1 && lane === currentLane){
+                        self.score++;
+                        Warp.warpField[collectSliceIndex].gems[lane] = 2;
+
+                        if(Warp.sliceIndex % 2 === 1){
+                            for(var i = 0; i < 10; i++){
+                                emitter.emit();
+                            }
                         }
                     }
-                }
-            });
-        }
+                });
+            }
 
-        tEmitter.position.x = tShip.position.x;
-        tEmitter.position.y = tShip.position.y + .2;
-        tEmitter.position.z = tShip.position.z;
+            tEmitter.position.x = tShip.position.x;
+            tEmitter.position.y = tShip.position.y + .2;
+            tEmitter.position.z = tShip.position.z;
 
-        tTrail.position.set(
-            tShip.position.x,
-            tShip.position.y,
-            tShip.position.z + .5);
+            tTrail.position.set(
+                tShip.position.x,
+                tShip.position.y,
+                tShip.position.z + .5);
 
-        MScheduler.draw(() => {
-            //Rotate ship
-            tShip.rotation.x = - Math.PI / 9 - Math.abs(bankPct * bankAngle.x);
-            tShip.rotation.y = bankPct * bankAngle.y;
-            tShip.rotation.z = bankPct * bankAngle.z;
+            MScheduler.draw(() => {
+                //Rotate ship
+                tShip.rotation.x = - Math.PI / 9 - Math.abs(bankPct * bankAngle.x);
+                tShip.rotation.y = bankPct * bankAngle.y;
+                tShip.rotation.z = bankPct * bankAngle.z;
 
-            //Render in slightly muted red
-            MCamera.render(Geometry.meshes.Ship, tShip, MM.vec3(225, 20, 20));
+                //Render in slightly muted red
+                MCamera.render(Geometry.meshes.Ship, tShip, MM.vec3(225, 20, 20));
 
-            //Draw Shadow
-            MEasel.context.fillStyle = 'rgba(0,0,0,.25)';
-            //MCamera.drawShape(Shapes.Triangle, MM.vec3(tShip.position.x, 0, tShip.position.z), shipWidth * Math.cos(bankAngle), 10, 0);
+                //Draw Shadow
+                MEasel.context.fillStyle = 'rgba(0,0,0,.25)';
+                //MCamera.drawShape(Shapes.Triangle, MM.vec3(tShip.position.x, 0, tShip.position.z), shipWidth * Math.cos(bankAngle), 10, 0);
 
-        }, 10);
-    });
-}]);
+            }, 10);
+        });
+    }
+})();

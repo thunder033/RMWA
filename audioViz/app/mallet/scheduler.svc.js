@@ -2,7 +2,7 @@
  * Created by gjr8050 on 9/16/2016.
  */
 "use strict";
-angular.module('mallet').service("MScheduler", ['MaxFrameRate', 'MState', '$rootScope', function(MaxFrameRate, MState, $rootScope){
+angular.module('mallet').service("MScheduler", ['MaxFrameRate', 'mallet.state', '$rootScope', function(MaxFrameRate, MState, $rootScope){
     var self = this,
         updateOperations = new PriorityQueue(),
         drawCommands = new PriorityQueue(),

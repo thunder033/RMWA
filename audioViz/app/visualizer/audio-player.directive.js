@@ -2,7 +2,7 @@
  * Created by gjr8050 on 9/16/2016.
  */
 "use strict";
-angular.module('pulsar-visualizer').directive('audioPlayer', function(AudioPlayer){
+angular.module('pulsar.visualizer').directive('audioPlayer', function(AudioPlayer){
     return {
         restrict: 'E',
         replace: true,
