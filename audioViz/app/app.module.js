@@ -30,11 +30,11 @@ var app = angular.module('pulsar', [
 
 
 })
-.run(function(MScheduler, $rootScope, AudioPlayerService){
+.run(function(MScheduler, $rootScope, AudioPlayer){
     MScheduler.startMainLoop();
 
     $rootScope.$on('$stateChangeStart', ()=>{
-        AudioPlayerService.stop();
+        AudioPlayer.stop();
         MScheduler.reset();
     });
 });

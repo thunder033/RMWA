@@ -2,7 +2,7 @@
 /**
  * Created by gjrwcs on 9/15/2016.
  */
-angular.module('pulsar-visualizer').controller('ControlPanelCtrl', function($scope, $timeout, AudioClipService, AutoPlay, AudioPlayerService, MediaStates){
+angular.module('pulsar-visualizer').controller('ControlPanelCtrl', function($scope, $timeout, AudioClipService, AutoPlay, AudioPlayer, MediaStates){
     //Ensure all components render before we start trying to load songs
         $timeout(()=>{
             AudioClipService.getClipList()
@@ -11,7 +11,7 @@ angular.module('pulsar-visualizer').controller('ControlPanelCtrl', function($sco
                 .then(null, null, function(clip){
                     //Play AutoPlay clip when it finishes loading
                     if(clip.name == AutoPlay && clip.state == MediaStates.READY)
-                        AudioPlayerService.playClip(AutoPlay);
+                        AudioPlayer.playClip(AutoPlay);
                 });
         });
 });

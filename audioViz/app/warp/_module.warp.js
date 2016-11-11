@@ -325,7 +325,7 @@ angular.module('pulsar-warp', [])
         });
     }])
     //Still a little ugly, but this is workable...
-    .service('Warp', function (WarpFieldDraw, WarpLevel, WarpState, MState, MKeyboard, MKeys, AudioClipService, AutoPlay, MediaStates, MScheduler, AudioPlayerService, WarpFieldCache, $q, WarpField) {
+    .service('Warp', function (WarpFieldDraw, WarpLevel, WarpState, MState, MKeyboard, MKeys, AudioClipService, AutoPlay, MediaStates, MScheduler, AudioPlayer, WarpFieldCache, $q, WarpField) {
         
         var self = this;
 
@@ -354,19 +354,19 @@ angular.module('pulsar-warp', [])
             WarpLevel.reset();
 
             //Stop any song that's playing
-            AudioPlayerService.stop();
+            AudioPlayer.stop();
 
             getWarpField(clip).then(function(warpField){
                WarpLevel.load(warpField);
 
                 //Play the clip - this can take time to initialize
-                return AudioPlayerService.playClip(clip.id).then(()=>{
+                return AudioPlayer.playClip(clip.id).then(()=>{
                     WarpState.current = WarpState.Playing;
 
                     //Don't start playing the song if game is paused
                     if(MState.is(MState.Suspended)){
                         WarpState.current = WarpState.Paused;
-                        AudioPlayerService.pause();
+                        AudioPlayer.pause();
                     }
                 });
             });
@@ -378,7 +378,7 @@ angular.module('pulsar-warp', [])
         this.init = () => {
             WarpFieldDraw.init();
             MScheduler.suspendOnBlur(); //Suspend the event loop when the window is blurred
-            AudioPlayerService.registerPlayer(); //init the audio player service
+            AudioPlayer.registerPlayer(); //init the audio player service
             AudioClipService.getClipList() //wait for clips to load
                 .then(AudioClipService.loadAudioClips)
                 .then(function() {
@@ -389,14 +389,14 @@ angular.module('pulsar-warp', [])
             MState.onState(MState.Suspended, () => {
                 if(WarpState.is(WarpState.Playing)){
                     WarpState.current = WarpState.Paused;
-                    AudioPlayerService.pause();
+                    AudioPlayer.pause();
                 }
             });
 
             MState.onState(MState.Running, () => {
                 if(WarpState.is(WarpState.Paused)){
                     WarpState.current = WarpState.Playing;
-                    AudioPlayerService.resume();
+                    AudioPlayer.resume();
                 }
             });
 

@@ -1,0 +1,1 @@
+Web Audio TS: https://raw.githubusercontent.com/Tonejs/TypeScript/master/WebAudio.d.ts

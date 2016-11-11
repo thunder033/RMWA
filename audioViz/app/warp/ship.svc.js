@@ -6,6 +6,7 @@
  * Controls behavior of the ship and handles scoring
  */
 angular.module('pulsar-warp').service('warp.ship', ['MScheduler', 'MCamera', 'MEasel', 'MalletMath', 'MKeyboard', 'MKeys', 'WarpLevel', 'WarpState', 'Geometry', 'MParticle', function(MScheduler, MCamera, MEasel, MM, MKeyboard, MKeys, Warp, WarpState, Geometry, MParticle){
+
     var self = this,
         velocity = MM.vec3(0),
         destLane = 0,
