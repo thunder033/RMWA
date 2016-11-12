@@ -130,8 +130,11 @@ angular.module('pulsar.warp', [])
 
             //MCamera.render(meshes.XZQuad, tZero, MM.vec3(255,0,0));
 
+            MCamera.present(); //Draw the background
+
             var green = MM.vec3(0,225,40);
             MCamera.render(meshes.Cube, gems, green);
+            MCamera.present(); //Draw the background
         }
 
         this.init = () => {
@@ -142,9 +145,8 @@ angular.module('pulsar.warp', [])
                     return;
                 }
 
-                MScheduler.draw(draw);
+                MScheduler.draw(draw, 9);
             });
         }
 
-    }])
-    //Still a little ugly, but this is workable...
+    }]);

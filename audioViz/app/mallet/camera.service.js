@@ -5,6 +5,7 @@
 angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', 'Geometry', 'MColor', 'MScheduler', 'mallet.state', function (MM, MEasel, Shapes, Geometry, Color, MScheduler, MState) {
 
     var Mesh = Geometry.Mesh,
+        drawCalls = new PriorityQueue(),
         self = this;
 
     this.renderRatio = 100;
@@ -149,7 +150,7 @@ angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', '
         return [screenX, screenY, fieldScale];
     };
 
-    this.projectBuffer = (buffer, culledFaces, normals, indices, drawQueue) => {
+    this.projectBuffer = (buffer, culledFaces, normals, indices, drawQueue, color) => {
         var tanLensAngle = Math.tan(self.getLensAngle()),
             ctx = MEasel.context,
             viewport = MM.vec2(ctx.canvas.height, ctx.canvas.height),
@@ -178,10 +179,9 @@ angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', '
                 dispY = -(buffer[b + 1] - self.position.y),
                 dispZ = self.position.z - buffer[b + 2];
 
-            avgDist += dispZ / faceSize;
-
             //Transform the vertex into screen space
             var distance = Math.sqrt(dispX * dispX + dispY * dispY + dispZ * dispZ);
+            avgDist += distance / faceSize;
             var fieldScale = Math.abs(1 / (distance / 5 * tanLensAngle)),
                 screenX = dispX * fieldScale * viewport.x / self.renderRatio + screenCenter.x,
                 screenY = dispY * fieldScale * viewport.y / self.renderRatio + screenCenter.y;
@@ -200,7 +200,11 @@ angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', '
                     //Clamp the light amount to 1 and make sure it is positive
                     lightAmt = Math.min(.2 + Math.max(0, dot), 1);
 
-                drawQueue.enqueue(1000 - avgDist, {buffer: faceBuffer.slice(), end: faceSize * 2, color: lightAmt});
+                drawQueue.enqueue(1000 - avgDist, {
+                    buffer: faceBuffer.slice(),
+                    end: faceSize * 2,
+                    color: MM.Vector3.scale(color, lightAmt)});
+
                 avgDist = 0;
                 faceBufferIndex = 0;
             }
@@ -232,32 +236,25 @@ angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', '
 
     /**
      *
-     * @param {Image} image
+     * @param {Array<Image>} images
      * @param {Transform[]} transforms
      * @param {Transform} [parent]
      */
-    this.billboardRender = (image, transforms, parent) => {
+    this.billboardRender = (images, transforms, parent) => {
         //wrap a raw transform in an array
         transforms = (transforms instanceof Array) ? transforms : [transforms];
         parent = parent || new Geometry.Transform();
 
         //create a queue to store the draw commands generated
-        var ctx = MEasel.context,
-            drawCalls = new PriorityQueue(),
-            culledFace = [1],
-            normals = [0, 0, 1],
-            indices = [0];
+        var ctx = MEasel.context;
 
         for(var t = 0; t < transforms.length; t++) {
             if (transforms[t] === null || typeof transforms[t] !== 'object') {
                 continue;
             }
 
-            var buffer = transforms[t].position.toBuffer();
-
-            //buffer[0] += parent.position.x;
-            //buffer[1] += parent.position.y;
-            //buffer[2] += parent.position.z;
+            var buffer = transforms[t].position.toBuffer(),
+                image = images[~~(Math.random() * images.length)];
 
             var screenCoords = self.projectPoint(buffer),
                 fieldScale = screenCoords[2] / 30;
@@ -285,7 +282,6 @@ angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', '
         //wrap a raw transform in an array
         transforms = (transforms instanceof Array) ? transforms : [transforms];
         //create a queue to store the draw commands generated
-        var drawCalls = new PriorityQueue();
 
         for(var t = 0; t < transforms.length; t++){
             if(transforms[t] === null || typeof transforms[t] !== 'object'){
@@ -295,8 +291,8 @@ angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', '
             //Don't render things that are behind the camera
             //TODO: this needs to be changed be based off camera camera position/perspective
             if(self.position.z - transforms[t].position.z < 0){
-                if(MState.is(MState.Debug)){
-                    console.warn('Mesh at ' + transforms[t].position + ' was skipped');
+                if(MState.is(MState.Debug)){ //TODO: add logging levels (this would be VERY verbose)
+                    //console.warn('Mesh at ' + transforms[t].position + ' was skipped');
                 }
 
                 continue;
@@ -310,19 +306,7 @@ angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', '
                 culledFaces = self.getCulledFaces(buffer, normalsBuffer, mesh.indices);
 
             //Project the buffer into the camera's viewport
-            self.projectBuffer(buffer, culledFaces, normalsBuffer, mesh.indices, drawCalls);
-        }
-
-        var ctx = MEasel.context, face, callCount = 0;
-        ctx.lineWidth = 1;
-        //Execute each draw call to display the scene
-        while(drawCalls.peek() != null){
-            callCount++;
-            face = drawCalls.dequeue();
-            //Apply lighting calculations to the mesh color
-            ctx.fillStyle = ctx.strokeStyle = Color.rgbaFromVector(MM.Vector3.scale(color, face.color));
-            //Draw the face
-            self.drawFace(MEasel.context, face.buffer, face.end);
+            self.projectBuffer(buffer, culledFaces, normalsBuffer, mesh.indices, drawCalls, color);
         }
     };
 
@@ -399,7 +383,22 @@ angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', '
         ctx.restore();
     };
 
-    MScheduler.draw(()=>{
+   this.present = () => {
+        var ctx = MEasel.context, face, callCount = 0;
+        ctx.lineWidth = 1;
+        //Execute each draw call to display the scene
+        while(drawCalls.peek() != null){
+            callCount++;
+            face = drawCalls.dequeue();
+            //Apply lighting calculations to the mesh color
+            ctx.fillStyle = ctx.strokeStyle = Color.rgbaFromVector(face.color);
+            //Draw the face
+            self.drawFace(MEasel.context, face.buffer, face.end);
+        }
+    };
 
+    MScheduler.schedule(()=>{
+        MScheduler.draw(self.present, 0);
     });
+
 }]);

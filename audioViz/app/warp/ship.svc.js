@@ -77,6 +77,7 @@
 
         this.lane = 0;
         this.score = 0;
+        this.priority = 10;
 
         /**
          * Determines if the ship is switching lanes
@@ -267,12 +268,13 @@
 
                 //Render in slightly muted red
                 MCamera.render(Geometry.meshes.Ship, tShip, MM.vec3(225, 20, 20));
+                MCamera.present();
 
                 //Draw Shadow
                 MEasel.context.fillStyle = 'rgba(0,0,0,.25)';
                 //MCamera.drawShape(Shapes.Triangle, MM.vec3(tShip.position.x, 0, tShip.position.z), shipWidth * Math.cos(bankAngle), 10, 0);
 
-            }, 10);
-        });
+            }, this.priority);
+        }, this.priority);
     }
 })();
