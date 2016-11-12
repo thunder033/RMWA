@@ -88,7 +88,7 @@ angular.module('mallet').service('mallet.state', ['$location', function($locatio
      */
     this.clearState = () => {
         appState = self.Loading;
-        appState |= $location.search('debug') ? self.Debug : 0;
+        appState |= $location.search().debug == '1' ? self.Debug : 0;
         stateListeners.length = 0;
     };
 
