@@ -14,11 +14,18 @@ angular.module('pulsar.warp', [])
         };
 
         this.retrieve = (clip) => {
-            var warpField = JSON.parse(localStorage.getItem(clip.name)),
+            var warpField, signature;
+
+            try {
+                warpField = JSON.parse(localStorage.getItem(clip.name));
                 signature = getObjectSignature(warpField || {});
+            }
+            catch(e){
+                return null;
+            }
 
             if(signature !== getObjectSignature(new WarpField())){
-                localStorage.setItem(clip.name, '');
+                localStorage.setItem(clip.name, 'null');
                 return null;
             }
 
