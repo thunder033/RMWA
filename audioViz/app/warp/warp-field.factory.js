@@ -17,7 +17,7 @@
         function WarpField(){
             //Defining a version as a key so that the 'signature' of the object
             //can be compared without analyzing any specific property
-            Object.defineProperty(this, 'v1.28', {configurable: false, value: 1, enumerable: true});
+            Object.defineProperty(this, 'v1.39', {configurable: false, value: 1, enumerable: true});
             this.duration = 0;
             this.timeStep = NaN;
             this.level = null;

@@ -8,72 +8,27 @@
      * Controls behavior of the ship and handles scoring
      */
     angular.module('pulsar.warp')
-        .service('warp.Ship', ['MScheduler', 'MCamera', 'MEasel', 'MalletMath', 'MKeyboard', 'MKeys', 'warp.Level', 'warp.State', 'Geometry', 'MParticle', Ship]);
+        .service('warp.Ship', ['MScheduler', 'MCamera', 'MalletMath', 'MKeyboard', 'MKeys', 'Geometry', Ship]);
 
-    function Ship(MScheduler, MCamera, MEasel, MM, MKeyboard, MKeys, Warp, WarpState, Geometry, MParticle){
+    function Ship(MScheduler, MCamera, MM, MKeyboard, MKeys, Geometry){
 
         var self = this,
             velocity = MM.vec3(0),
             destLane = 0,
-            moveSpeed = 0.004,
+            moveSpeed = 0.0045,
             laneWidth = 1.15,
 
             bankAngle = MM.vec3(Math.PI / 12, Math.PI / 24, Math.PI / 4),
             bankPct = 0,
             bankRate = 0.008;
 
-        var tEmitter = new Geometry.Transform().scaleBy(3.5);
-        var emitter = new MParticle.Emitter({
-            maxParticleCount: 30,
-            transform: tEmitter,
-            priority: 9,
-            rate: 0,
-
-            energy: 500,
-            sizeDecay: 0.08,
-            speed: 1.5,
-            startVelocity: MM.vec3(0, 0, 0.01),
-            spread: MM.vec3(1, 1, .5)
-        });
-
-        function blitTrail(){
-            var height = 20,
-                width = height * 4;
-            //Create a temporary canvas
-            MEasel.createNewCanvas('trail', width, height);
-            var cacheCtx = MEasel.getContext('trail');
-            cacheCtx.fillStyle = 'rgba(255, 20, 20, .5)';
-            //cacheCtx.fillStyle = 'rgba(255, 255, 255, .5)';
-            cacheCtx.beginPath();
-            cacheCtx.moveTo(0, height);
-            cacheCtx.lineTo(width / 4, 0);
-            cacheCtx.lineTo(3 * width / 4, 0);
-            cacheCtx.lineTo(width, height);
-            cacheCtx.closePath();
-            cacheCtx.fill();
-
-            //Return the rendered image
-            return cacheCtx.canvas;
-        }
-
-        var tTrail = new Geometry.Transform();
-        var trailEmitter = new MParticle.Emitter({
-            maxParticleCount: 7,
-            transform: tTrail,
-            priority: 1001,
-            rate: MParticle.Emitter.Uniform,
-
-            energy: 600,
-            speed: .85,
-            startVelocity: MM.vec3(0, .0006, 0.01),
-            spread: MM.vec3(0),
-            image: blitTrail()
-        });
-
         //create the ship's transform
-        var tShip = new Geometry.Transform();
-        tShip.position.set(-laneWidth, -1, -2);
-        tShip.scale.set(.75, .5, .75);
+        this.transform = new Geometry.Transform()
+            .translate(-laneWidth, -1, -2)
+            .scaleBy(.75, .5, .75);
+
+        //Shorter local reference
+        var tShip = this.transform;
 
         this.lane = 0;
         this.score = 0;
@@ -128,16 +83,14 @@
          * Determines what lane the ship is in from it's position
          * @returns {number} 0 - 2
          */
-        function getLaneFromPos(){
+        this.getLaneFromPos = function(){
             var rightBound = 0;
             while((rightBound - 1) * laneWidth <= tShip.position.x){
                 rightBound++;
             }
 
             return getLaneCoord() > .5 ? rightBound : rightBound - 1;
-        }
-
-        WarpState.onState(WarpState.Loading, ()=>{self.score = 0});
+        };
 
         function setDestLane(lane){
             destLane = MM.clamp(lane, 0, 2);
@@ -230,48 +183,21 @@
                 }
             }
 
-            tShip.position.add(MM.Vector3.scale(velocity, dt));
-
-            var collectOffset = 5, //how many slices ahead of the current slice we're collecting from
-                collectSliceIndex = collectOffset + Warp.sliceIndex,
-                currentLane = getLaneFromPos();
-
-            if(Warp.warpField && Warp.warpField[collectSliceIndex]){
-                Warp.warpField[collectSliceIndex].gems.forEach((gem, lane) => {
-                    if(gem === 1 && lane === currentLane){
-                        self.score++;
-                        Warp.warpField[collectSliceIndex].gems[lane] = 2;
-
-                        if(Warp.sliceIndex % 2 === 1){
-                            for(var i = 0; i < 10; i++){
-                                emitter.emit();
-                            }
-                        }
-                    }
-                });
-            }
-
-            tEmitter.position.x = tShip.position.x;
-            tEmitter.position.y = tShip.position.y + .2;
-            tEmitter.position.z = tShip.position.z;
-
-            tTrail.position.set(
-                tShip.position.x,
-                tShip.position.y,
-                tShip.position.z + .5);
+            tShip.timeTranslate(velocity, dt);
 
             MScheduler.draw(() => {
                 //Rotate ship
-                tShip.rotation.x = - Math.PI / 9 - Math.abs(bankPct * bankAngle.x);
-                tShip.rotation.y = bankPct * bankAngle.y;
-                tShip.rotation.z = bankPct * bankAngle.z;
+                tShip.rotation.set(
+                    - Math.PI / 9 - Math.abs(bankPct * bankAngle.x),
+                    bankPct * bankAngle.y,
+                    bankPct * bankAngle.z);
 
                 //Render in slightly muted red
                 MCamera.render(Geometry.meshes.Ship, tShip, MM.vec3(225, 20, 20));
                 MCamera.present();
 
                 //Draw Shadow
-                MEasel.context.fillStyle = 'rgba(0,0,0,.25)';
+                //MEasel.context.fillStyle = 'rgba(0,0,0,.25)';
                 //MCamera.drawShape(Shapes.Triangle, MM.vec3(tShip.position.x, 0, tShip.position.z), shipWidth * Math.cos(bankAngle), 10, 0);
 
             }, this.priority);

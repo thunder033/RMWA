@@ -2,30 +2,43 @@
  * Created by gjr8050 on 11/11/2016.
  */
 "use strict";
-angular.module('pulsar.audio').factory('audio.audioFx',['MediaLibrary', 'AudioData', '$q', function (AudioClip, AudioData, $q) {
+angular.module('pulsar.audio').factory('audio.AudioFx',['MediaLibrary', 'AudioData', '$q', function (MediaLibrary, AudioData, $q) {
 
     var audioCtx = new (window.AudioContext || window.webkitAudioContext),
         autoId = 0,
-        gain = audioCtx.createGain();
+        masterGain = audioCtx.createGain();
 
-    gain.connect(audioCtx.destination);
+    masterGain.gain.value = 1;
+    masterGain.connect(audioCtx.destination);
 
     /**
      * @param {Object} params
      * @param {string} params.clipId
+     * @param {number} [params.gain=1]
      * @constructor
      */
     function Effect(params){
-        this.clip = AudioClip.getAudioClip(params.clipId);
-        this.ready = $q.when(this);
-
-        if(!this.clip.buffer){
-            this.ready = AudioData.getAudioBuffer(this.clip)
-                .then(buffer => {
-                    this.clip.buffer = buffer;
-                    return this;
-                });
+        if(!params.clipId){
+            throw new Error('No Clip ID was provided to generate effect');
         }
+
+        this.ready = MediaLibrary.isReady().then(()=>{
+            this.clip = MediaLibrary.getAudioClip(params.clipId);
+            this.gain = audioCtx.createGain();
+            this.gain.connect(masterGain);
+            this.gain.gain.value = typeof params.gain === 'number' ? params.gain : 1;
+
+            if(!this.clip.buffer){
+                return AudioData.getAudioBuffer(this.clip)
+                    .then(buffer => {
+                        this.clip.buffer = buffer;
+                        return this;
+                    });
+            }
+
+            return this;
+        });
+
 
         this.instances = {};
     }
@@ -38,7 +51,7 @@ angular.module('pulsar.audio').factory('audio.audioFx',['MediaLibrary', 'AudioDa
         return this.isReady()
             .then(()=>{
                 var source = audioCtx.createBufferSource();
-                source.connect(gain);
+                source.connect(this.gain);
                 source.buffer = this.clip.buffer;
                 source.start(0);
                 this.instances[autoId++] = source;

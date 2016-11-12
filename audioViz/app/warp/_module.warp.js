@@ -78,6 +78,10 @@ angular.module('pulsar.warp', [])
             return startOffset;
         }
 
+        function getItems(indices, items){
+            return indices.map(i => items[i]);
+        }
+
         function draw(dt, tt){
             var zRot = - Math.PI / 8; //rotation of loudness bars on the edges
 
@@ -87,6 +91,8 @@ angular.module('pulsar.warp', [])
             var color = MM.vec3(100,255,255);
 
             var drawOffset = getStartOffset(WarpLevel.barQueue); //this spaces the bars correctly across the screen, based on how far above the plane the camera is
+
+            var blackGems = [];
             for(var i = 0; i < WarpLevel.barsVisible; i++){
                 if(i + 10 > WarpLevel.barsVisible){
                     var sliceValue = 1 - (WarpLevel.barsVisible - i) / 10;
@@ -108,12 +114,26 @@ angular.module('pulsar.warp', [])
                 MCamera.render(meshes.XZQuad, tBar, color);
 
                 var sliceGems = (WarpLevel.warpField[WarpLevel.sliceIndex + i] || {}).gems || [];
-                gems[i].scale = MM.vec3(0);
-                for(var l = 0; l < 3; l++){
-                    if(sliceGems[l] === 1 && (WarpLevel.sliceIndex +i) % 2 === 0){
-                        gems[i].scale = MM.vec3(.15);
-                        gems[i].rotation.y = tt / 1000;
+                gems[i].scale.set(0);
+
+                if((WarpLevel.sliceIndex + i) % 2 === 0){
+                    for(var l = 0; l < 3; l++){
+                        if(sliceGems[l] === 0 || sliceGems[l] === 2){
+                            continue;
+                        }
+
                         gems[i].position = MM.vec3((l - 1) * mLaneWidth * 3, -.5, zOffset);
+                        if(sliceGems[l] === 1){
+                            gems[i].scale.set(.15);
+                            gems[i].rotation.set(0, tt / 1000, 0);
+                        }
+                        else if(sliceGems[l] === 3){
+                            blackGems.push(i);
+                            gems[i].rotation.set(
+                                tt / 666,
+                                tt / 666,
+                                Math.PI / 4);
+                        }
                     }
                 }
 
@@ -134,6 +154,12 @@ angular.module('pulsar.warp', [])
 
             var green = MM.vec3(0,225,40);
             MCamera.render(meshes.Cube, gems, green);
+
+            var darkGrey = MM.vec3(25);
+            var transforms = getItems(blackGems, gems);
+            transforms.forEach(t => t.scale.set(.3));
+            MCamera.render(meshes.Spike, transforms, darkGrey);
+
             MCamera.present(); //Draw the background
         }
 

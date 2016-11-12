@@ -48,26 +48,10 @@ angular.module('mallet').factory('MParticle', ['MalletMath', 'MCamera', 'Geometr
     };
 
     /**
-     * Temporary generation function; makes green square
-     * @returns {*|HTMLCanvasElement}
-     */
-    function blitParticle(){
-        var size = 10;
-        //Create a temporary canvas
-        MEasel.createNewCanvas('particle', size, size);
-        var cacheCtx = MEasel.getContext('particle');
-        cacheCtx.fillStyle = '#0f0';
-        cacheCtx.fillRect(0, 0, size, size);
-
-        //Return the rendered image
-        return cacheCtx.canvas;
-    }
-
-    /**
      *
      * @param {Object} params
      * @param {number} [params.energy=100]
-     * @param {Image} [params.image]
+     * @param {Image|Array<Image>} params.image
      * @param {number} [params.maxParticleCount=100]
      * @param {number} [params.priority=0]
      * @param {number} [params.rate] default emission rate
@@ -90,7 +74,7 @@ angular.module('mallet').factory('MParticle', ['MalletMath', 'MCamera', 'Geometr
 
         this.emitPosition = 1;
         this.endPosition = 0;
-        this.image = params.image || blitParticle();
+        this.image = params.image instanceof Array ? params.image : [params.image];
 
         this.rate = (params.rate === Emitter.Uniform) ? 1000 / (params.energy / params.maxParticleCount) : params.rate || 0;
 

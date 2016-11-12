@@ -20,6 +20,11 @@ function getMaxIndex(arr){
     return maxIndex;
 }
 
+function random(seed) {
+    var x = Math.sin(seed) * 10000;
+    return x - ~~(x);
+}
+
 /**
  * Generates a gems based off the raw PCM audio data provided
  * @param frameBuffers
@@ -65,15 +70,42 @@ function generateAudioField(frameBuffers, frequencyBinCount, sampleRate){
     //normalize loudness values
     var maxLoudness = field.reduce( (max, val) => val.loudness > max ? val.loudness : max, 0);
     console.log(maxLoudness);
+
+    var sameLaneCount = 0,
+        lastLane = 0,
+        Gems = {
+            Basic: 1,
+            //2 is collected
+            Black: 3,
+        };
+
+    var blackGemInterval = 13;
     for(var o = 0; o < field.length; o++){
         field[o].loudness = field[o].loudness / maxLoudness;
         var loudestRange = getMaxIndex(field[o].gems);
+
+        var gem = Gems.Basic;
+        if(loudestRange === lastLane){
+            if(++sameLaneCount > 12 &&
+                (sameLaneCount % blackGemInterval === 1
+                || sameLaneCount % blackGemInterval === 0)){
+
+                gem = Gems.Black;
+                blackGemInterval = 13 + 3 * ~~(.5 - random(o));
+                //gem = random(o) > .5 ? Gems.Black : Gems.Basic;
+            }
+        }
+        else {
+            sameLaneCount = 0;
+        }
+
         field[o].gems.fill(0);
-        field[o].gems[loudestRange] = 1;
+        field[o].gems[loudestRange] = gem;
+        lastLane = loudestRange;
     }
 
     //The current "gems" is just based off the normalized loudness values of each frame
-    //more complex analysis will be done later to generate actual gemss
+    //more complex analysis will be done later to generate actual gems
     return field;
 }
 
