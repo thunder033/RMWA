@@ -36,16 +36,17 @@ angular.module('pulsar.audio').service('AudioData', function (MScheduler, Sample
      * @returns {Promise}
      */
     this.getAudioBuffer = (clip) => {
-        var renderOp = $q.defer(),
-        audioCtx = new (window.AudioContext || window.webkitAudioContext);
+        var renderOp = $q.defer();
 
         if(clip.buffer){
             renderOp.resolve(clip.buffer);
         }
         else {
+            var audioCtx = new (window.AudioContext || window.webkitAudioContext);
             audioCtx.decodeAudioData(clip.clip, function(buffer) {
                 clip.buffer = buffer;
                 renderOp.resolve(buffer);
+                audioCtx.close();
             });
         }
 
