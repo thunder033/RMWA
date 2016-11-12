@@ -4,9 +4,9 @@
 "use strict";
 var app = angular.module('pulsar', [
     'mallet',
-    'pulsar-visualizer',
-    'pulsar-audio',
-    'pulsar-warp',
+    'pulsar.visualizer',
+    'pulsar.audio',
+    'pulsar.warp',
     'checklist-model',
     'ui.router'
 ]).config(function($stateProvider, $urlRouterProvider) {
@@ -21,18 +21,16 @@ var app = angular.module('pulsar', [
     }).state('warp', {
         url: '/warp',
         template: '<m-easel id="warp"></m-easel><warp-hud></warp-hud>',
-        controller: function WarpCtrl(Warp) {
-            Warp.init();
-        }
+        controller: 'warp.GameController'
     });
 
 
 })
-.run(function(MScheduler, $rootScope, AudioPlayerService){
+.run(function(MScheduler, $rootScope, AudioPlayer){
     MScheduler.startMainLoop();
 
     $rootScope.$on('$stateChangeStart', ()=>{
-        AudioPlayerService.stop();
+        AudioPlayer.stop();
         MScheduler.reset();
     });
 });

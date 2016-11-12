@@ -11,7 +11,7 @@
  * @property Suspended
  * @property Debug
  */
-angular.module('mallet').service('MState', ['$location', function($location){
+angular.module('mallet').service('mallet.state', ['$location', function($location){
 
     var self = this,
         stateListeners = [],
@@ -88,7 +88,7 @@ angular.module('mallet').service('MState', ['$location', function($location){
      */
     this.clearState = () => {
         appState = self.Loading;
-        appState |= $location.search('debug') ? self.Debug : 0;
+        appState |= $location.search().debug == '1' ? self.Debug : 0;
         stateListeners.length = 0;
     };
 

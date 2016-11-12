@@ -37,16 +37,44 @@
     position: fixed;
     top: 0;
     left: 0;
-    padding: 1em;
+    padding: .75em;
     color: #fff;
-    font-size: 1.3em;
+    font-size: 1.5em;
+    font-weight: bold;
 }
 
 .score {
     position: fixed;
-    top: 3em;
+    top: 1em;
     color: #fff;
-    left: 1em;
-    font-size: 1.2em;
+    left: .33em;
+    font-size: 3em;
     font-weight: bold;
+}
+
+.multiplier {
+    position: fixed;
+    top: 4em;
+    left: .66em;
+    color: #ffffff;
+    font-size: 1.5em;
+}
+
+.multiplier:before {
+    content: 'x';
+}
+
+.volume-btn {
+    position: fixed;
+    top: 1em;
+    right: 1em;
+    color: #fff;
+    background: rgba(100,100,100,.6);
+    padding: .5em;
+    border-radius: .5em;
+    border: 0;
+}
+
+.volume-btn:hover {
+    background: rgba(130,130,130,.6);;
 }

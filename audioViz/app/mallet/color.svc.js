@@ -29,6 +29,11 @@ angular.module('mallet').service('MColor', [function(){
          */
         hsla(hue, saturation, lightness, alpha) {
             return `hsla(${hue},${saturation},${lightness},${alpha})`;
+        },
+
+        rgbaFromVector(vec, a) {
+            var alpha = typeof a === 'number' ? a : 1;
+            return 'rgba(' + ~~vec.x  + ',' + ~~vec.y + ',' + ~~vec.z + ',' + alpha + ')';
         }
     }
 }]);

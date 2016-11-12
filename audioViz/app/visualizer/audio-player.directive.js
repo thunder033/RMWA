@@ -2,16 +2,16 @@
  * Created by gjr8050 on 9/16/2016.
  */
 "use strict";
-angular.module('pulsar-visualizer').directive('audioPlayer', function(AudioPlayerService){
+angular.module('pulsar.visualizer').directive('audioPlayer', function(AudioPlayer){
     return {
         restrict: 'E',
         replace: true,
         templateUrl: 'views/audio-player.html',
         link: function(scope, elem){
-            AudioPlayerService.registerPlayer();
-            scope.player = AudioPlayerService;
+            AudioPlayer.registerPlayer();
+            scope.player = AudioPlayer;
             scope.getPlaybarSize = function(){
-                return AudioPlayerService.completionPct * 100 + '%'
+                return AudioPlayer.completionPct * 100 + '%'
             }
             
             function getMouse(e){
@@ -25,7 +25,7 @@ angular.module('pulsar-visualizer').directive('audioPlayer', function(AudioPlaye
                 var mouse = getMouse(e),
                     playBar = elem[0].querySelector(".play-bar"),
                     pctPos = mouse.x / playBar.clientWidth;
-                AudioPlayerService.seekTo(pctPos);
+                AudioPlayer.seekTo(pctPos);
             }
         }
     }

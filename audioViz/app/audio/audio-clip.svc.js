@@ -2,8 +2,10 @@
  * Created by gjr8050 on 9/16/2016.
  */
 "use strict";
-angular.module('pulsar-audio').service('AudioClipService', function ($http, $q, MediaPath, MediaStates, ReverbImpulsePath, MediaType) {
+angular.module('pulsar.audio').service('MediaLibrary', function ($http, $q, MediaPath, MediaStates, ReverbImpulsePath, MediaType) {
     var self = this,
+        ready = $q.defer(),
+        loadingTriggered = false,
         clips = {},
         clipList = [],
         clipCache = {},
@@ -26,7 +28,7 @@ angular.module('pulsar-audio').service('AudioClipService', function ($http, $q, 
 
     /**
      * Retrieves a list of audio clips to load
-     * @returns {Promise}
+     * @returns {Promise<Array>}
      */
     this.getClipList = () => {
         return $q.when([
@@ -44,11 +46,23 @@ angular.module('pulsar-audio').service('AudioClipService', function ($http, $q, 
             'New Adventure Theme.mp3',
             'Peanuts Theme.mp3',
             'The Picard Song.mp3',
+
             //Impulse samples: Samplicity (http://www.samplicity.com/bricasti-m7-impulse-responses/)
             {name: 'Concert Hall.wav', type: MediaType.ReverbImpulse},
             {name: 'Arena.wav', type: MediaType.ReverbImpulse},
-            {name: 'Bass Boost.wav', type: MediaType.ReverbImpulse}
+            {name: 'Bass Boost.wav', type: MediaType.ReverbImpulse},
+
+            {name: 'gemCollect.wav', type: MediaType.Effect},
+            {name: 'blackGem.wav', type:MediaType.Effect}
         ]);
+    };
+
+    /**
+     * Returns promise that resolves when the clips have been loaded
+     * @returns {Promise}
+     */
+    this.isReady = () => {
+        return ready.promise;
     };
 
     /**
@@ -57,14 +71,20 @@ angular.module('pulsar-audio').service('AudioClipService', function ($http, $q, 
      * @returns {Promise|IPromise}
      */
     this.loadAudioClips = (clipList) => {
+        //TODO: Make this less clunky...
+        if(loadingTriggered){
+            return ready.promise;
+        }
+
+        loadingTriggered = true;
+
         clipList = clipList instanceof Array ? clipList : [clipList];
-        var defer = $q.defer();
 
         $q.all(clipList.map(fileName=> {
-            return self.loadAudioClip(fileName.name || fileName, fileName.type || MediaType.Song).then(defer.notify);
-        })).then(defer.resolve, defer.reject);
+            return self.loadAudioClip(fileName.name || fileName, fileName.type || MediaType.Song).then(ready.notify);
+        })).then(ready.resolve, ready.reject);
 
-        return defer.promise.then(updateCaches);
+        return ready.promise.then(updateCaches)
     };
 
     /**
@@ -118,12 +138,12 @@ angular.module('pulsar-audio').service('AudioClipService', function ($http, $q, 
      * @returns {*}
      */
     this.getAudioClip = (id) => {
-        if (typeof id == "number") {
+        if (typeof id === "number") {
             return clips[id];
         }
-        else if (typeof id == "string") {
+        else if (typeof id === "string") {
             return clipList.reduce((clip, curClip) => {
-                return !clip && curClip.name == id ? curClip : clip;
+                return !clip && curClip.name === id ? curClip : clip;
             }, null);
         }
 

@@ -17,6 +17,7 @@ angular.module('mallet').service('MEasel', [function () {
             canvas.height = height;
 
             contexts[contextKey] = canvas.getContext('2d');
+            return canvas;
         },
         getContext(contextKey){
             return contexts[contextKey];
