@@ -2,7 +2,7 @@
  * Created by gjr8050 on 9/16/2016.
  */
 "use strict";
-angular.module('pulsar.audio').service('MediaLibrary', function ($http, $q, MediaPath, MediaStates, ReverbImpulsePath, MediaType) {
+angular.module('pulsar.audio').service('MediaLibrary', function ($http, $q, MediaPath, MediaStates, ReverbImpulsePath, MediaType, MConcurrentOperation) {
     var self = this,
         ready = $q.defer(),
         loadingTriggered = false,
