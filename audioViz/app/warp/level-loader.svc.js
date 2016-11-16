@@ -8,7 +8,7 @@
         'warp.State',
         'mallet.state',
         'MediaLibrary',
-        'MediaStates',
+        'MediaState',
         'AudioPlayer',
         'WarpFieldCache',
         '$q',
