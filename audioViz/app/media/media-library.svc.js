@@ -10,11 +10,11 @@
         'media.Path',
         'media.State',
         'media.Type',
-        'audio.Clip',
+        'media.AudioClip',
         'MConcurrentOperation',
         Library]);
 
-    function Library($http, $q, MediaPath, MediaState, MediaType, Clip, MConcurrentOperation) {
+    function Library($http, $q, MediaPath, MediaState, MediaType, AudioClip, MConcurrentOperation) {
         var self = this,
             ready = $q.defer(),
             loadingTriggered = false,
@@ -103,11 +103,11 @@
          * load a given audio clip into the audio clip service
          * @param {string} fileName
          * @param {media.Type} type
-         * @returns {Promise.<Clip>|IPromise<Clip>|*}
+         * @returns {Promise.<AudioClip>|IPromise<AudioClip>|*}
          */
         this.loadAudioClip = (fileName, type) => {
             var uri = (type == MediaType.ReverbImpulse ? MediaPath.ReverbImpulse : MediaPath.Base) + fileName,
-                clip = new Clip({
+                clip = new AudioClip({
                     name: fileName,
                     uri: uri,
                     type: type
@@ -133,7 +133,7 @@
         /**
          * Return the audio clip with the given id or name
          * @param id {string|number}
-         * @returns {Promise<Clip>}
+         * @returns {Promise<AudioClip>}
          */
         this.getAudioClip = (id) => {
             return ready.promise.then(()=>{
@@ -151,7 +151,7 @@
         /**
          * Get all audio clips of one type
          * @param type {media.Type}
-         * @returns {Promise<Clip[]>}
+         * @returns {Promise<AudioClip[]>}
          */
         this.getAudioClips = (type) => {
             return ready.promise.then(()=>{

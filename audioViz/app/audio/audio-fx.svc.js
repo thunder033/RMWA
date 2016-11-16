@@ -19,7 +19,7 @@ angular.module('pulsar.audio').factory('audio.AudioFx',['MediaLibrary', 'AudioDa
      */
     function Effect(params){
         if(!params.clipId){
-            throw new Error('No Clip ID was provided to generate effect');
+            throw new Error('No AudioClip ID was provided to generate effect');
         }
 
         this.ready = MediaLibrary.isReady().then(()=>{

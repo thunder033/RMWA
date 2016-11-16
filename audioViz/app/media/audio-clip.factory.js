@@ -4,11 +4,11 @@
 (()=>{
     "use strict";
 
-    angular.module('pulsar-audio').factory('audio.Clip', ['media.Type', 'media.State', _Clip]);
+    angular.module('pulsar-media').factory('media.AudioClip', ['media.Type', 'media.State', _Clip]);
 
     /**
-     * Returns a factory reference to the Clip constructor
-     * @returns {{Clip: Clip}}
+     * Returns a factory reference to the AudioClip constructor
+     * @returns {{AudioClip: AudioClip}}
      * @private
      */
     function _Clip(MediaType, MediaState){
@@ -32,9 +32,9 @@
          * @param {string} [params.uri]
          * @constructor
          */
-        function Clip(params) {
+        function AudioClip(params) {
             if(typeof params.id === 'undefined'){
-                this.id = Clip.getNewId();
+                this.id = AudioClip.getNewId();
                 this.name = getNiceName(params.name);
                 this.uri = params.uri;
                 this.type = params.type || MediaType.Song;
@@ -47,14 +47,14 @@
             }
         }
 
-        Clip._IdKey = 'pulsar-media-item-id';
-        Clip.autoIncrementId = parseInt(localStorage.getItem(Clip._IdKey)) || 0;
+        AudioClip._IdKey = 'pulsar-media-item-id';
+        AudioClip.autoIncrementId = parseInt(localStorage.getItem(AudioClip._IdKey)) || 0;
 
-        Clip.getNewId = function() {
-            localStorage.setItem(Clip._IdKey, ++Clip.autoIncrementId);
-            return Clip.autoIncrementId;
+        AudioClip.getNewId = function() {
+            localStorage.setItem(AudioClip._IdKey, ++AudioClip.autoIncrementId);
+            return AudioClip.autoIncrementId;
         };
 
-        return Clip;
+        return AudioClip;
     }
 })();
