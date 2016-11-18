@@ -17,7 +17,7 @@
     </label>
 
     <label class="select-box">Reverb Effect
-        <select ng-model="reverbEffect" ng-options="effect as effect.name for effect in reverbEffects track by effect.id" ng-change="setReverbEffect()"></select>
+        <select ng-model="reverbEffect" ng-options="effect as effect.name for effect in (reverbEffects | addOption : {name: 'Test', id: 9998}) track by effect.id" ng-change="setReverbEffect()"></select>
     </label>
 
     <h4>Songs</h4>

@@ -50,6 +50,10 @@
         AudioClip._IdKey = 'pulsar-media-item-id';
         AudioClip.autoIncrementId = parseInt(localStorage.getItem(AudioClip._IdKey)) || 0;
 
+        /**
+         * @param word
+         * @returns {Number|number|*}
+         */
         AudioClip.getNewId = function() {
             localStorage.setItem(AudioClip._IdKey, ++AudioClip.autoIncrementId);
             return AudioClip.autoIncrementId;

@@ -14,7 +14,7 @@
         'MConcurrentOperation',
         Library]);
 
-    function Library($http, $q, MediaPath, MediaState, MediaType, AudioClip, MConcurrentOperation) {
+    function Library($http, MediaPath, MediaState, MediaType, AudioClip, MConcurrentOperation) {
         var self = this,
             ready = $q.defer(),
             loadingTriggered = false,
@@ -29,12 +29,6 @@
             Object.keys(clipCache).forEach(function (clipType) {
                 clipCache[clipType].length = 0;
                 Array.prototype.push.apply(clipCache[clipType], clipList.filter(clip => clip.type == clipType));
-
-                //This is so hacky its not even funny, but its the best I got right now
-                //This is here to add a "None" option to the "Rever Effect" dropdown
-                if(clipType === MediaType.ReverbImpulse){
-                    clipCache[clipType].push({name: 'None', id: 9999});
-                }
             });
         }
 

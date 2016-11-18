@@ -13,6 +13,13 @@ angular.module('pulsar.media')
         LOADING: 'LOADING',
         ERROR: 'ERROR'
     }))
+
+    /**
+     * Indicates the usage of an AudioClip
+     * @property {media.Type} Song
+     * @property {media.Type} Effect
+     * @property {media.Type} ReverbImpulse
+     */
     .constant('media.Type', Object.freeze({
         "Song": 'Song',
         'Effect': 'Effect',
