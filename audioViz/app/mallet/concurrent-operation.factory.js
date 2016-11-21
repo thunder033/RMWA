@@ -28,11 +28,15 @@ angular.module('mallet').factory('MConcurrentOperation', ['$q', function concurr
 
         this.invoke = (params) => {
             var invocation = $q.defer();
-            invocations[opId] = invocation;
+            invocations[opId++] = invocation;
             params._id = opId;
 
             worker.postMessage(params);
             return invocation.promise;
+        };
+
+        this.isIdle = () => {
+            return Object.keys(invocations).length === 0;
         };
     }
 
