@@ -4,7 +4,7 @@
 "use strict";
 var app = angular.module('pulsar', [
     'mallet',
-    'pulsar.visualizer',
+    'pulsar.flare',
     'pulsar.audio',
     'pulsar.warp',
     'checklist-model',

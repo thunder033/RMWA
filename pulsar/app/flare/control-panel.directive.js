@@ -4,7 +4,7 @@
 (()=>{
     "use strict";
 
-    angular.module('pulsar.visualizer').directive('controlPanel', ['Visualizer','Effects','MScheduler','media.Library','media.Type', controlPanel]);
+    angular.module('pulsar.flare').directive('controlPanel', ['Flare','Effects','MScheduler','media.Library','media.Type', controlPanel]);
 
     function controlPanel(Visualizer, Effects, MScheduler, MediaLibrary, AudioPlayer, MediaType){
         return {

@@ -5,7 +5,7 @@
 /**
  * Performs analysis on the waveform data each frame to derive metrics
  */
-angular.module('pulsar.visualizer').service('WaveformAnalyzer', function (MScheduler, AudioData, SampleCount) {
+angular.module('pulsar.flare').service('WaveformAnalyzer', function (MScheduler, AudioData, SampleCount) {
     var results = {};
 
     /**

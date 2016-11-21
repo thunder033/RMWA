@@ -2,7 +2,7 @@
  * Created by Greg on 9/18/2016.
  */
 "use strict";
-angular.module('pulsar.visualizer').directive('playlist', function(MediaLibrary, AudioPlayer, MediaType){
+angular.module('pulsar.flare').directive('playlist', function(MediaLibrary, AudioPlayer, MediaType){
     return {
         restrict: 'E',
         replace: true,

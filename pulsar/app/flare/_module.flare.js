@@ -1,4 +1,4 @@
 /**
  * Created by gjrwcs on 10/25/2016.
  */
-angular.module('pulsar.visualizer', []);
+angular.module('pulsar.flare', []);

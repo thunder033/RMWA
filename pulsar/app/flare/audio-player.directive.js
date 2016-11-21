@@ -2,7 +2,7 @@
  * Created by gjr8050 on 9/16/2016.
  */
 "use strict";
-angular.module('pulsar.visualizer').directive('audioPlayer', function(AudioPlayer){
+angular.module('pulsar.flare').directive('audioPlayer', function(AudioPlayer){
     return {
         restrict: 'E',
         replace: true,
@@ -12,10 +12,10 @@ angular.module('pulsar.visualizer').directive('audioPlayer', function(AudioPlaye
             scope.player = AudioPlayer;
             scope.getPlaybarSize = function(){
                 return AudioPlayer.completionPct * 100 + '%'
-            }
+            };
             
             function getMouse(e){
-                var mouse = {} // make an object
+                var mouse = {}; // make an object
                 mouse.x = e.pageX - e.target.offsetLeft;
                 mouse.y = e.pageY - e.target.offsetTop;
                 return mouse;
