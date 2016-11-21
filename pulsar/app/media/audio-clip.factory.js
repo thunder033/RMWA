@@ -25,6 +25,10 @@
 
         /**
          * Maintains metadata and content for an audio clip
+         * @property {number} id
+         * @property {string} name
+         * @property {string} uri
+         * 
          * @param {Object} params
          * @param {Object} [params.id] Provides an ID of a cached audio clip to load
          * @param {string} [params.name]

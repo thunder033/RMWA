@@ -14,7 +14,7 @@
         var asyncScript = 'assets/js/workers/asyncHttpRequest.js';
 
         /**
-         * Finds an idle thread in the pool, if there is any
+         * Finds an idle thread in the pool, if there are any
          * @param {ConcurrentOperation[]} threads
          * @returns {ConcurrentOperation|null}
          */
@@ -30,7 +30,7 @@
         }
 
         /**
-         * Creates a pool of threads to be distributed among requeusts
+         * Creates a pool of threads to be distributed among requests
          * @param {number} [size=1]
          * @constructor
          */
