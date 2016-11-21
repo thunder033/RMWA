@@ -26,6 +26,10 @@
         this.current = root;
     }
 
+    /**
+     * Traverses the iterator to the next node and returns its item
+     * @returns {*}
+     */
     Iterator.prototype.next = function(){
         if(this.current){
             var node = this.current;
@@ -35,12 +39,17 @@
         return null;
     };
 
+    /**
+     * Indicates if the iterator has traversed all nodes
+     * @returns {boolean}
+     */
     Iterator.prototype.isEnd = function(){
         return this.current === null;
     };
 
     /**
      * Priority Queue
+     * lower priority items (close to 0) will be dequeued first
      * @constructor
      */
     function PriorityQueue() {
@@ -50,8 +59,9 @@
 
     /**
      * Add a new item to the queue according to the given priority
-     * @param priority
-     * @param item
+     * Items with priority equal an existing node will be enqueued after those node
+     * @param {number} priority
+     * @param {*} item
      */
     PriorityQueue.prototype.enqueue = function(priority, item){
 
@@ -107,7 +117,7 @@
 
     /**
      * See the next item in queue
-     * @returns {null}
+     * @returns {*|null}
      */
     PriorityQueue.prototype.peek = function(){
         return this.root ? this.root.item : null;
