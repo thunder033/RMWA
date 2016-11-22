@@ -11,16 +11,23 @@
         'media.State',
         'media.Type',
         'media.AudioClip',
-        'MConcurrentOperation',
+        'media.Source',
+        'media.Sources',
+        '$injector',
         Library]);
 
-    function Library($http, MediaPath, MediaState, MediaType, AudioClip, MConcurrentOperation) {
+    function Library($http, MediaPath, MediaState, MediaType, AudioClip, Source, Sources, $injector) {
         var self = this,
             ready = $q.defer(),
             loadingTriggered = false,
             clips = {},
             clipList = [],
             clipCache = {};
+
+        function init() {
+            //Invoke the creation of each source
+            Object.keys(Sources).forEach(source => $injector.get(`media.source.${source}`));
+        }
 
         /**
          * Push out new set of clips to any clients that have requested a filtered list of clips
@@ -114,12 +121,12 @@
 
             //Were going to preload the audio clips so there's no delay in playing
             return $http.get(uri, {responseType: 'arraybuffer'}).then(function (buffer) {
-                clip.state = MediaState.READY;
+                clip.state = MediaState.Ready;
                 clip.clip = buffer.data;
                 return clip;
             }, function (err) {
                 //console.warn(fileName + ' failed to load: ' + (err.message || err));
-                clip.state = MediaState.ERROR;
+                clip.state = MediaState.Error;
                 return clip;
             });
         };

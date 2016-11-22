@@ -4,14 +4,19 @@
 (()=>{
     "use strict";
 
-    angular.module('pulsar-media').factory('media.AudioClip', ['media.Type', 'media.State', _Clip]);
+    angular.module('pulsar-media').factory('media.AudioClip', [
+        'media.Type',
+        'media.State',
+        'AudioData',
+        '$q',
+        _Clip]);
 
     /**
      * Returns a factory reference to the AudioClip constructor
      * @returns {{AudioClip: AudioClip}}
      * @private
      */
-    function _Clip(MediaType, MediaState){
+    function _Clip(MediaType, MediaState, AudioData, $q){
         /**
          * Derive a more readable name from a file name
          * @param fileName
@@ -28,9 +33,12 @@
          * @property {number} id
          * @property {string} name
          * @property {string} uri
+         * @property {Source} source
          * 
          * @param {Object} params
+         * @param {Source} params.source
          * @param {Object} [params.id] Provides an ID of a cached audio clip to load
+         * @param {string} [params.sourceId]
          * @param {string} [params.name]
          * @param {media.Type} [params.type]
          * @param {string} [params.uri]
@@ -39,23 +47,58 @@
         function AudioClip(params) {
             if(typeof params.id === 'undefined'){
                 this.id = AudioClip.getNewId();
+                this.sourceId = '' + (params.sourceId || this.id);
                 this.name = getNiceName(params.name);
                 this.uri = params.uri;
                 this.type = params.type || MediaType.Song;
                 this.clip = null;
+                this.buffer = null;
+                this.source = params.source;
 
-                this.state = MediaState.LOADING;
+                this.state = MediaState.Loading;
             }
             else {
                 throw new ReferenceError('Cached Clips not yet supported');
             }
         }
 
+        /**
+         * Load the audio buffer for this clip
+         * @returns {Promise}
+         * @private
+         */
+        AudioClip.prototype._loadBuffer = function() {
+            return this.source.getRawBuffer(this.sourceId)
+                .then(AudioData.getAudioBuffer)
+                .then(buffer => {
+                    this.buffer = buffer;
+                    this.state = MediaState.Ready;
+                    return buffer;
+                }).catch(err => {
+                    this.state = MediaState.Error;
+                });
+        };
+
+        /**
+         * Retrieve the clip's audio buffer, loading it if necessary
+         * @returns {IPromise<void>|Promise}
+         */
+        AudioClip.prototype.getBuffer = function() {
+            return $q.when(this.buffer || this._loadBuffer());
+        };
+
+        /**
+         * Returns true if the clip has an audio buffer
+         * @returns {boolean}
+         */
+        AudioClip.prototype.isBuffered = function(){
+            return this.buffer !== null;
+        };
+
         AudioClip._IdKey = 'pulsar-media-item-id';
         AudioClip.autoIncrementId = parseInt(localStorage.getItem(AudioClip._IdKey)) || 0;
 
         /**
-         * @param word
          * @returns {Number|number|*}
          */
         AudioClip.getNewId = function() {

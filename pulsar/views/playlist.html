@@ -1,8 +1,8 @@
 <div class="playlist">
     <ul>
-        <li ng-class="{playing: isPlaying(clip.id)}" ng-repeat="clip in clips" ng-click="playClip(clip.id)" ng-if="clip.state != 'ERROR'">
+        <li ng-class="{playing: isPlaying(clip.id)}" ng-repeat="clip in clips" ng-click="playClip(clip.id)" ng-if="clip.state != 'Error'">
             {{clip.name}}
-            <loader-icon ng-if="clip.state == 'LOADING'"></loader-icon>
+            <loader-icon ng-if="clip.state == 'Loading'"></loader-icon>
         </li>
     </ul>
 </div>

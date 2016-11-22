@@ -34,7 +34,7 @@
         this.playClip = function(clipId){
             var clip = MediaLibrary.getAudioClip(clipId);
 
-            if(!clip.state === MediaStates.READY){
+            if(!clip.state === MediaStates.Ready){
                 return;
             }
 

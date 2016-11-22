@@ -5,11 +5,11 @@
 angular.module('pulsar.audio').service('AudioPlayer', function(SampleCount, MediaLibrary, $q, MediaState){
 
     var states = Object.freeze({
-        LOADING: 'LOADING',
+        Loading: 'Loading',
         PLAYING: 'PLAYING',
         PAUSED: 'PAUSED',
         STOPPED: 'STOPPED',
-        ERROR: 'ERROR'
+        Error: 'Error'
     });
 
     var self = this,
@@ -22,7 +22,7 @@ angular.module('pulsar.audio').service('AudioPlayer', function(SampleCount, Medi
         gainNode = null, // Master Gain node (affects visualization)
         outputGainNode = null, //Outuput gain (affects only volume)
         
-        state = states.LOADING,
+        state = states.Loading,
 
         _autoPlay = false,
         trackLength = 0,
@@ -128,28 +128,16 @@ angular.module('pulsar.audio').service('AudioPlayer', function(SampleCount, Medi
      */
     this.playClip = (clipId, startTime) => {
         self.stop();
-        state = states.LOADING;
-
-        var playOp = $q.defer();
-        ready.promise.then(function () {
+        state = states.Loading;
+        
+        return ready.promise.then(function () {
             playing = MediaLibrary.getAudioClip(clipId);
-            state = states.LOADING;
+            state = states.Loading;
 
-            if(playing && playing.buffer){
-                self.playBuffer(playing.buffer, startTime);
-                playOp.resolve();
-            }
-            else {
-                audioCtx.decodeAudioData(playing.clip, buffer=> {
-                    playing.buffer = buffer;
-                    self.playBuffer(buffer, startTime);
-                    playOp.resolve();
-                });
-            }
-
+            return playing.getBuffer().then(buffer => {
+                self.playBuffer(buffer, startTime);
+            });
         });
-
-        return playOp.promise;
     };
 
     /**
@@ -200,7 +188,7 @@ angular.module('pulsar.audio').service('AudioPlayer', function(SampleCount, Medi
             var next = playing;
             do {
                 next = AudioClipService.getAudioClip(next.id + 1);
-            } while(next.state === MediaStates.ERROR);
+            } while(next.state === MediaStates.Error);
 
             self.playClip(next.id);
         }

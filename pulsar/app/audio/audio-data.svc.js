@@ -32,23 +32,18 @@ angular.module('pulsar.audio').service('AudioData', function (MScheduler, Sample
 
     /**
      * Generates an audio buffer for the clip and caches the result on the clip
-     * @param clip
+     * @param {ArrayBuffer} rawBuffer
      * @returns {Promise}
      */
-    this.getAudioBuffer = (clip) => {
+    this.getAudioBuffer = (rawBuffer) => {
         var renderOp = $q.defer();
 
-        if(clip.buffer){
-            renderOp.resolve(clip.buffer);
-        }
-        else {
-            var audioCtx = new (window.AudioContext || window.webkitAudioContext);
-            audioCtx.decodeAudioData(clip.clip, function(buffer) {
-                clip.buffer = buffer;
-                renderOp.resolve(buffer);
-                audioCtx.close();
-            });
-        }
+        var audioCtx = new (window.AudioContext || window.webkitAudioContext);
+        audioCtx.decodeAudioData(rawBuffer, function(buffer) {
+            renderOp.resolve(buffer);
+            audioCtx.close();
+            //Make sure the audio context gets close
+        }, e => audioCtx.close());
 
         return renderOp.promise;
     };
@@ -59,7 +54,7 @@ angular.module('pulsar.audio').service('AudioData', function (MScheduler, Sample
      * @returns {IPromise<Array>|Promise.<Array>|*}
      */
     this.renderFrameBuffers = (clip) => {
-        return self.getAudioBuffer(clip).then(buffer => {
+        return clip.getBuffer().then(buffer => {
             //Create an offline context and nodes - were dividing the sample rate by 4 so that things don't crash when add dual channel
             var offlineCtx = new OfflineAudioContext(buffer.numberOfChannels, buffer.sampleRate * buffer.duration / 4, buffer.sampleRate / 4),
                 processor = offlineCtx.createScriptProcessor(SampleCount, buffer.numberOfChannels, buffer.numberOfChannels),

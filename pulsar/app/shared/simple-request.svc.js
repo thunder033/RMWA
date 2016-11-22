@@ -10,6 +10,9 @@
         .service('simple-request.SimpleHttp', [SimpleHttp])
         .factory('simple-request.HttpConfig', [httpConfigFactory]);
 
+    /**
+     * @returns {HttpConfig}
+     */
     function httpConfigFactory(){
         return HttpConfig;
     }
@@ -31,7 +34,7 @@
         this.url = params.url;
         this.responseType = params.responseType || XMLHttpRequest.responseType;
     }
-
+    
     function SimpleHttp($http)
     {
 

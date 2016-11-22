@@ -10,7 +10,7 @@ angular.module('pulsar.flare').controller('ControlPanelCtrl', function($scope, $
                 //Were using the progress event so we don't wait for everything to load
                 .then(null, null, function(clip){
                     //Play AutoPlay clip when it finishes loading
-                    if(clip.name == AutoPlay && clip.state == MediaStates.READY)
+                    if(clip.name == AutoPlay && clip.state == MediaStates.Ready)
                         AudioPlayer.playClip(AutoPlay);
                 });
         });
