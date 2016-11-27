@@ -19,9 +19,9 @@ angular.module('pulsar.warp').directive('warpHud', ['warp.State','MScheduler', '
                 MScheduler.resume();
             };
 
-            scope.playClip = clipId => {
+            scope.playClip = clip => {
                 MScheduler.resume();
-                LevelLoader.playClip(clipId)
+                LevelLoader.playClip(clip)
             };
 
             scope.toggleMute = () => {

@@ -7,7 +7,7 @@
     angular.module('simple-request', []);
 
     angular.module('simple-request', [])
-        .service('simple-request.SimpleHttp', [SimpleHttp])
+        .service('simple-request.SimpleHttp', ['$http', SimpleHttp])
         .factory('simple-request.HttpConfig', [httpConfigFactory]);
 
     /**
@@ -30,6 +30,10 @@
      */
     function HttpConfig(params)
     {
+        if(typeof params.url !== 'string'){
+            throw new TypeError('URL must be a string');
+        }
+
         this.method = params.method || 'get';
         this.url = params.url;
         this.responseType = params.responseType || XMLHttpRequest.responseType;
@@ -37,14 +41,12 @@
     
     function SimpleHttp($http)
     {
-
-
         function doRequest(config)
         {
             return $http(config).then(response => {
                 return response.data || response;
             }, error => {
-                return `${error.status || error.statusCode}: ${error.message || error}`;
+                throw `${error.status || error.statusCode}: ${JSON.stringify(error.message || error.data || error)}`;
             });
         }
 
@@ -59,7 +61,9 @@
             params = params || {};
             params.url = url;
 
-            return doRequest(new HttpConfig(params));
+            var config = (params instanceof HttpConfig) ? params : new HttpConfig(params);
+
+            return doRequest(config);
         }
     }
 

@@ -5,7 +5,7 @@
  * on the screen. It provides an interface to change how particles are emitted and when.
  */
 "use strict";
-angular.module('mallet').service('MParticleEmitter2D', ['MScheduler','MEasel','ScaleFactor', 'MalletMath', function(Scheduler, Easel, ScaleFactor, MM){
+angular.module('mallet').service('MParticleEmitter2D', ['MScheduler','MEasel','mallet.const.ScaleFactor', 'MalletMath', function(Scheduler, Easel, ScaleFactor, MM){
 
     /**
      * Maintains the properties of a single particle

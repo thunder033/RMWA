@@ -1,1 +1,5 @@
-angular.module('mallet', ['mallet-constants','mallet-math','simple-request']);
+angular.module('mallet', [
+    'mallet-constants',
+    'mallet-math',
+    'simple-request'
+]);

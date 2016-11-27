@@ -3,26 +3,27 @@
  */
 (()=>{
     "use strict";
-    angular.module('pulsar.media').factory('media.source.Local', [
+    angular.module('pulsar.media').factory('media.source.Pulsar', [
         'media.Source',
         'mallet.AsyncRequest',
-        'simple-http.HttpConfig',
+        'simple-request.HttpConfig',
         'media.AudioClip',
-        'media.Type',
-        'media.Path',
-        sourceLocalFactory]);
+        'media.const.Type',
+        'media.const.Path',
+        '$q',
+        sourcePulsarFactory]);
 
     /**
-     * @returns {Local}
+     * @returns {Pulsar}
      */
-    function sourceLocalFactory(Source, AsyncRequest, HttpConfig, AudioClip, MediaType, MediaPath){
+    function sourcePulsarFactory(Source, AsyncRequest, HttpConfig, AudioClip, MediaType, MediaPath, $q){
 
         /**
          * @extends Source
          */
-        class Local extends Source {
+        class Pulsar extends Source {
             constructor() {
-                super('Local');
+                super('Pulsar');
             }
 
             /**
@@ -42,14 +43,14 @@
                     //Parse each track in the list
                     trackList.forEach(track => {
                         var fileName = track.name || track,
-                            url = (type === MediaType.ReverbImpulse ? MediaPath.ReverbImpulse : MediaPath.Base) + fileName;
+                            url = (track.type === MediaType.ReverbImpulse ? MediaPath.ReverbImpulse : MediaPath.Base) + fileName;
 
                         //Load the local track into the cache
                         this._cachedTracks.push(new AudioClip({
                             source: this,
                             name: fileName,
                             type: track.type || MediaType.Song,
-                            url: url
+                            uri: url
                         }));
                     });
 
@@ -63,18 +64,18 @@
              * @param {string} params.term
              */
             search(params) {
-                switch(params.field)
-                {
-                    case 'name':
-                        //TODO: implement name searching
-                        return this._cachedTracks.filter(track => track.name === params.term);
-                        break;
-                    case 'type':
-                        return this._cachedTracks.filter(track => track.type === params.term);
-                        break;
-                    default:
-                        return this._cachedTracks;
-                }
+                return this.isReady().then(()=>{
+                    switch(params.field)
+                    {
+                        case 'name':
+                        case 'type':
+                            return $q.when(this._cachedTracks.filter(track => track[params.field] === params.term));
+                            break;
+                        default:
+                            return $q.when(this._cachedTracks);
+                    }
+                });
+
             }
 
             /**
@@ -85,12 +86,12 @@
                 var track = this.getTrack(sourceId);
 
                 return super.getRawBuffer(new HttpConfig({
-                    url: track.url,
+                    url: track.uri,
                     responseType: 'arraybuffer'
                 }));
             }
         }
 
-        return new Local();
+        return new Pulsar();
     }
-});
+})();

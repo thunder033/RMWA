@@ -14,17 +14,16 @@
         'AudioPlayer',
         'MediaLibrary',
         'WarpFieldDraw',
-        'AutoPlay',
         GameController]);
 
-    function GameController(MState, State, MScheduler, MKeyboard, MKeys, LevelLoader, AudioPlayer, AudioClip, WarpFieldDraw, AutoPlay){
+    function GameController(MState, State, MScheduler, MKeyboard, MKeys, LevelLoader, AudioPlayer, AudioClip, WarpFieldDraw){
         WarpFieldDraw.init();
         MScheduler.suspendOnBlur(); //Suspend the event loop when the window is blurred
         AudioPlayer.registerPlayer(); //init the audio player service
         AudioClip.getClipList() //wait for clips to load
             .then(AudioClip.loadAudioClips)
             .then(function() {
-                LevelLoader.playClip(AutoPlay);
+                //LevelLoader.playClip(AutoPlay);
             });
 
         //Setup state events

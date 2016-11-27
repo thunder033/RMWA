@@ -19,9 +19,12 @@
     <script src="../node_modules/angular-ui-router/release/angular-ui-router.min.js"></script>
     <script src="../node_modules/checklist-model/checklist-model.js"></script>
     <script src="assets/js/priorityQueue.js"></script>
+
+    <!--LOAD SIMPLE REQUEST-->
+    <script src="app/shared/simple-request.svc.js"></script>
     
     <!--LOAD MALLET-->
-    <script src="app/mallet/constants.js"></script>
+    <script src="app/mallet/mallet.constants.js"></script>
 
     <script src="app/mallet/_module.mallet.js"></script>
     <script src="app/mallet/scheduler.svc.js"></script>
@@ -30,32 +33,38 @@
     <script src="app/mallet/particle-emitter.factory.js"></script>
     <script src="app/mallet/particle-emitter-2d.svc.js"></script>
     <script src="app/mallet/easel.directive.js"></script>
-    <script src="app/mallet/concurrent-operation.factory.js"></script>
+    <script src="app/mallet/thread.factory.js"></script>
     <script src="app/mallet/math.svc.js"></script>
     <script src="app/mallet/keys.svc.js"></script>
     <script src="app/mallet/state.svc.js"></script>
     <script src="app/mallet/camera.service.js"></script>
     <script src="app/mallet/geometry.svc.js"></script>
+    <script src="app/mallet/async-request.factory.js"></script>
     
     <!--LOAD PULSAR-->
+
+    <!--AUDIO-->
+    <script src="app/audio/_module.audio.js"></script>
+    <script src="app/audio/audio.constants.js"></script>
+    <script src="app/audio/audio-player.svc.js"></script>
+    <script src="app/audio/realtime-data.svc.js"></script>
+    <script src="app/audio/audio-fx.svc.js"></script>
+    <script src="app/audio/data-utils.svc.js"></script>
 
     <!--MEDIA-->
     <script src="app/media/_module.media.js"></script>
     <script src="app/media/media.constants.js"></script>
+    <script src="app/media/source.factory.js"></script>
     <script src="app/media/media-library.svc.js"></script>
-
-    <!--AUDIO-->
-    <script src="app/audio/_module.audio.js"></script>
-    <script src="app/audio/audio-player.svc.js"></script>
-    <script src="app/audio/audio-data.svc.js"></script>
-    <script src="app/audio/audio-fx.svc.js"></script>
+    <script src="app/media/source.Pulsar.factory.js"></script>
+    <script src="app/media/audio-clip.factory.js"></script>
 
     <!--VISUALIZER-->
-    <script src="app/flare/_module.visualizer.js"></script>
+    <script src="app/flare/_module.flare.js"></script>
     <script src="app/flare/frequency-analyzer.svc.js"></script>
     <script src="app/flare/waveform-analyzer.svc.js"></script>
     <script src="app/flare/frequency-pinwheel.svc.js"></script>
-    <script src="app/flare/visualizer.svc.js"></script>
+    <script src="app/flare/flare.svc.js"></script>
     <script src="app/flare/control-panel.ctrl.js"></script>
     <script src="app/flare/playlist.directive.js"></script>
     <script src="app/flare/audio-player.directive.js"></script>

@@ -5,23 +5,23 @@
     "use strict";
 
     angular.module('mallet').service('mallet.AsyncRequest', [
-        'MConcurrentOperation',
+        'mallet.Thread',
         '$q',
         asyncRequestFactory]);
 
-    function asyncRequestFactory(MConcurrentOperation, $q){
+    function asyncRequestFactory(Thread, $q){
         
         var asyncScript = 'assets/js/workers/asyncHttpRequest.js';
 
         /**
          * Finds an idle thread in the pool, if there are any
-         * @param {ConcurrentOperation[]} threads
-         * @returns {ConcurrentOperation|null}
+         * @param {Thread[]} threads
+         * @returns {Thread|null}
          */
         function getIdleThread(threads){
             for(var t = 0; t < threads.length; t++)
             {
-                if(!threads[t].isIdle()){
+                if(threads[t].isIdle()){
                     return threads[t];
                 }
             }
@@ -40,13 +40,13 @@
                 requestQueue = new PriorityQueue(); // queue of pending requests awaiting threads
 
             //Create thread pool of specified size
-            for(var o = 0; o < size || 1; o++) {
-                threads.push(MConcurrentOperation.create(asyncScript));
+            for(var o = 0; o < (size || 1); o++) {
+                threads.push(Thread.create(asyncScript));
             }
 
             /**
              * Provides a thread to the next queue request
-             * @param {ConcurrentOperation} thread
+             * @param {Thread} thread
              */
             function disperseThread(thread) {
                 if(requestQueue.peek() !== null){
@@ -72,7 +72,7 @@
 
             /**
              * Gets an available idle thread or waits for one
-             * @returns {IPromise<ConcurrentOperation>|Promise}
+             * @returns {IPromise<Thread>|Promise}
              */
             function getThread(){
                 return $q.when(getIdleThread(threads) || waitForIdleThread());
@@ -84,7 +84,12 @@
              * @returns {Promise.<Object>|*}
              */
             this.send = function(config) {
+
                 return getThread().then(thread => {
+                    // adjust any relative paths back to the app root
+                    // since web workers CWD is the location of the script
+                    var appRoot = '../../../';
+                    config.url = (config.url.indexOf('http') === 0) ? config.url : appRoot + config.url;
                     return thread.invoke(config).finally(()=> {
                             requestComplete.notify(thread);
                         });

@@ -7,7 +7,6 @@
         'warp.Level',
         'warp.State',
         'mallet.state',
-        'MediaLibrary',
         'MediaState',
         'AudioPlayer',
         'WarpFieldCache',
@@ -15,7 +14,7 @@
         'warp.WarpField',
         LevelLoader]);
 
-    function LevelLoader(Level, State, MState, MediaLibrary, MediaStates, AudioPlayer, FieldCache, $q, WarpField) {
+    function LevelLoader(Level, State, MState, MediaStates, AudioPlayer, FieldCache, $q, WarpField) {
 
         function getWarpField(clip) {
             var cachedField = FieldCache.retrieve(clip);
@@ -31,8 +30,7 @@
 
         }
 
-        this.playClip = function(clipId){
-            var clip = MediaLibrary.getAudioClip(clipId);
+        this.playClip = function(clip){
 
             if(!clip.state === MediaStates.Ready){
                 return;

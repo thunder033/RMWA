@@ -4,7 +4,7 @@
 (()=>{
     "use strict";
 
-    angular.module('pulsar.flare').directive('controlPanel', ['Flare','Effects','MScheduler','media.Library','media.Type', controlPanel]);
+    angular.module('pulsar.flare').directive('controlPanel', ['Flare','Effects','MScheduler','media.Library','audio.Player', 'media.const.Type', controlPanel]);
 
     function controlPanel(Visualizer, Effects, MScheduler, MediaLibrary, AudioPlayer, MediaType){
         return {
@@ -12,12 +12,17 @@
             replace: true,
             templateUrl: 'views/control-panel.html',
             link: function(scope){
+                scope.reverbEffects = [];
+
                 scope.visualizer = Visualizer;
                 scope.effects = Effects;
 
                 scope.reverbEffect = {name: 'None', id: 9999};
-                scope.reverbEffects = MediaLibrary.getAudioClips(MediaType.ReverbImpulse);
-                scope.reverbEffects.push({name: 'None', id: 9999});
+                MediaLibrary.getAudioClips(MediaType.ReverbImpulse)
+                    .then(effects => {
+                        scope.reverbEffects = effects.asArray();
+                        scope.reverbEffects.push({name: 'None', id: 9999});
+                    });
 
                 scope.setCircleRadius = function(value){
                     Visualizer.setCircleRadius(value);

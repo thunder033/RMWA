@@ -2,7 +2,7 @@
  * Created by gjr8050 on 9/16/2016.
  */
 "use strict";
-angular.module('pulsar.flare').directive('audioPlayer', function(AudioPlayer){
+angular.module('pulsar.flare').directive('audioPlayer', ['audio.Player', function(AudioPlayer){
     return {
         restrict: 'E',
         replace: true,
@@ -29,4 +29,4 @@ angular.module('pulsar.flare').directive('audioPlayer', function(AudioPlayer){
             }
         }
     }
-});
+}]);

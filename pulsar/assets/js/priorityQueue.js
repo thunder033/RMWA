@@ -130,5 +130,19 @@
         this.root = null;
     };
 
+    /**
+     * Creates an array of the items in the priority queue
+     * @returns {Array}
+     */
+    PriorityQueue.prototype.asArray = function(){
+        var arr = [],
+            it = this.getIterator();
+        while(!it.isEnd()){
+            arr.push(it.next());
+        }
+
+        return arr;
+    };
+
     window.PriorityQueue = PriorityQueue;
 })();

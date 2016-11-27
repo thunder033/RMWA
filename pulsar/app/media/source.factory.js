@@ -21,6 +21,7 @@
          */
         function Source(name) {
             sources[name] = this;
+            this.name = name;
             this._cachedTracks = [];
             this._tracks = {};
 
@@ -61,17 +62,23 @@
         /**
          * Encapsulate source-specific requirements of loading an audio track
          * @param {string|number} sourceId
+         * @returns {AudioClip}
          */
         Source.prototype.getTrack = function(sourceId) {
             return this._tracks[sourceId];
         };
 
+        /**
+         * Return the map of registered sources
+         * @returns {{string: Source}}
+         */
         Source.getSources = function(){
-            return Object.keys(sources).map(name => sources[name]);
+            return sources;
+            //return Object.keys(sources).map(name => sources[name]);
         };
 
         return Source;
     }
 
    
-});
+})();

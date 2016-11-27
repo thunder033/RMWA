@@ -7,27 +7,30 @@
     angular.module('pulsar.media').service('media.Library', [
         '$http',
         '$q',
-        'media.Path',
-        'media.State',
-        'media.Type',
+        'media.const.Path',
+        'media.const.State',
+        'media.const.Type',
         'media.AudioClip',
         'media.Source',
-        'media.Sources',
+        'media.const.Sources',
         '$injector',
         Library]);
 
-    function Library($http, MediaPath, MediaState, MediaType, AudioClip, Source, Sources, $injector) {
+    function Library($http, $q, MediaPath, MediaState, MediaType, AudioClip, Source, Sources, $injector) {
         var self = this,
             ready = $q.defer(),
             loadingTriggered = false,
             clips = {},
+            sources = {},
             clipList = [],
             clipCache = {};
 
-        function init() {
+        this.init = function() {
             //Invoke the creation of each source
-            Object.keys(Sources).forEach(source => $injector.get(`media.source.${source}`));
-        }
+            Object.keys(Sources).map(source => $injector.get(`media.source.${source}`));
+            //Get a reference to the sources collection
+            sources = Source.getSources();
+        };
 
         /**
          * Push out new set of clips to any clients that have requested a filtered list of clips
@@ -39,11 +42,16 @@
             });
         }
 
+        function values(map){
+            return Object.keys(map).map(key => map[key]);
+        }
+
         /**
          * Retrieves a list of audio clips to load
          * @returns {Promise<Array>}
          */
         this.getClipList = () => {
+
             return $q.when([
                 //Audio clips from local machine
                 'Kitchen Sink.mp3',
@@ -75,7 +83,7 @@
          * @returns {Promise}
          */
         this.isReady = () => {
-            return ready.promise;
+            return $q.all(values(sources).map(source => source.isReady()));
         };
 
         /**
@@ -118,7 +126,7 @@
 
             clipList.push(clip);
             clipList.sort((a, b) => a.id > b.id);
-
+            
             //Were going to preload the audio clips so there's no delay in playing
             return $http.get(uri, {responseType: 'arraybuffer'}).then(function (buffer) {
                 clip.state = MediaState.Ready;
@@ -152,20 +160,38 @@
         /**
          * Get all audio clips of one type
          * @param type {media.Type}
-         * @returns {Promise<AudioClip[]>}
+         * @returns {Promise<PriorityQueue>}
          */
         this.getAudioClips = (type) => {
-            return ready.promise.then(()=>{
-                if (type) {
-                    if(!clipCache[type]){
-                        clipCache[type] = clipList.filter(clip => clip.type == type);
-                    }
+            var defer = $q.defer(),
+                clipList = new PriorityQueue();
 
-                    return clipCache[type];
-                }
+            //define parameters to search for audio clips with
+            var searchParam = {field: 'type', term: type || MediaType.Song};
 
-                return clipList;
-            });
+            //invoke a search from each source
+            $q.all(values(sources).map(source => source.search(searchParam).then(results => {
+                //start providing resources as soon as a source returns
+                results.forEach(clip => clipList.enqueue(0, clip));
+                defer.notify(clipList);
+            })))
+                //indicate when the search has completed
+                .then(() => defer.resolve(clipList))
+                .catch(defer.reject);
+
+            return defer.promise;
+
+            // return ready.promise.then(()=>{
+            //     if (type) {
+            //         if(!clipCache[type]){
+            //             clipCache[type] = clipList.filter(clip => clip.type == type);
+            //         }
+            //
+            //         return clipCache[type];
+            //     }
+            //
+            //     return clipList;
+            // });
         };
     }
 })();

@@ -7,16 +7,17 @@ var app = angular.module('pulsar', [
     'pulsar.flare',
     'pulsar.audio',
     'pulsar.warp',
+    'pulsar.media',
     'checklist-model',
     'ui.router'
 ]).config(function($stateProvider, $urlRouterProvider) {
-    $urlRouterProvider.otherwise('/visualizer');
+    $urlRouterProvider.otherwise('/flare');
 
-    $stateProvider.state('visualizer', {
-        url: '/visualizer',
+    $stateProvider.state('flare', {
+        url: '/flare',
         template: '<control-panel></control-panel><m-easel id="visualizer"></m-easel>',
-        controller: function VisualizerCtrl(Visualizer, $timeout) {
-            $timeout(()=>Visualizer.init());
+        controller: function FlareCtrl(Flare, $timeout) {
+            $timeout(()=>Flare.init());
         }
     }).state('warp', {
         url: '/warp',
@@ -26,11 +27,11 @@ var app = angular.module('pulsar', [
 
 
 })
-.run(function(MScheduler, $rootScope, AudioPlayer){
+.run(['MScheduler', '$rootScope', 'audio.Player', function(MScheduler, $rootScope, AudioPlayer){
     MScheduler.startMainLoop();
 
     $rootScope.$on('$stateChangeStart', ()=>{
         AudioPlayer.stop();
         MScheduler.reset();
     });
-});
+}]);

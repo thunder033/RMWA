@@ -4,10 +4,10 @@
 (()=>{
     "use strict";
 
-    angular.module('pulsar-media').factory('media.AudioClip', [
-        'media.Type',
-        'media.State',
-        'AudioData',
+    angular.module('pulsar.media').factory('media.AudioClip', [
+        'media.const.Type',
+        'media.const.State',
+        'audio.DataUtils',
         '$q',
         _Clip]);
 
@@ -16,7 +16,7 @@
      * @returns {{AudioClip: AudioClip}}
      * @private
      */
-    function _Clip(MediaType, MediaState, AudioData, $q){
+    function _Clip(MediaType, MediaState, DataUtils, $q){
         /**
          * Derive a more readable name from a file name
          * @param fileName
@@ -49,13 +49,13 @@
                 this.id = AudioClip.getNewId();
                 this.sourceId = '' + (params.sourceId || this.id);
                 this.name = getNiceName(params.name);
-                this.uri = params.uri;
+                this.uri = params.uri || params.name;
                 this.type = params.type || MediaType.Song;
                 this.clip = null;
                 this.buffer = null;
                 this.source = params.source;
 
-                this.state = MediaState.Loading;
+                this.state = MediaState.Ready;
             }
             else {
                 throw new ReferenceError('Cached Clips not yet supported');
@@ -68,13 +68,16 @@
          * @private
          */
         AudioClip.prototype._loadBuffer = function() {
+            this.state = MediaState.Buffering;
             return this.source.getRawBuffer(this.sourceId)
-                .then(AudioData.getAudioBuffer)
+                .then(DataUtils.getAudioBuffer)
                 .then(buffer => {
                     this.buffer = buffer;
-                    this.state = MediaState.Ready;
+                    this.state = MediaState.Buffered;
                     return buffer;
                 }).catch(err => {
+                    //Temporary error handling until we get an error service
+                    console.log(err);
                     this.state = MediaState.Error;
                 });
         };
@@ -84,6 +87,7 @@
          * @returns {IPromise<void>|Promise}
          */
         AudioClip.prototype.getBuffer = function() {
+            //console.log(this.buffer.length);
             return $q.when(this.buffer || this._loadBuffer());
         };
 

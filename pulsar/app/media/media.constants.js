@@ -3,19 +3,19 @@
  */
 angular.module('pulsar.media')
 //Media Loading
-    .constant('media.Path', Object.freeze({
+    .constant('media.const.Path', Object.freeze({
         Base: 'assets/audio/',
         ReverbImpulse: 'assets/reverb-impulses/',
         Tracks: 'assets/data/localAudio.json'
     }))
-    .constant('media.Sources', Object.freeze({
-        Local: 'Local'
+    .constant('media.const.Sources', Object.freeze({
+        Pulsar: 'Pulsar'
     }))
-    .constant('media.AutoPlay', "New Adventure Theme") //what song to auto-play
-    .constant('media.State', Object.freeze({
-        Ready: 'Ready',
-        Loading: 'Loading',
-        Error: 'Error'
+    .constant('media.const.State', Object.freeze({
+        Ready: 'Ready', //The clip is ready to begin buffering
+        Buffering: 'Buffering', //The clip is currently buffering
+        Buffered: 'Buffered', //The clip has buffered and is ready to be played
+        Error: 'Error' //An error was encountered while preparing the clip
     }))
 
     /**
@@ -24,7 +24,7 @@ angular.module('pulsar.media')
      * @property {media.Type} Effect
      * @property {media.Type} ReverbImpulse
      */
-    .constant('media.Type', Object.freeze({
+    .constant('media.const.Type', Object.freeze({
         "Song": 'Song',
         'Effect': 'Effect',
         'ReverbImpulse' : 'ReverbImpulse'
