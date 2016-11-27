@@ -1,8 +1,12 @@
 dependencies:
   override:
     - npm install
-  post:
-    - npm build
 deployment:
-  commands:
-    - ./deploy.sh
+  production:
+    branch: prod
+    commands:
+      - ./deploy.sh
+  stagin:
+    branch: master
+    commands:
+      - ./deploy.sh
