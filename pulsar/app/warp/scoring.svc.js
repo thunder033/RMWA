@@ -4,9 +4,14 @@
 
 (()=>{
     "use strict";
-    angular.module('pulsar.warp').service('warp.Scoring',
-        ['warp.Ship', 'warp.ShipEffects', 'warp.Level', 'MScheduler', 'warp.State', Scoring]);
-
+    angular.module('pulsar.warp').service('warp.Scoring', [
+        'warp.Ship',
+        'warp.ShipEffects',
+        'warp.Level',
+        'MScheduler',
+        'warp.State',
+        Scoring]);
+    
     function Scoring(Ship, ShipEffects, Level, MScheduler, State){
 
         var self = this;

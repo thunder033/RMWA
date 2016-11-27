@@ -6,10 +6,10 @@
     /**
      * Provides functions to render the frequency pinwheel
      */
-    angular.module('pulsar.flare').service('FrequencyPinwheel', [
+    angular.module('pulsar.flare').service('flare.FrequencyPinwheel', [
         'audio.RealtimeData',
         'MEasel',
-        'FrequencyAnalyzer',
+        'flare.FrequencyAnalyzer',
         'MColor',
         FrequencyPinwheel]);
 

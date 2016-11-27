@@ -3,12 +3,15 @@
  */
 (()=>{
     "use strict";
-    angular.module('pulsar.warp')
-        .factory('warp.WarpField', ['MConcurrentOperation', 'AudioData', 'SampleCount', Field]);
+    angular.module('pulsar.warp').factory('warp.WarpField', [
+        'mallet.Thread',
+        'audio.RealtimeData',
+        'mallet.const.SampleCount',
+        Field]);
 
-    function Field(MConcurrentOperation, AudioData, SampleCount){
+    function Field(Thread, AudioData, SampleCount){
         //Create a web worker with the analysis script
-        var fieldGenerator = MConcurrentOperation.create('assets/js/workers/generateAudioField.js');
+        var fieldGenerator = Thread.create('assets/js/workers/generateAudioField.js');
 
         /**
          * A WarpField defines a level in Warp, generated from an audio file

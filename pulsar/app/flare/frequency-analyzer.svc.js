@@ -7,7 +7,7 @@
     /**
      * Performs analysis on frequency data each frame to generate metrics
      */
-    angular.module('pulsar.flare').service('FrequencyAnalyzer', [
+    angular.module('pulsar.flare').service('flare.FrequencyAnalyzer', [
         'MScheduler',
         'audio.RealtimeData',
         'audio.const.FrequencyRanges',

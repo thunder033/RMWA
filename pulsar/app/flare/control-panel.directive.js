@@ -17,17 +17,18 @@
                 scope.visualizer = Visualizer;
                 scope.effects = Effects;
 
-                scope.reverbEffect = {name: 'None', id: 9999};
+                var noneOption = {name: 'None', id: 9999};
+                scope.reverbEffect = noneOption;
+                // Get all of the reverb effects from the media library
                 MediaLibrary.getAudioClips(MediaType.ReverbImpulse)
                     .then(effects => {
                         scope.reverbEffects = effects.asArray();
-                        scope.reverbEffects.push({name: 'None', id: 9999});
+                        scope.reverbEffects.push(noneOption);
                     });
 
-                scope.setCircleRadius = function(value){
-                    Visualizer.setCircleRadius(value);
-                };
-
+                /**
+                 * Enables the currently selected reverb effect
+                 */
                 scope.setReverbEffect = function(){
                     if(scope.reverbEffect.name === 'None'){
                         AudioPlayer.disableConvolverNode();

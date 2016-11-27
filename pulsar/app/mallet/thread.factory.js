@@ -6,6 +6,12 @@
     angular.module('mallet').factory('mallet.Thread', ['$q', threadFactory]);
 
     function threadFactory($q){
+
+        /**
+         * Client for a web worker
+         * @param {string} script name of the file to use in the worker
+         * @constructor
+         */
         function Thread(script) {
             if(!window.Worker){
                 throw new Error('Web workers are not supported by your browser.')
@@ -15,6 +21,10 @@
                 invocations = [],
                 worker = new Worker(script);
 
+            /**
+             * Determine which invocation was responded to and resolve its promise
+             * @param {Event} e
+             */
             function notifyClient(e) {
 
                 if(typeof e.data._id === 'undefined'){
@@ -37,6 +47,11 @@
             worker.onmessage = notifyClient;
             //worker.onerror =
 
+            /**
+             * Send a message to the worker
+             * @param {*} params
+             * @returns {Promise} resolves when the worker response is received
+             */
             this.invoke = (params) => {
                 var invocation = $q.defer();
                 invocations[++opId] = invocation;
@@ -46,6 +61,10 @@
                 return invocation.promise;
             };
 
+            /**
+             * Indicates if the worker has any pending invocations
+             * @returns {boolean}
+             */
             this.isIdle = () => {
                 return Object.keys(invocations).length === 0;
             };

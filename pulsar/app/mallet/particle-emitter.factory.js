@@ -1,11 +1,22 @@
 /**
  * Created by gjr8050 on 11/9/2016.
  */
-angular.module('mallet').factory('MParticle', ['MalletMath', 'MCamera', 'Geometry', 'MScheduler', 'MEasel', function(MM, MCamera, Geometry, MScheduler, MEasel){
+angular.module('mallet').factory('MParticle', ['MalletMath', 'MCamera', 'Geometry', 'MScheduler', function(MM, MCamera, Geometry, MScheduler){
     "use strict";
 
+    //Adjust the speed of all particles so input values can be reasonable
     var particleSpeed = .001;
 
+    /**
+     *
+     * @param {Object} params
+     * @param {number} [params.energy=0] how long the particle will live
+     * @param {Vector3} [params.startVelocity]
+     * @param {number} [params.sizeDecay=0] the rate at which the particle will shrink
+     * @param {number} [params.speed=1] how fast the particle moves
+     * @param {Vector3} [params.spread] vector determining the overall shape of the system
+     * @constructor
+     */
     function Particle(params){
         this.transform = new Geometry.Transform();
         this.velocity = MM.vec3(0);
@@ -19,12 +30,19 @@ angular.module('mallet').factory('MParticle', ['MalletMath', 'MCamera', 'Geometr
         this.spread = params.spread;
     }
 
+    /**
+     * Hide the particle and deactivate it
+     */
     Particle.prototype.die = function(){
         this.active = false;
         this.transform.scale.scale(0);
     };
 
-    Particle.prototype.setActive = function(spawnPosition){
+    /**
+     * Spawns the particle at the given location with a random velocity
+     * @param {Vector3} spawnPosition
+     */
+    Particle.prototype.spawn = function(spawnPosition){
         this.active = true;
         this.energy = this.startEnergy;
         this.transform.position.set(spawnPosition);
@@ -76,6 +94,7 @@ angular.module('mallet').factory('MParticle', ['MalletMath', 'MCamera', 'Geometr
         this.endPosition = 0;
         this.image = params.image instanceof Array ? params.image : [params.image];
 
+        //A uniform emitter will use all available particles at constant rate
         this.rate = (params.rate === Emitter.Uniform) ? 1000 / (params.energy / params.maxParticleCount) : params.rate || 0;
 
         this.emittedElapsed = 0;
@@ -95,10 +114,17 @@ angular.module('mallet').factory('MParticle', ['MalletMath', 'MCamera', 'Geometr
         }, params.priority);
     }
 
+    /**
+     * Indicates if the emitter has available particles
+     * @returns {boolean}
+     */
     Emitter.prototype.canEmit = function(){
         return this.emitPosition !== this.endPosition;
     };
 
+    /**
+     * Spawns an inactive particle
+     */
     Emitter.prototype.emit = function(){
         if(this.canEmit()){
             var p = this.emitPosition;
@@ -107,7 +133,7 @@ angular.module('mallet').factory('MParticle', ['MalletMath', 'MCamera', 'Geometr
                 this.transforms[p] = this.particles[p].transform;
             }
 
-            this.particles[p].setActive(this.transform.position);
+            this.particles[p].spawn(this.transform.position);
             this.transforms[p] = this.particles[p].transform;
 
             if(++this.emitPosition >= this.particles.length){
@@ -116,11 +142,20 @@ angular.module('mallet').factory('MParticle', ['MalletMath', 'MCamera', 'Geometr
         }
     };
 
+    /**
+     * Draws all particles in the system
+     */
     Emitter.prototype.draw = function() {
         MCamera.billboardRender(this.image, this.transforms, this.transform);
     };
 
+    /**
+     * Trigger updates of all particles in the system
+     * @param {float} dt
+     */
     Emitter.prototype.update = function (dt) {
+
+        //If this emitter automatically emits
         if(this.rate > 0){
             this.emittedElapsed += dt;
             if(this.emittedElapsed > this.emissionTrigger){
@@ -141,6 +176,8 @@ angular.module('mallet').factory('MParticle', ['MalletMath', 'MCamera', 'Geometr
             }
 
             this.particles[p].update(dt);
+            // Kill any particle with out energy
+            // This is triggered here so the system can track it's particles
             if(this.particles[p].energy <= 0 && this.particles[p].active === true){
                 this.particles[p].die();
                 this.transforms[p] = null;

@@ -9,9 +9,9 @@
         'Effects',
         'audio.const.FrequencyRanges',
         'MColor',
-        'WaveformAnalyzer',
-        'FrequencyAnalyzer',
-        'FrequencyPinwheel',
+        'flare.WaveformAnalyzer',
+        'flare.FrequencyAnalyzer',
+        'flare.FrequencyPinwheel',
         'MParticleEmitter2D',
         Flare]);
 

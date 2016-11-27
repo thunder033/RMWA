@@ -39,7 +39,7 @@
             var threads = [], // Threads available to execute requests
                 requestQueue = new PriorityQueue(); // queue of pending requests awaiting threads
 
-            //Create thread pool of specified size
+            // Create thread pool of specified size
             for(var o = 0; o < (size || 1); o++) {
                 threads.push(Thread.create(asyncScript));
             }
@@ -48,7 +48,7 @@
              * Provides a thread to the next queue request
              * @param {Thread} thread
              */
-            function disperseThread(thread) {
+            function dispatchThread(thread) {
                 if(requestQueue.peek() !== null){
                     requestQueue.dequeue().resolve(thread);
                 }
@@ -57,8 +57,8 @@
             // Promise to handle finished op notifications
             // This deferred object never actually gets resolved, it just handles notifications
             var requestComplete = $q.defer();
-            //When a request completes, hand off the thread to the next waiting request
-            requestComplete.promise.then(null, null, disperseThread);
+            // When a request completes, hand off the thread to the next waiting request
+            requestComplete.promise.then(null, null, dispatchThread);
 
             /**
              * Queues up a request for an eventually available thread

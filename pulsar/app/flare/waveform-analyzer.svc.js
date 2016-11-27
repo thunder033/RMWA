@@ -5,7 +5,7 @@
 /**
  * Performs analysis on the waveform data each frame to derive metrics
  */
-angular.module('pulsar.flare').service('WaveformAnalyzer', ['MScheduler', 'audio.RealtimeData', 'mallet.const.SampleCount', function (MScheduler, AudioData, SampleCount) {
+angular.module('pulsar.flare').service('flare.WaveformAnalyzer', ['MScheduler', 'audio.RealtimeData', 'mallet.const.SampleCount', function (MScheduler, AudioData, SampleCount) {
     var results = {};
 
     /**

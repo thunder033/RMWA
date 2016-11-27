@@ -7,8 +7,14 @@
     /**
      * Controls behavior of the ship and handles scoring
      */
-    angular.module('pulsar.warp')
-        .service('warp.Ship', ['MScheduler', 'MCamera', 'MalletMath', 'MKeyboard', 'MKeys', 'Geometry', Ship]);
+    angular.module('pulsar.warp').service('warp.Ship', [
+        'MScheduler',
+        'MCamera',
+        'MalletMath',
+        'MKeyboard',
+        'MKeys',
+        'Geometry',
+        Ship]);
 
     function Ship(MScheduler, MCamera, MM, MKeyboard, MKeys, Geometry){
 
