@@ -4,7 +4,8 @@
   "description": "collection of web-apps for IGME 330",
   "main": "index.js",
   "scripts": {
-    "test": "./node_modules/.bin/mocha --reporter spec audioViz/test/*.js"
+    "test": "./node_modules/.bin/mocha --reporter spec pulsar/test/*.js",
+    "build": "grunt"
   },
   "repository": {
     "type": "git",
@@ -23,6 +24,8 @@
   },
   "devDependencies": {
     "chai": "^3.5.0",
+    "grunt": "^1.0.1",
+    "grunt-browserify": "^5.0.0",
     "mocha": "^3.1.2"
   }
 }
