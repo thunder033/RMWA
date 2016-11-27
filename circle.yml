@@ -5,8 +5,11 @@ deployment:
   production:
     branch: prod
     commands:
-      - ./deploy.sh
-  stagin:
+      - sh ./deploy.sh
+  staging:
     branch: master
     commands:
       - sh ./deploy.sh
+general:
+  artifacts:
+    - "dist.tar"
