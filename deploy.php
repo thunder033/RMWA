@@ -7,13 +7,15 @@
  *		https://gist.github.com/1809044
  */
 
+$branch = $_REQUEST['branch'] || 'prod';
+
 // The commands
 $commands = array(
     'echo $PWD',
     'whoami',
     'git fetch',
     'git reset --hard HEAD',
-    'git checkout prod',
+    'git checkout ' . $branch,
     'git pull',
     'git status',
     //'git submodule sync',
@@ -23,7 +25,7 @@ $commands = array(
 // Run the commands for output
 $output = '';
 $payload = json_decode($_REQUEST['payload'], true);
-if($payload['ref'] == 'refs/heads/prod') {
+if($payload['ref'] == 'refs/heads/prod' || true) {
     foreach($commands AS $command){
         // Run it
         $tmp = shell_exec($command);
