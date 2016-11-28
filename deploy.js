@@ -4,7 +4,7 @@
 'use strict';
 var request = require('request');
 
-var circleCIToken = process.env.ArtifactToken, //Token for Circle CI
+var circleCIToken = process.env.ArtifactToken || 'test', //Token for Circle CI
     buildNum = 'latest';
 
 /**
@@ -14,7 +14,7 @@ var circleCIToken = process.env.ArtifactToken, //Token for Circle CI
  */
 function logError(err){
     if(err){
-        console.error('Deployment Failed: ' + err.message || err);
+        console.error('Deployment Failed: ' + (err.message || err));
         process.exit(1);
     }
 
@@ -78,11 +78,16 @@ function getArtifactID(){
 function triggerDeploy(artifact){
 
     //Parse the artifact path to get the server and artifact path
-    var pcs = artifact.path.match(/^https:\/\/([\d]+\-[\d]+\-\w+\.)circle-artifacts.com(.*)$/),
-        server = pcs[1],
+    var pcs = artifact.url.match(/^https:\/\/([\d]+\-[\d]+\-\w+\.)circle-artifacts.com(.*)$/);
+
+    if(pcs === null || pcs.length === 0){
+        return logError(`Could not parse artifact URL: ` + artifact.path);
+    }
+
+    var server = pcs[1],
         path = pcs[2];
 
-    // Use when Node 6 becomes available on Cirlce CI
+    // Use when Node 6 becomes available on Cirlce CI (and delete above)
     // var [, server, path] = artifact.path.match(/^https:\/\/([\d]+\-[\d]+\-\w+\.)circle-artifacts.com(.*)$/);
 
     if(!server || !path){
@@ -104,7 +109,7 @@ function triggerDeploy(artifact){
 
     request(deployURL, options, function(error, response, body){
         if(!logError(error)) {
-            console.log('Completed Deployment: ' + (body || response.status || response));
+            console.log('\nCompleted Deployment: ' + (body || response.status || response));
         }
     });
 }
