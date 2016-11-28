@@ -6,10 +6,12 @@ deployment:
     branch: prod
     commands:
       - sh ./deploy.sh
+      - node deploy.js prod
   staging:
     branch: master
     commands:
       - sh ./deploy.sh
+      - node deploy.js stage
 general:
   artifacts:
     - "dist.tar"
