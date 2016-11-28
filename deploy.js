@@ -22,17 +22,25 @@ function logError(err){
 }
 
 /**
+ * Shallow copy the properties of the source to the destination
+ * @param {Object} source
+ * @param {Object} dest
+ */
+function copyObj(source, dest){
+    Object.keys(source).forEach(key => dest[key] = source[key]);
+}
+
+/**
  * Find an artifact by name in a CirceCI API response
- * @param artifacts
- * @param artifactName
- * @param artifactOut
+ * @param {Array<Object>} artifacts: list of returned artifacts from CCI
+ * @param {string} artifactName: Name of the artifact to search for
+ * @param {Object} artifactOut: An empty object to output artifact properties on
  * @returns {boolean|Array}
  */
 function getArtifact(artifacts, artifactName, artifactOut) {
     return artifacts.some(artifact => {
         if(artifact.path.indexOf(artifactName) > -1){
-            //TODO: set parameters manually
-            artifactOut = artifact;
+            copyObj(artifact, artifactOut);
             return true;
         }
 
@@ -65,12 +73,17 @@ function getArtifactID(){
 
 /**
  * Trigger a deploy script on the server
- * @param {Object} artifact
+ * @param {Object} artifact: artifact to deploy
  */
 function triggerDeploy(artifact){
 
     //Parse the artifact path to get the server and artifact path
-    var [, server, path] = artifact.path.match(/^https:\/\/([\d]+\-[\d]+\-\w+\.)circle-artifacts.com(.*)$/);
+    var pcs = artifact.path.match(/^https:\/\/([\d]+\-[\d]+\-\w+\.)circle-artifacts.com(.*)$/),
+        server = pcs[1],
+        path = pcs[2];
+
+    // Use when Node 6 becomes available on Cirlce CI
+    // var [, server, path] = artifact.path.match(/^https:\/\/([\d]+\-[\d]+\-\w+\.)circle-artifacts.com(.*)$/);
 
     if(!server || !path){
         return logError(`Could not parse artifact URL: ` + artifact.path);
