@@ -3,8 +3,13 @@
  */
 (()=>{
     "use strict";
-    angular.module('pulsar.warp')
-        .service('warp.Level', ['MScheduler', 'warp.State', 'WaveformAnalyzer', 'warp.Bar', 'MalletMath', Level]);
+    angular.module('pulsar.warp').service('warp.Level', [
+        'MScheduler',
+        'warp.State',
+        'flare.WaveformAnalyzer',
+        'warp.Bar',
+        'MalletMath',
+        Level]);
 
     /**
      * Advances play through the current WarpField

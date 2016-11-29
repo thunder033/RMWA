@@ -12,7 +12,7 @@
         'MCamera',
         'MalletMath',
         'MKeyboard',
-        'MKeys',
+        'mallet.const.MKeys',
         'Geometry',
         Ship]);
 

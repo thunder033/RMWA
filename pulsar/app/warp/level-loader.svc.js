@@ -7,9 +7,9 @@
         'warp.Level',
         'warp.State',
         'mallet.state',
-        'MediaState',
-        'AudioPlayer',
-        'WarpFieldCache',
+        'media.const.State',
+        'audio.Player',
+        'warp.WarpFieldCache',
         '$q',
         'warp.WarpField',
         LevelLoader]);
@@ -46,7 +46,7 @@
                 Level.load(warpField);
 
                 //Play the clip - this can take time to initialize
-                return AudioPlayer.playClip(clip.id).then(()=>{
+                return AudioPlayer.playClip(clip).then(()=>{
                     State.current = State.Playing;
 
                     //Don't start playing the song if game is paused

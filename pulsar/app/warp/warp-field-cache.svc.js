@@ -37,4 +37,4 @@
             return warpField;
         }
     }
-});
+})();

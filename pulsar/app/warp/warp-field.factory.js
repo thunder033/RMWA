@@ -5,13 +5,14 @@
     "use strict";
     angular.module('pulsar.warp').factory('warp.WarpField', [
         'mallet.Thread',
-        'audio.RealtimeData',
+        'audio.DataUtils',
         'mallet.const.SampleCount',
+        'pulsar.const.Path',
         Field]);
 
-    function Field(Thread, AudioData, SampleCount){
+    function Field(Thread, DataUtils, SampleCount, Path){
         //Create a web worker with the analysis script
-        var fieldGenerator = Thread.create('assets/js/workers/generateAudioField.js');
+        var fieldGenerator = Thread.create(Path.Assets + 'generateAudioField.js');
 
         /**
          * A WarpField defines a level in Warp, generated from an audio file
@@ -34,7 +35,7 @@
             var warpField = new WarpField();
             //This function renders all of the PCM data for the entire clip into series of buffers
             //The result thousands of buckets of 1024 samples (~800 per minute of play w/ current config)
-            return AudioData.renderFrameBuffers(clip)
+            return DataUtils.renderFrameBuffers(clip)
                 .then(result => {
                     warpField.duration = result.duration;
                     //this is the average duration of time for each buffer created

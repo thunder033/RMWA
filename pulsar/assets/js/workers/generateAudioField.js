@@ -4,7 +4,7 @@
 "use strict";
 
 //https://github.com/corbanbrook/dsp.js
-require('../dsp');
+var dsp = require('../dsp');
 
 function getMaxIndex(arr){
     var max = -Infinity,
@@ -34,7 +34,7 @@ function random(seed) {
  */
 function generateAudioField(frameBuffers, frequencyBinCount, sampleRate){
 
-    var fft = new FFT(frequencyBinCount, sampleRate),
+    var fft = new dsp.FFT(frequencyBinCount, sampleRate),
         frequencyRanges = [0, 400, 650, 21050],
         lanes = new Array(3),
         //frequencyRanges = [0, 60, 250, 2000, 6000, 21050],

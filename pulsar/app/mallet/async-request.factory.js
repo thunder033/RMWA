@@ -12,7 +12,8 @@
     var basePath = '../';
 
     function asyncRequestFactory(Thread, $q){
-        
+
+        //TODO: make this a variable somehow...maybe mallet config
         var asyncScript = 'dist/asyncHttpRequest.js';
 
         /**

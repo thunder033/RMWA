@@ -19,6 +19,7 @@ require('./ship-effects.svc');
 require('./warp-field.factory');
 require('./warp-field-cache.svc');
 require('./warp-field-draw.svc');
+require('./state.svc');
 
 module.exports = warp;
     

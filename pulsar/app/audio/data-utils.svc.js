@@ -4,6 +4,9 @@
 (()=>{
     "use strict";
 
+    /**
+     * @module audio.DataUtils
+     */
     angular.module('pulsar.audio').service('audio.DataUtils', [
         'mallet.const.SampleCount',
         '$q',

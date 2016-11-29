@@ -6,7 +6,7 @@ var constants = require('angular')
 
     .constant('pulsar.const.Path', Object.freeze({
         Root: '../',
-        Assets: '',
+        Assets: 'dist/',
         App: ''
     }));
 

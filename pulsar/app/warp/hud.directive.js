@@ -2,7 +2,7 @@
  * Created by Greg on 10/29/2016.
  */
 "use strict";
-angular.module('pulsar.warp').directive('warpHud', ['warp.State','MScheduler', 'AudioPlayer', 'warp.Scoring', 'warp.LevelLoader', '$sce', '$timeout', function(WarpState, MScheduler, AudioPlayer, Scoring, LevelLoader, $sce, $timeout){
+angular.module('pulsar.warp').directive('warpHud', ['warp.State','MScheduler', 'audio.Player', 'warp.Scoring', 'warp.LevelLoader', '$sce', '$timeout', function(WarpState, MScheduler, AudioPlayer, Scoring, LevelLoader, $sce, $timeout){
     return {
         restrict: 'E',
         templateUrl: 'views/warp-hud.html',

@@ -2,7 +2,7 @@
  * Created by Greg on 10/28/2016.
  */
 "use strict";
-angular.module('mallet').service('MKeyboard', ['MKeys', function(MKeys){
+angular.module('mallet').service('MKeyboard', ['mallet.const.MKeys', function(MKeys){
     var keyState = [],
         keyDownEvents = [],
         keyUpEvents = [];
