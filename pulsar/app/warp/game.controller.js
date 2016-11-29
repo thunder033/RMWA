@@ -10,16 +10,14 @@
         'MScheduler',
         'MKeyboard',
         'mallet.const.MKeys',
-        'warp.LevelLoader',
         'audio.Player',
         'media.Library',
         'warp.WarpFieldDraw',
         GameController]);
 
-    function GameController(MState, State, MScheduler, MKeyboard, MKeys, LevelLoader, AudioPlayer, MediaLibrary, WarpFieldDraw){
+    function GameController(MState, State, MScheduler, MKeyboard, MKeys, AudioPlayer, MediaLibrary, WarpFieldDraw){
         WarpFieldDraw.init();
         MScheduler.suspendOnBlur(); //Suspend the event loop when the window is blurred
-        AudioPlayer.registerPlayer(); //init the audio player service
 
         MediaLibrary.isReady()
             .then(() => State.current = State.LevelComplete);

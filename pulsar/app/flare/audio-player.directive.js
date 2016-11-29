@@ -8,7 +8,6 @@ angular.module('pulsar.flare').directive('audioPlayer', ['audio.Player', functio
         replace: true,
         templateUrl: 'views/audio-player.html',
         link: function(scope, elem){
-            AudioPlayer.registerPlayer();
             scope.player = AudioPlayer;
             scope.getPlaybarSize = function(){
                 return AudioPlayer.completionPct * 100 + '%'

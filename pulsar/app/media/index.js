@@ -9,11 +9,16 @@
 var media = require('angular').module('pulsar.media', []);
 
 require('./media.constants');
+
+require('./i-playable.factory.js');
 require('./audio-clip.factory');
+require('./playlist.factory');
+
 require('./playlist.directive');
 require('./media-library.svc');
 require('./source.factory');
 require('./source.Pulsar.factory');
+
 
 media.run(['media.Library', function (MediaLibrary) {
     MediaLibrary.init();

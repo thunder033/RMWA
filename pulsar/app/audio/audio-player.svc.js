@@ -5,12 +5,9 @@
     "use strict";
     angular.module('pulsar.audio').service('audio.Player', [
         'mallet.const.SampleCount',
-        'media.const.State',
-        'media.Library',
-        '$q',
         Player]);
 
-    function Player(SampleCount, MediaState, MediaLibrary, $q){
+    function Player(SampleCount){
 
         var states = Object.freeze({
             Loading: 'Loading',
@@ -28,17 +25,14 @@
             analyzerNode = null,
             convolverNode = null, //Produces reverb effects
             gainNode = null, // Master Gain node (affects visualization)
-            outputGainNode = null, //Outuput gain (affects only volume)
+            outputGainNode = null, //Output gain (affects only volume)
 
             state = states.Loading,
 
-            _autoPlay = false,
             trackLength = 0,
             pausedAt = 0,
-            trackStart = 0;
-
-        var playHooks = [],
-            ready = $q.defer();
+            trackStart = 0,
+            playHooks = [];
 
         function getNow() {
             return (new Date()).getTime();
@@ -72,20 +66,6 @@
             analyzerNode = self.createAnalyzerNode(audioCtx);
             gainNode = self.createMasterGainNode(audioCtx);
             convolverNode = self.createConvolverNode(audioCtx);
-        };
-
-
-        this.isReady = () => {
-            return ready.promise();
-        };
-
-        /**
-         * Register audio player with the service
-         * This probably needs to be deleted at some point
-         */
-        this.registerPlayer = (autoPlay) => {
-            _autoPlay = autoPlay;
-            ready.resolve(true);
         };
 
         /**
@@ -136,15 +116,12 @@
          */
         this.playClip = (clip, startTime) => {
             self.stop();
+
+            playing = clip;
             state = states.Loading;
 
-            return ready.promise.then(function () {
-                playing = clip;
-                state = states.Loading;
-
-                return playing.getBuffer().then(buffer => {
-                    self.playBuffer(buffer, startTime);
-                });
+            return playing.getBuffer().then(buffer => {
+                self.playBuffer(buffer, startTime);
             });
         };
 
@@ -162,12 +139,6 @@
             state = states.PLAYING;
             gainNode.gain.value = 1;
             sourceNode.start(0 , startTime || 0);
-            if(_autoPlay){
-                sourceNode.onended = self.playNext;
-            }
-            else {
-                sourceNode.onended = self.stop;
-            }
             playHooks.forEach(callback => callback.call(null, playing));
             trackStart = getNow();
             trackLength = buffer.duration;
@@ -188,22 +159,6 @@
                 sourceNode.onended = null;
                 sourceNode.stop(0);
                 state = states.STOPPED;
-            }
-        };
-
-        this.playNext = () => {
-            return;
-
-            if(playing){
-                var next = playing;
-                do {
-                    next = MediaLibrary.getAudioClip(next.id + 1);
-                } while(next.state === MediaState.Error);
-
-                self.playClip(next);
-            }
-            else {
-                self.playClip(0);
             }
         };
 

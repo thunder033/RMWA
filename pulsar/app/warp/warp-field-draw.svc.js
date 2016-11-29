@@ -87,7 +87,7 @@ angular.module('pulsar.warp').service('warp.WarpFieldDraw', ['MScheduler', 'warp
                         continue;
                     }
 
-                    gems[i].position = MM.vec3((l - 1) * mLaneWidth * 3, -.5, zOffset);
+                    gems[i].position.set((l - 1) * mLaneWidth * 3, -.5, zOffset);
                     if(sliceGems[l] === 1){
                         gems[i].scale.set(.15);
                         gems[i].rotation.set(0, tt / 1000, 0);
