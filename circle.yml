@@ -4,10 +4,11 @@ machine:
 dependencies:
   pre:
     - browserify --version || npm i browserify -g
+    - grunt --version || npm i grunt grunt-cli -g
   override:
     - npm install
   post:
-    - npm build
+    - grunt
 deployment:
   production:
     branch: prod
