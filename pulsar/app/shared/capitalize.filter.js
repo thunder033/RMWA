@@ -4,7 +4,7 @@
 "use strict";
 //StackOverflow user Nidhish Krishnan
 //http://stackoverflow.com/questions/30207272/capitalize-the-first-letter-of-string-in-angularjs
-app.filter('capitalize', function(){
+require('angular').module('shared').filter('capitalize', function(){
     return function(input){
         return (input && typeof input == "string") ? input.charAt(0).toUpperCase() + input.substr(1).toLowerCase() : '';
     }

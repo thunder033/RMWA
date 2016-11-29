@@ -1,8 +1,8 @@
 /**
  * Created by gjrwcs on 10/27/2016.
  */
-"use strict";
-angular.module('mallet-math', []).service('MalletMath', [function(){
+'use strict';
+var math = require('angular').module('mallet-math', []).service('MalletMath', [function(){
 
     /**
      * A simple vector class
@@ -304,3 +304,5 @@ angular.module('mallet-math', []).service('MalletMath', [function(){
         return values.reduce((avg, value) => avg + value / values.length, 0);
     }
 }]);
+
+module.exports = math;

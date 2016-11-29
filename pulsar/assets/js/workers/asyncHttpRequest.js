@@ -18,18 +18,21 @@ self.document = {
     }
 };
 
-// Import angular
-var modulesPath = '../../../../node_modules/',
-    appPath = '../../../app/';
-self.importScripts(`${modulesPath}angular/angular.min.js`);
+var appPath = '../../../app/';
 
-self.angular = window.angular;
+// Import angular
+var angular = require('angular');
+//self.importScripts(`${modulesPath}angular/angular.min.js`);
+
+self.angular = angular;
 
 // Load simple request
-self.importScripts(`${appPath}shared/simple-request.svc.js`);
+// for some reason this has to be a single string???
+var simpleRequest = require('../../../app/shared/simple-request');
+//self.importScripts(`${appPath}shared/simple-request.js`);
 
 // Create stub app
-var workerApp = angular.module('worker-app', ['simple-request']);
+var workerApp = angular.module('worker-app', [simpleRequest.name]);
 
 /**
  * Determines is one of the classes implementing the Transferable interface
@@ -40,7 +43,7 @@ function isTransferable(data) {
     return data instanceof ArrayBuffer || data instanceof ImageBitmap || data instanceof MessagePort;
 }
 
-onmessage = function(e) {
+function processMessage(e) {
     workerApp.run(['simple-request.SimpleHttp', function(SimpleHttp){
         var data = e.data;
         SimpleHttp[data.method || 'get'](data.url, data.body || data, data)
@@ -54,4 +57,6 @@ onmessage = function(e) {
 
     // Bootstrap the app
     self.angular.bootstrap(null, ['worker-app']);
-};
+}
+
+self.addEventListener('message', processMessage);

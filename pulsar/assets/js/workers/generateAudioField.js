@@ -4,7 +4,7 @@
 "use strict";
 
 //https://github.com/corbanbrook/dsp.js
-self.importScripts('../dsp.js');
+require('../dsp');
 
 function getMaxIndex(arr){
     var max = -Infinity,
@@ -109,10 +109,12 @@ function generateAudioField(frameBuffers, frequencyBinCount, sampleRate){
     return field;
 }
 
-onmessage = function(e){
+function processMessage(e){
     var audioField = generateAudioField(e.data.frameBuffers, e.data.frequencyBinCount, e.data.frameBuffers);
     postMessage({
         _id: e.data._id,
         audioField: audioField
     });
-};
+}
+
+self.addEventListener('message', processMessage);

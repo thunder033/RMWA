@@ -9,9 +9,11 @@
         '$q',
         asyncRequestFactory]);
 
+    var basePath = '../';
+
     function asyncRequestFactory(Thread, $q){
         
-        var asyncScript = 'assets/js/workers/asyncHttpRequest.js';
+        var asyncScript = 'dist/asyncHttpRequest.js';
 
         /**
          * Finds an idle thread in the pool, if there are any
@@ -32,9 +34,10 @@
         /**
          * Creates a pool of threads to be distributed among requests
          * @param {number} [size=1]
+         * @param {string} [base='']
          * @constructor
          */
-        function RequestPool(size)
+        function RequestPool(size, base)
         {
             var threads = [], // Threads available to execute requests
                 requestQueue = new PriorityQueue(); // queue of pending requests awaiting threads
@@ -88,11 +91,10 @@
                 return getThread().then(thread => {
                     // adjust any relative paths back to the app root
                     // since web workers CWD is the location of the script
-                    var appRoot = '../../../';
-                    config.url = (config.url.indexOf('http') === 0) ? config.url : appRoot + config.url;
+                    config.url = (config.url.indexOf('http') === 0) ? config.url : base + config.url;
                     return thread.invoke(config).finally(()=> {
-                            requestComplete.notify(thread);
-                        });
+                        requestComplete.notify(thread);
+                    });
                 });
             };
         }
@@ -100,14 +102,15 @@
         /**
          * Create a RequestPool of the specific size
          * @param {number} threadCount
+         * @param {string} [base='../']
          * @returns {RequestPool}
          */
-        function createRequestPool(threadCount){
-            return new RequestPool(threadCount);
+        function createRequestPool(threadCount, base){
+            return new RequestPool(threadCount, base || basePath);
         }
 
         //Create a default request pool for arbitrary usage
-        var defaultPool = createRequestPool(1);
+        var defaultPool = createRequestPool(1, basePath);
 
         /**
          * Sends a request using the default async pool

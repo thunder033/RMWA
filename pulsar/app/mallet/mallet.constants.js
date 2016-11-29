@@ -1,4 +1,5 @@
-angular.module('mallet-constants', [])
+'use strict';
+var constants = require('angular').module('mallet-constants', [])
     //Rendering
     .constant('mallet.const.ScaleFactor', (()=>window.devicePixelRatio || 1)())
     .constant('mallet.const.SampleCount', 1024)
@@ -11,3 +12,5 @@ angular.module('mallet-constants', [])
         Space: 32,
         Escape: 27
     }));
+
+module.exports = constants;

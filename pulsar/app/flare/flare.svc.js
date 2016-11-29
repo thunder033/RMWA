@@ -6,7 +6,7 @@
     angular.module('pulsar.flare').service('Flare', [
         'MScheduler',
         'MEasel',
-        'Effects',
+        'flare.const.Effects',
         'audio.const.FrequencyRanges',
         'MColor',
         'flare.WaveformAnalyzer',

@@ -4,10 +4,11 @@
 (()=>{
     "use strict";
 
-    angular.module('pulsar').filter('addOption', [addNoneOption]);
+    angular.module('pulsar').filter('addOption', [addOption]);
 
-    function addNoneOption(){
+    function addOption(){
         return function(options, option){
+            options = options || [];
             options.push(option);
             return options;
         }

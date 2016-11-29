@@ -2,7 +2,7 @@
  * Created by Greg on 11/2/2016.
  */
 "use strict";
-angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', 'Geometry', 'MColor', 'MScheduler', 'mallet.state', function (MM, MEasel, Shapes, Geometry, Color, MScheduler, MState) {
+angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Geometry', 'MColor', 'MScheduler', 'mallet.state', function (MM, MEasel, Geometry, Color, MScheduler, MState) {
 
     var Mesh = Geometry.Mesh,
         drawCalls = new PriorityQueue(),
@@ -308,79 +308,6 @@ angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Shapes', '
             //Project the buffer into the camera's viewport
             self.projectBuffer(buffer, culledFaces, normalsBuffer, mesh.indices, drawCalls, color);
         }
-    };
-
-    /**
-     * Draws a rectangle in the Z plane - derived from Hammer code (Camera.cs)
-     * @param shape
-     * @param pos {Vector3}
-     * @param width {Number} size of shape on x-axis
-     * @param depth {Number} size of shape on z-axis
-     * @param zRot {Number} rotation on z-axis
-     */
-    this.drawShape = function(shape, pos, width, depth, zRot){
-
-        var verts = [];
-
-        if(shape === Shapes.Triangle){
-            verts = [
-                MM.vec3(-width / 2, 0, 0),
-                MM.vec3(0, 0, depth),
-                MM.vec3(+width / 2, 0, 0)];
-        }
-        else if(shape === Shapes.Quadrilateral){
-            verts = [
-                MM.vec3(-width / 2, 0, 0),
-                MM.vec3(-width / 2, 0, depth),
-                MM.vec3(+width / 2, 0, depth),
-                MM.vec3(+width / 2, 0, 0)];
-        }
-
-        zRot = zRot || 0;
-        var ctx = MEasel.context,
-            viewport = MM.vec2(ctx.canvas.width, ctx.canvas.height),
-            screenCenter = MM.vec2(viewport.x / 2, viewport.y / 2), //center of the viewport
-
-        //position of the object relative to the camera
-        //The Y position is inverted because screen space is reversed in Y
-            relPosition = MM.vec3(pos.x - self.position.x, -(pos.y - self.position.y), self.position.z - pos.z),
-            lensAngle = self.getLensAngle(); //the viewing angle of the lens, large is more stuff visible
-
-        //Don't draw things that are in front of the camera
-        if(relPosition.z <= 0){
-            return;
-        }
-
-        ctx.save();
-        ctx.beginPath();
-
-        //Draw the shape with each point
-        verts.forEach((pt, index) => {
-            var screenPos = MM.vec2(
-                /**
-                 * { cos -sin }
-                 * { sin  cos }
-                 */
-                //x' = x * cos(theta) - y * sin(theta)
-                pt.x * Math.cos(zRot) - pt.y * Math.sin(zRot) + relPosition.x,
-                //y' = y * cos(theta) + x * sin(theta)
-                pt.x * Math.sin(zRot) + pt.y * Math.cos(zRot) + relPosition.y
-            );
-
-            var fieldRadius = (relPosition.z + pt.z) * Math.tan(lensAngle); //FOV radius at the point
-            //Transform the point into screen space
-            screenPos
-                .scale(1 / fieldRadius) //1. Scale by the depth of the point
-                .mult(viewport)         //2. Scale to the size of the viewport
-                .add(screenCenter);     //3. Move relative to the screen center
-
-            //Add the point to the path (move for the first point)
-            (index === 0 ? ctx.moveTo : ctx.lineTo).call(ctx, screenPos.x, screenPos.y);
-        });
-
-        ctx.closePath();
-        ctx.fill();
-        ctx.restore();
     };
 
    this.present = () => {

@@ -2,7 +2,7 @@
  * Created by Greg on 9/20/2016.
  */
 "use strict";
-app.directive('loaderIcon', function(){
+require('angular').module('shared').directive('loaderIcon', function(){
     return {
         restrict: 'E',
         replace: true,

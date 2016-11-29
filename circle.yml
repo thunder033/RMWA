@@ -2,8 +2,12 @@ machine:
   node:
     version: 5.5.0
 dependencies:
+  pre:
+    - browserify --version || npm i browserify -g
   override:
     - npm install
+  post:
+    - npm build
 deployment:
   production:
     branch: prod
