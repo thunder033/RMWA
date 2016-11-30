@@ -68,6 +68,35 @@ function playlistFactory(MediaState, IPlayable){
         }
 
         /**
+         * Gets a subset of results from a clip queue
+         * @param {number} page
+         * @param {Array} clipList
+         * @returns {Array<AudioClip>}
+         */
+        getPage(page, clipList) {
+            // clear the clip list
+            clipList.length = 0;
+            // return an empty array if given an invalid page
+            if(!this._queue || typeof page !== 'number'){
+                return clipList;
+            }
+
+            var pageSize = 10, pos = 0;
+            var it = this._queue.getIterator();
+            // iterate through queue until end or page is filled
+            while(!it.isEnd() && clipList.length < pageSize){
+                if(pos++ > page * pageSize){
+                    clipList.push(it.next());
+                }
+                else {
+                    it.next();
+                }
+            }
+
+            return clipList;
+        }
+
+        /**
          *
          * @returns {IPromise.<AudioBuffer>|Promise}
          */
