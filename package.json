@@ -23,7 +23,8 @@
   "dependencies": {
     "angular": "^1.5.8",
     "angular-ui-router": "^0.3.1",
-    "checklist-model": "^0.10.0"
+    "checklist-model": "^0.10.0",
+    "eventtarget": "^0.1.0"
   },
   "devDependencies": {
     "chai": "^3.5.0",

@@ -1,13 +1,23 @@
 /**
  * Created by gjr8050 on 9/16/2016.
  */
+"use strict";
+var EventTarget = require('eventtarget');
+
 (()=>{
-    "use strict";
-    angular.module('pulsar.audio').service('audio.Player', [
+    require('angular').module('pulsar.audio').service('audio.Player', [
         'mallet.const.SampleCount',
         Player]);
 
+    /**
+     *
+     * @param SampleCount
+     * @constructor
+     * @extends EventTarget
+     */
     function Player(SampleCount){
+
+        EventTarget.call(this);
 
         var states = Object.freeze({
             Loading: 'Loading',
@@ -18,7 +28,11 @@
         });
 
         var self = this,
-            playing = null, //currently playing clip
+            /**
+             * currently playing clip
+             * @type {IPlayable}
+             */
+            playing = null,
             sourceNode = null, //active source node (different for each track)
             audioCtx = null, //the audio context
 
@@ -31,8 +45,7 @@
 
             trackLength = 0,
             pausedAt = 0,
-            trackStart = 0,
-            playHooks = [];
+            trackStart = 0;
 
         function getNow() {
             return (new Date()).getTime();
@@ -69,15 +82,8 @@
         };
 
         /**
-         * Add a callback to be invoked when a new clip is played
-         * @param callback
+         * Pause playback if the player is playing
          */
-        this.addPlayEventListener = (callback) => {
-            if (callback instanceof Function) {
-                playHooks.push(callback);
-            }
-        };
-
         this.pause = () => {
             if(state === states.PLAYING){
                 sourceNode.onended = null;
@@ -87,15 +93,21 @@
             }
         };
 
+        /**
+         * Resume playback if the player is currently paused
+         */
         this.resume = () =>{
             if(state === states.PAUSED){
                 gainNode.gain.cancelScheduledValues(audioCtx.currentTime);
-                self.playBuffer(playing.buffer, pausedAt);
+                self.playBuffer(sourceNode.buffer, pausedAt);
                 gainNode.gain.value = 1;
                 trackStart = getNow() - pausedAt * 1000;
             }
         };
 
+        /**
+         * If the player is playing
+         */
         this.togglePlaying = () => {
             if(state === states.PLAYING){
                 self.pause();
@@ -111,8 +123,8 @@
 
         /**
          * play the clip with the given ID
-         * @param clip
-         * @param startTime
+         * @param {IPlayable} clip
+         * @param {number} [startTime=0]
          */
         this.playClip = (clip, startTime) => {
             self.stop();
@@ -121,14 +133,14 @@
             state = states.Loading;
 
             return playing.getBuffer().then(buffer => {
-                self.playBuffer(buffer, startTime);
+                self.playBuffer(buffer, startTime || 0);
             });
         };
 
         /**
          * Player the audio buffer from the given time (in microseconds) or from the start
-         * @param buffer
-         * @param startTime
+         * @param {AudioBuffer} buffer
+         * @param {number} [startTime=0]
          */
         this.playBuffer = (buffer, startTime) => {
 
@@ -139,7 +151,8 @@
             state = states.PLAYING;
             gainNode.gain.value = 1;
             sourceNode.start(0 , startTime || 0);
-            playHooks.forEach(callback => callback.call(null, playing));
+            sourceNode.onended = () => this.dispatchEvent('ended');
+            this.dispatchEvent('play');
             trackStart = getNow();
             trackLength = buffer.duration;
         };
@@ -147,7 +160,7 @@
         this.seekTo = (pct) => {
             if(playing){
                 var time = trackLength * (pct || 0);
-                self.playBuffer(playing.buffer, time);
+                self.playBuffer(sourceNode.buffer, time);
                 trackStart = getNow() - time * 1000;
             }
 

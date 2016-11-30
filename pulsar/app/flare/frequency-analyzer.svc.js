@@ -76,7 +76,7 @@
             analyzerFrequencyData(AudioData.getFrequencies(), results);
         });
 
-        AudioPlayer.addPlayEventListener(()=> {
+        AudioPlayer.addEventListener('play', ()=> {
             results.dataLimit = 0;
         });
 
