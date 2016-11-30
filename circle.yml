@@ -3,8 +3,8 @@ machine:
     version: 5.5.0
 dependencies:
   cache_directories:
-    - /opt/circleci/nodejs/<version>/bin
-    - /opt/circleci/nodejs/<version>/lib/node_modules
+    - /opt/circleci/nodejs/v5.5.0/bin
+    - /opt/circleci/nodejs/v5.5.0/lib/node_modules
   pre:
     - browserify --version || npm i browserify -g
     - grunt --version || npm i grunt grunt-cli -g
