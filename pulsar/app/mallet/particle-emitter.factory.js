@@ -1,11 +1,11 @@
 /**
  * Created by gjr8050 on 11/9/2016.
  */
-angular.module('mallet').factory('MParticle', ['MalletMath', 'MCamera', 'Geometry', 'MScheduler', function(MM, MCamera, Geometry, MScheduler){
-    "use strict";
+require('angular').module('mallet').factory('MParticle', ['MalletMath', 'MCamera', 'Geometry', 'MScheduler', function(MM, MCamera, Geometry, MScheduler){
+    'use strict';
 
     //Adjust the speed of all particles so input values can be reasonable
-    var particleSpeed = .001;
+    var particleSpeed = 0.001;
 
     /**
      *
@@ -49,9 +49,9 @@ angular.module('mallet').factory('MParticle', ['MalletMath', 'MCamera', 'Geometr
         this.transform.scale.set(1);
 
         this.velocity.set(
-            .5 - Math.random(),
-            .5 - Math.random(),
-            .5 - Math.random())
+            0.5 - Math.random(),
+            0.5 - Math.random(),
+            0.5 - Math.random())
             .mult(this.spread)
             .scale(particleSpeed * this.speed)
             .add(this.startVelocity);
@@ -198,5 +198,5 @@ angular.module('mallet').factory('MParticle', ['MalletMath', 'MCamera', 'Geometr
 
     return {
         Emitter: Emitter
-    }
+    };
 }]);

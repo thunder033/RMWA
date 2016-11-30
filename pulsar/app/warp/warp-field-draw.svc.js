@@ -1,25 +1,41 @@
 /**
  * Created by Greg on 11/27/2016.
  */
-angular.module('pulsar.warp').service('warp.WarpFieldDraw', ['MScheduler', 'warp.Level', 'MalletMath', 'warp.State', 'MCamera', 'Geometry', 'warp.Bar', 'MEasel', '$timeout', function(MScheduler, WarpLevel, MM, WarpState, MCamera, Geometry, Bar, MEasel, $timeout){
+'use strict';
+require('angular')
+    .module('pulsar.warp')
+    .service('warp.WarpFieldDraw', [
+        'MScheduler',
+        'warp.Level',
+        'MalletMath',
+        'warp.State',
+        'MCamera',
+        'Geometry',
+        'warp.Bar',
+        'MEasel',
+        '$timeout',
+        WarpFieldDraw
+    ]);
+
+function WarpFieldDraw(MScheduler, WarpLevel, MM, WarpState, MCamera, Geometry, Bar, MEasel, $timeout){
     var velocity = 0,
         sliceOffset = 3, //how many slice to draw behind the ship (that have already passed)
         meshes = Geometry.meshes,
         Transform = Geometry.Transform;
 
-    var mLaneWidth = .20, //width of each lane
-        mLanePadding = .01, //padding on edge of each lane
+    var mLaneWidth = 0.20, //width of each lane
+        mLanePadding = 0.01, //padding on edge of each lane
 
         tLane = new Transform();
     tLane.scale.x = mLaneWidth - mLanePadding;
     tLane.scale.z = 60;
     tLane.position.z = -37;
-    tLane.position.y = -.1;
-    tLane.origin.z = -.5;
+    tLane.position.y = -0.1;
+    tLane.origin.z = -0.5;
 
     var tZero = new Transform();
     tZero.scale.x = mLaneWidth * 3;
-    tZero.position = MM.vec3(0, -.1, 6);
+    tZero.position = MM.vec3(0, -0.1, 6);
 
     var gems = new Array(WarpLevel.barsVisible);
     for(var g = 0; g < gems.length; g++){
@@ -27,7 +43,7 @@ angular.module('pulsar.warp').service('warp.WarpFieldDraw', ['MScheduler', 'warp
         //gems[g].position.y = -.5;
         gems[g].rotation.y = Math.PI / 4;
         gems[g].rotation.x = Math.PI / 4;
-        gems[g].scale = MM.vec3(.15);
+        gems[g].scale = MM.vec3(0.15);
     }
 
     var tBar = new Transform();
@@ -87,9 +103,9 @@ angular.module('pulsar.warp').service('warp.WarpFieldDraw', ['MScheduler', 'warp
                         continue;
                     }
 
-                    gems[i].position.set((l - 1) * mLaneWidth * 3, -.5, zOffset);
+                    gems[i].position.set((l - 1) * mLaneWidth * 3, -0.5, zOffset);
                     if(sliceGems[l] === 1){
-                        gems[i].scale.set(.15);
+                        gems[i].scale.set(0.15);
                         gems[i].rotation.set(0, tt / 1000, 0);
                     }
                     else if(sliceGems[l] === 3){
@@ -122,7 +138,7 @@ angular.module('pulsar.warp').service('warp.WarpFieldDraw', ['MScheduler', 'warp
 
         var darkGrey = MM.vec3(25);
         var transforms = getItems(blackGems, gems);
-        transforms.forEach(t => t.scale.set(.3));
+        transforms.forEach(t => t.scale.set(0.3));
         MCamera.render(meshes.Spike, transforms, darkGrey);
 
         MCamera.present(); //Draw the background
@@ -138,6 +154,5 @@ angular.module('pulsar.warp').service('warp.WarpFieldDraw', ['MScheduler', 'warp
 
             MScheduler.draw(draw, 9);
         });
-    }
-
-}]);
+    };
+}

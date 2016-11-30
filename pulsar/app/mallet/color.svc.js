@@ -1,11 +1,9 @@
-/**
- * Created by gjr8050 on 10/19/2016.
- */
-"use strict";
+'use strict';
 /**
  * Provides utility functions for working with CSS colors
+ * @author Greg Rozmarynowycz <greg@thunderlab.net>
  */
-angular.module('mallet').service('MColor', [function(){
+require('angular').module('mallet').service('MColor', [function(){
     return {
         /**
          * Generate and RGBA color string from the provided values
@@ -35,5 +33,5 @@ angular.module('mallet').service('MColor', [function(){
             var alpha = typeof a === 'number' ? a : 1;
             return 'rgba(' + ~~vec.x  + ',' + ~~vec.y + ',' + ~~vec.z + ',' + alpha + ')';
         }
-    }
+    };
 }]);

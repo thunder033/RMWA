@@ -25,7 +25,7 @@ angular.module('pulsar.media')
      * @property {media.Type} ReverbImpulse
      */
     .constant('media.const.Type', Object.freeze({
-        "Song": 'Song',
+        'Song': 'Song',
         'Effect': 'Effect',
         'ReverbImpulse' : 'ReverbImpulse'
     }));

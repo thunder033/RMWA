@@ -2,9 +2,9 @@
  * Created by gjr8050 on 11/11/2016.
  */
 (()=>{
-    "use strict";
+    'use strict';
 
-    angular.module('pulsar.warp').controller('warp.GameController', [
+    require('angular').module('pulsar.warp').controller('warp.GameController', [
         'mallet.state',
         'warp.State',
         'MScheduler',
@@ -39,7 +39,11 @@
 
         MKeyboard.onKeyDown(MKeys.Escape, () => { //Escape key toggles playing
             if(State.is(State.Playing) || State.is(State.Paused)) {
-                MState.is(MState.Running) ? MScheduler.suspend() : MScheduler.resume()
+                if (MState.is(MState.Running)) {
+                    MScheduler.suspend();
+                } else {
+                    MScheduler.resume();
+                }
             }
         });
     }

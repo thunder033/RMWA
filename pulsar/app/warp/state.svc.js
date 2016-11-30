@@ -2,7 +2,7 @@
  * Created by gjr8050 on 11/11/2016.
  */
 (()=>{
-    "use strict";
+    'use strict';
     angular.module('pulsar.warp')
         .service('warp.State', [State]);
 
@@ -44,7 +44,7 @@
         };
 
         Object.defineProperties(this, {
-            'current': {get: ()=>state, set: value =>{ state = value; invokeStateListeners(state)}},
+            'current': {get: ()=>state, set: value =>{ state = value; invokeStateListeners(state); }},
 
             'Paused': {value: 1, enumerable: true},
             'Playing': {value: 2, enumerable: true},

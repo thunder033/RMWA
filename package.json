@@ -30,6 +30,9 @@
     "chai": "^3.5.0",
     "grunt": "^1.0.1",
     "grunt-browserify": "^5.0.0",
+    "grunt-contrib-jshint": "^1.1.0",
+    "jshint": "^2.9.4",
+    "jshint-stylish": "^2.2.1",
     "mocha": "^3.1.2",
     "request": "^2.79.0"
   }

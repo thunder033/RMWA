@@ -2,7 +2,7 @@
  * Created by gjr8050 on 11/11/2016.
  */
 (()=>{
-    "use strict";
+    'use strict';
     angular.module('pulsar.warp').service('warp.ShipEffects', [
         'warp.Ship',
         'MParticle',
@@ -16,7 +16,7 @@
 
     function ShipEffects(Ship, MParticle, MScheduler, MM, Geometry, MEasel, AudioFx, MColor) {
 
-        var collectSound = new AudioFx.Effect({clipId: 'gemCollect', gain: .35}),
+        var collectSound = new AudioFx.Effect({clipId: 'gemCollect', gain: 0.35}),
             blackGemImpact = new AudioFx.Effect({clipId: 'blackGem', gain: 2});
 
         function blitGemShard(lightness){
@@ -24,7 +24,7 @@
             //Create a temporary canvas
             MEasel.createNewCanvas('particle', size, size);
             var cacheCtx = MEasel.getContext('particle');
-            cacheCtx.fillStyle = MColor.hsla(127, '100%', lightness + '%', .8);
+            cacheCtx.fillStyle = MColor.hsla(127, '100%', lightness + '%', 0.8);
             cacheCtx.fillRect(0, 0, size, size);
 
             //Return the rendered image
@@ -36,7 +36,7 @@
             //Create a temporary canvas
             MEasel.createNewCanvas('particle', size, size);
             var cacheCtx = MEasel.getContext('particle');
-            cacheCtx.fillStyle = MColor.hsla(0, '0%', lightness + '%', .8);
+            cacheCtx.fillStyle = MColor.hsla(0, '0%', lightness + '%', 0.8);
             cacheCtx.beginPath();
             cacheCtx.moveTo(0, size);
             cacheCtx.lineTo(size / 2, 0);
@@ -70,7 +70,7 @@
             sizeDecay: 0.08,
             speed: 1.5,
             startVelocity: MM.vec3(0, 0, 0.01),
-            spread: MM.vec3(1, 1, .5)
+            spread: MM.vec3(1, 1, 0.5)
         });
 
         var blackShardEmitter = new MParticle.Emitter({
@@ -84,7 +84,7 @@
             sizeDecay: 0.08,
             speed: 1.5,
             startVelocity: MM.vec3(0, 0, 0.01),
-            spread: MM.vec3(1, 1, .5)
+            spread: MM.vec3(1, 1, 0.5)
         });
 
         function blitTrail(){
@@ -115,8 +115,8 @@
             rate: MParticle.Emitter.Uniform,
 
             energy: 600,
-            speed: .85,
-            startVelocity: MM.vec3(0, .0006, 0.01),
+            speed: 0.85,
+            startVelocity: MM.vec3(0, 0.0006, 0.01),
             spread: MM.Vector3.Zero,
             image: blitTrail()
         });
@@ -139,13 +139,13 @@
 
         MScheduler.schedule(()=>{
             tEmitter.position.x = tShip.position.x;
-            tEmitter.position.y = tShip.position.y + .2;
+            tEmitter.position.y = tShip.position.y + 0.2;
             tEmitter.position.z = tShip.position.z;
 
             tTrail.position.set(
                 tShip.position.x,
                 tShip.position.y,
-                tShip.position.z + .5);
+                tShip.position.z + 0.5);
 
         }, Ship.priority + 1);
     }

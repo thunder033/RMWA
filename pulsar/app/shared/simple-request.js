@@ -67,7 +67,7 @@ function SimpleHttp($http)
         var config = (params instanceof HttpConfig) ? params : new HttpConfig(params);
 
         return doRequest(config);
-    }
+    };
 }
 
 module.exports = simpleRequest;

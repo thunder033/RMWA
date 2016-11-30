@@ -2,7 +2,7 @@
  * Created by gjr8050 on 9/16/2016.
  */
 (()=>{
-    "use strict";
+    'use strict';
 
     angular.module('pulsar.media').service('media.Library', [
         '$q',
@@ -49,10 +49,10 @@
          */
         this.getAudioClip = (id) => {
             return ready.promise.then(()=>{
-                if (typeof id === "number") {
+                if (typeof id === 'number') {
                     return clips[id];
                 }
-                else if (typeof id === "string") {
+                else if (typeof id === 'string') {
                     return clipList.reduce((clip, curClip) => {
                         return !clip && curClip.name === id ? curClip : clip;
                     }, null);

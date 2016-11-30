@@ -2,7 +2,7 @@
  * Created by gjrwcs on 11/10/2016.
  */
 (()=>{
-    "use strict";
+    'use strict';
 
     /**
      * Controls behavior of the ship and handles scoring
@@ -31,7 +31,7 @@
         //create the ship's transform
         this.transform = new Geometry.Transform()
             .translate(-laneWidth, -1, -2)
-            .scaleBy(.75, .5, .75);
+            .scaleBy(0.75, 0.5, 0.75);
 
         //Shorter local reference
         var tShip = this.transform;
@@ -95,7 +95,7 @@
                 rightBound++;
             }
 
-            return getLaneCoord() > .5 ? rightBound : rightBound - 1;
+            return getLaneCoord() > 0.5 ? rightBound : rightBound - 1;
         };
 
         function setDestLane(lane){
@@ -160,8 +160,8 @@
                 //Determine if the ship is close to the left or right lane
                 //Then set the destination and current lanes accordingly
                 var laneCoord = getLaneCoord();
-                destLane = (laneCoord > .5) ? rightBound : rightBound - 1;
-                self.lane = (laneCoord > .5) ? rightBound - 1 : rightBound;
+                destLane = (laneCoord > 0.5) ? rightBound : rightBound - 1;
+                self.lane = (laneCoord > 0.5) ? rightBound - 1 : rightBound;
 
                 //Conditionally clamp the destination and start lanes
                 if(destLane > 2){
@@ -178,7 +178,7 @@
             }
 
             //Gradually return the ship to resting rotation if there's no movement
-            if(bankPct != 0 && velocity.len2() === 0) {
+            if(bankPct !== 0 && velocity.len2() === 0) {
                 var sign = MM.sign(bankPct);
                 bankPct -= bankRate * dt * sign;
                 bankPct = MM.clamp(bankPct, -1, 1);

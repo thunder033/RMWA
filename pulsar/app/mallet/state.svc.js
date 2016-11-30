@@ -1,7 +1,7 @@
 /**
  * Created by Greg on 10/29/2016.
  */
-"use strict";
+'use strict';
 /**
  * For now just handles maintain app state, might change in the future
  * @name MState
@@ -11,7 +11,7 @@
  * @property Suspended
  * @property Debug
  */
-angular.module('mallet').service('mallet.state', ['$location', function($location){
+require('angular').module('mallet').service('mallet.state', ['$location', function($location){
 
     var self = this,
         stateListeners = [],
@@ -88,7 +88,7 @@ angular.module('mallet').service('mallet.state', ['$location', function($locatio
      */
     this.clearState = () => {
         appState = self.Loading;
-        appState |= $location.search().debug == '1' ? self.Debug : 0;
+        appState |= $location.search().debug === '1' ? self.Debug : 0;
         stateListeners.length = 0;
     };
 

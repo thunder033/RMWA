@@ -1,11 +1,9 @@
-/**
- * Created by gjr8050 on 10/19/2016.
- */
-"use strict";
+'use strict';
 /**
  * Performs analysis on the waveform data each frame to derive metrics
+ * @author Greg Rozmarynowycz <greg@thunderlab.net>
  */
-angular.module('pulsar.flare').service('flare.WaveformAnalyzer', ['MScheduler', 'audio.RealtimeData', 'mallet.const.SampleCount', function (MScheduler, AudioData, SampleCount) {
+require('angular').module('pulsar.flare').service('flare.WaveformAnalyzer', ['MScheduler', 'audio.RealtimeData', 'mallet.const.SampleCount', function (MScheduler, AudioData, SampleCount) {
     var results = {};
 
     /**
@@ -41,7 +39,7 @@ angular.module('pulsar.flare').service('flare.WaveformAnalyzer', ['MScheduler', 
         outResults.peakDistance = peakDistance;
         outResults.trough = troughMin;
         outResults.amplitude = peakMax - troughMin;
-        outResults.period = peakDistance / SampleCount * 2
+        outResults.period = peakDistance / SampleCount * 2;
     }
 
     MScheduler.schedule(()=> {

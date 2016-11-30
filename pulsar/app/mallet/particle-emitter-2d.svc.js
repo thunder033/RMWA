@@ -4,8 +4,8 @@
  * The particle emitter provider maintains position, velocity, and other properties of each particle drawn
  * on the screen. It provides an interface to change how particles are emitted and when.
  */
-"use strict";
-angular.module('mallet').service('MParticleEmitter2D', ['MScheduler','MEasel','mallet.const.ScaleFactor', 'MalletMath', function(Scheduler, Easel, ScaleFactor, MM){
+'use strict';
+require('angular').module('mallet').service('MParticleEmitter2D', ['MScheduler','MEasel','mallet.const.ScaleFactor', 'MalletMath', function(Scheduler, Easel, ScaleFactor, MM){
 
     /**
      * Maintains the properties of a single particle
@@ -35,8 +35,8 @@ angular.module('mallet').service('MParticleEmitter2D', ['MScheduler','MEasel','m
             return;
         }
 
-        this.position.x += this.velocity.x * dt * .25 + this.velocity.x * velocityScale * .75;
-        this.position.y += this.velocity.y * dt * .25 + this.velocity.y * velocityScale * .75;
+        this.position.x += this.velocity.x * dt * 0.25 + this.velocity.x * velocityScale * 0.75;
+        this.position.y += this.velocity.y * dt * 0.25 + this.velocity.y * velocityScale * 0.75;
 
         this.energy -= dt;
     };
@@ -114,7 +114,7 @@ angular.module('mallet').service('MParticleEmitter2D', ['MScheduler','MEasel','m
                 particles.push(new Particle(
                     MM.vec3(origin.x, origin.y),
                     //Make particles evenly spread across canvas by taking aspect ratio into account
-                    MM.vec3((.166 - Math.random() / 3) * aspectRatio, (.166 - Math.random() / 3)),
+                    MM.vec3((0.166 - Math.random() / 3) * aspectRatio, (0.166 - Math.random() / 3)),
                     initEnergy,
                     Math.random() * size
                 ));
@@ -133,7 +133,7 @@ angular.module('mallet').service('MParticleEmitter2D', ['MScheduler','MEasel','m
             ctx.translate(pos.x, pos.y);
             ctx.scale(particles[i].size, particles[i].size);
             //Make the particles fade as they near the end of their life
-            ctx.globalAlpha = Math.min(particles[i].energy / 500, .75);
+            ctx.globalAlpha = Math.min(particles[i].energy / 500, 0.75);
             ctx.drawImage(particleImage, 0, 0);
             ctx.restore();
         }

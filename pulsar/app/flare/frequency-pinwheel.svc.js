@@ -1,12 +1,12 @@
 /**
  * Created by gjr8050 on 10/19/2016.
  */
-"use strict";
+'use strict';
 (()=>{
     /**
      * Provides functions to render the frequency pinwheel
      */
-    angular.module('pulsar.flare').service('flare.FrequencyPinwheel', [
+    require('angular').module('pulsar.flare').service('flare.FrequencyPinwheel', [
         'audio.RealtimeData',
         'MEasel',
         'flare.FrequencyAnalyzer',
@@ -108,10 +108,10 @@
                 data = AudioData.getFrequencies();
 
             //Draw each set of arcs
-            var darkBack = MColor.hsla(hue, '84%', '25%', .65),
-                lightBack = MColor.hsla(hue, '90%', '43%', .75),
-                darkFront = MColor.hsla(hue, '70%', '70%', .5),
-                lightFront = MColor.hsla(hue, '55%', '78%', .5);
+            var darkBack = MColor.hsla(hue, '84%', '25%', 0.65),
+                lightBack = MColor.hsla(hue, '90%', '43%', 0.75),
+                darkFront = MColor.hsla(hue, '70%', '70%', 0.5),
+                lightFront = MColor.hsla(hue, '55%', '78%', 0.5);
 
             drawArcSet(ctx, data, 0, metrics.dataLimit / 2, lightBack, 2, angle); //skip every other
             drawArcSet(ctx, data, 1, metrics.dataLimit / 2 + 1, darkBack, 2, angle); //offset by 1 and skip ever other arc
@@ -122,8 +122,8 @@
 
             //Draw circle in center of arcs
             var gradient = ctx.createRadialGradient(origin.x, origin.y, metrics.avgLoudness / 10, origin.x, origin.y, metrics.avgLoudness);
-            gradient.addColorStop(0, "#fff");
-            gradient.addColorStop(1, "rgba(255,255,255,0)");
+            gradient.addColorStop(0, '#fff');
+            gradient.addColorStop(1, 'rgba(255,255,255,0)');
 
             ctx.fillStyle = gradient;
             ctx.beginPath();
@@ -134,6 +134,6 @@
 
         return {
             draw: drawFrequencyPinwheel
-        }
+        };
     }
 })();

@@ -2,7 +2,7 @@
  * Created by Greg on 11/21/2016.
  */
 (()=>{
-    "use strict";
+    'use strict';
     angular.module('pulsar.media').factory('media.source.Pulsar', [
         'media.Source',
         'mallet.AsyncRequest',
@@ -70,7 +70,6 @@
                         case 'name':
                         case 'type':
                             return $q.when(this._cachedTracks.filter(track => track[params.field] === params.term));
-                            break;
                         default:
                             return $q.when(this._cachedTracks);
                     }

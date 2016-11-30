@@ -2,7 +2,7 @@
  * Created by gjr8050 on 11/11/2016.
  */
 (()=>{
-    "use strict";
+    'use strict';
     angular.module('pulsar.warp').service('warp.LevelLoader', [
         'warp.Level',
         'warp.State',
@@ -32,7 +32,7 @@
 
         this.playClip = function(clip){
 
-            if(!clip.state === MediaStates.Ready){
+            if(clip.state !== MediaStates.Ready){
                 return;
             }
 

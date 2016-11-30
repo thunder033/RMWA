@@ -19,7 +19,7 @@ function playQueueDirective(AudioPlayer){
              */
             scope.queue = [];
 
-            AudioPlayer.
+            AudioPlayer.addEventListener('ended', ()=>{});
         }
-    }
+    };
 }

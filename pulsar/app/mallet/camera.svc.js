@@ -1,8 +1,8 @@
 /**
  * Created by Greg on 11/2/2016.
  */
-"use strict";
-angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Geometry', 'MColor', 'MScheduler', 'mallet.state', function (MM, MEasel, Geometry, Color, MScheduler, MState) {
+'use strict';
+require('angular').module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Geometry', 'MColor', 'MScheduler', 'mallet.state', function (MM, MEasel, Geometry, Color, MScheduler, MState) {
 
     var Mesh = Geometry.Mesh,
         drawCalls = new PriorityQueue(),
@@ -16,7 +16,7 @@ angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Geometry',
     };
 
     //position of the camera in 3d space
-    this.position = MM.vec3(0, .2, 10);
+    this.position = MM.vec3(0, 0.2, 10);
     var light = MM.vec3(-1, -1, -1).normalize();
 
     this.toVertexBuffer = (verts) => {
@@ -166,7 +166,7 @@ angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Geometry',
         var avgDist = 0,
             faceSize = 3;
 
-        for(var i = 0; i < indices.length; i ++) {
+        for(var i = 0, l = indices.length; i < l; i ++) {
             //If the face is facing away from the camera, don't render it
             if(culledFaces[(i - (i % faceSize)) / faceSize] === 0){
                 continue;
@@ -191,14 +191,18 @@ angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Geometry',
             faceBuffer[faceBufferIndex++] = screenY;
 
             //Push the vertices into face buffer
-            if((i + 1) % faceSize == 0){
+            if((i + 1) % faceSize === 0){
                 faceIndex = (i - (i % faceSize)) / faceSize;
+
+
                 var normalX = normals[faceIndex * 3],
                     normalY = normals[faceIndex * 3 + 1],
                     normalZ = normals[faceIndex * 3 + 2],
                     dot = light.x * normalX + light.y * normalY + light.z * normalZ,
+
+                    ambientLight = 0.2,
                     //Clamp the light amount to 1 and make sure it is positive
-                    lightAmt = Math.min(.2 + Math.max(0, dot), 1);
+                    lightAmt = Math.min(ambientLight + Math.max(0, dot), 1);
 
                 drawQueue.enqueue(1000 - avgDist, {
                     buffer: faceBuffer.slice(),
@@ -314,7 +318,7 @@ angular.module('mallet').service('MCamera', ['MalletMath', 'MEasel', 'Geometry',
         var ctx = MEasel.context, face, callCount = 0;
         ctx.lineWidth = 1;
         //Execute each draw call to display the scene
-        while(drawCalls.peek() != null){
+        while(drawCalls.peek() !== null){
             callCount++;
             face = drawCalls.dequeue();
             //Apply lighting calculations to the mesh color

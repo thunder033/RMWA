@@ -2,7 +2,7 @@
  * Created by gjr8050 on 11/11/2016.
  */
 (()=>{
-    "use strict";
+    'use strict';
     angular.module('pulsar.warp').service('warp.Level', [
         'MScheduler',
         'warp.State',
@@ -88,7 +88,7 @@
 
                     //add a new bar to the queue
                     self.barQueue.push({
-                        speed: .95 + .05 * MM.average(self.frequencies) //this value is basically fudged to work well
+                        speed: 0.95 + 0.05 * MM.average(self.frequencies) //this value is basically fudged to work well
                     });
                 }
             }

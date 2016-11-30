@@ -1,8 +1,8 @@
 /**
  * Created by gjr8050 on 9/16/2016.
  */
-"use strict";
-angular.module('mallet').service("MScheduler", ['mallet.const.MaxFrameRate', 'mallet.state', '$rootScope', function(MaxFrameRate, MState, $rootScope){
+'use strict';
+require('angular').module('mallet').service('MScheduler', ['mallet.const.MaxFrameRate', 'mallet.state', '$rootScope', function(MaxFrameRate, MState, $rootScope){
     var self = this,
         updateOperations = new PriorityQueue(),
         drawCommands = new PriorityQueue(),
@@ -46,11 +46,11 @@ angular.module('mallet').service("MScheduler", ['mallet.const.MaxFrameRate', 'ma
      * @param elapsedTime
      */
     function draw(deltaTime, elapsedTime) {
-        while(drawCommands.peek() != null){
+        while(drawCommands.peek() !== null){
             drawCommands.dequeue().call(null, deltaTime, elapsedTime);
         }
 
-        while(postDrawCommands.peek() != null){
+        while(postDrawCommands.peek() !== null){
             postDrawCommands.dequeue().call(null, deltaTime, elapsedTime);
         }
     }
@@ -88,7 +88,7 @@ angular.module('mallet').service("MScheduler", ['mallet.const.MaxFrameRate', 'ma
             deltaTime -= timestep;
 
             if(++updateSteps > 240){
-                console.warn("Update Loop Exceeded 240 Calls");
+                console.warn('Update Loop Exceeded 240 Calls');
                 deltaTime = 0; //don't do a silly # of updates
                 break;
             }
@@ -120,7 +120,7 @@ angular.module('mallet').service("MScheduler", ['mallet.const.MaxFrameRate', 'ma
             queue.enqueue(priority, command);
         }
         else {
-            throw new TypeError("Operation must be a function");
+            throw new TypeError('Operation must be a function');
         }
     }
 
@@ -180,5 +180,5 @@ angular.module('mallet').service("MScheduler", ['mallet.const.MaxFrameRate', 'ma
      */
     this.suspendOnBlur = (flag) => {
         suspendOnBlur = typeof flag !== 'undefined' ? flag : true;
-    }
+    };
 }]);

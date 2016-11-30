@@ -35,6 +35,6 @@
             }
 
             return warpField;
-        }
+        };
     }
 })();

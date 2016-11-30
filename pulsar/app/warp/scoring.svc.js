@@ -3,7 +3,7 @@
  */
 
 (()=>{
-    "use strict";
+    'use strict';
     angular.module('pulsar.warp').service('warp.Scoring', [
         'warp.Ship',
         'warp.ShipEffects',
@@ -23,7 +23,7 @@
             multiplerStartSlice = 0,
             lastCollectedSlice = 0;
 
-        State.onState(State.Loading, ()=>{self.score = 0});
+        State.onState(State.Loading, ()=>{self.score = 0;});
 
         MScheduler.schedule(()=>{
             var collectOffset = 5, //how many slices ahead of the current slice we're collecting from
@@ -48,7 +48,7 @@
 
                         if(Level.sliceIndex - lastCollectedSlice === 2 ){
                             if(Level.sliceIndex - multiplerStartSlice > 10){
-                                self.multiplier += lastCollectedLane !== lane ? .3 : .05;
+                                self.multiplier += lastCollectedLane !== lane ? 0.3 : 0.05;
                             }
                         }
                         else {

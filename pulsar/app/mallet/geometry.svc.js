@@ -1,8 +1,8 @@
 /**
  * Created by gjrwcs on 11/3/2016.
  */
-"use strict";
-angular.module('mallet') .factory('Geometry', ['MalletMath', function(MM){
+'use strict';
+require('angular').module('mallet') .factory('Geometry', ['MalletMath', function(MM){
 
     /**
      * Stores and manipulates _position, scale, and rotation data for an object
@@ -130,7 +130,7 @@ angular.module('mallet') .factory('Geometry', ['MalletMath', function(MM){
      * @returns {Vector3[]}
      */
     Mesh.buildNormals = function(verts, indices){
-        if(indices.length % 3 != 0){
+        if(indices.length % 3 !== 0){
             return;
         }
 
@@ -168,20 +168,25 @@ angular.module('mallet') .factory('Geometry', ['MalletMath', function(MM){
         var max = verts[0].clone();
 
         verts.forEach(v => {
-            if(v.x < min.x)
+            if(v.x < min.x) {
                 min.x = v.x;
-            else if(v.x > max.x)
+            } else if(v.x > max.x) {
                 max.x = v.x;
+            }
 
-            if(v.y < min.y)
+
+            if(v.y < min.y) {
                 min.y = v.y;
-            else if(v.y > max.y)
+            } else if(v.y > max.y) {
                 max.y = v.y;
+            }
 
-            if(v.z < min.z)
+
+            if(v.z < min.z) {
                 min.z = v.z;
-            else if(v.z > max.z)
+            } else if(v.z > max.z) {
                 max.z = v.z;
+            }
         });
 
         return MM.Vector3.subtract(max, min);
@@ -189,10 +194,10 @@ angular.module('mallet') .factory('Geometry', ['MalletMath', function(MM){
 
     var meshes = {
         XYQuad: new Mesh([
-                MM.vec3(-.5, -.5, 0),
-                MM.vec3(-.5, +.5, 0),
-                MM.vec3(+.5, +.5, 0),
-                MM.vec3(+.5, -.5, 0)], [
+                MM.vec3(-0.5, -0.5, 0),
+                MM.vec3(-0.5, +0.5, 0),
+                MM.vec3(+0.5, +0.5, 0),
+                MM.vec3(+0.5, -0.5, 0)], [
                 0, 1, 2,  0, 2, 3,
                 0, 2, 1,  0, 3, 2]), //We don't want the quad to disappear when it rotates
         XZQuad: new Mesh([
@@ -200,10 +205,10 @@ angular.module('mallet') .factory('Geometry', ['MalletMath', function(MM){
                  *    /   /
                  * 0 +---+ 3
                  */
-                MM.vec3(-.5, 0, -.5),
-                MM.vec3(-.5, 0, +.5),
-                MM.vec3(+.5, 0, +.5),
-                MM.vec3(+.5, 0, -.5)], [
+                MM.vec3(-0.5, 0, -0.5),
+                MM.vec3(-0.5, 0, +0.5),
+                MM.vec3(+0.5, 0, +0.5),
+                MM.vec3(+0.5, 0, -0.5)], [
                 0, 2, 1,  0, 3, 2,
                 0, 1, 2,  0, 2, 3]), //We don't want the quad to disappear when it rotates
         Ship: new Mesh([
@@ -213,11 +218,11 @@ angular.module('mallet') .factory('Geometry', ['MalletMath', function(MM){
              *    /   +  \
              * 0 + '  1 ` + 3
              */
-            MM.vec3(-.5, +.15, +.50),
-            MM.vec3(+.0, +.35, +.35),
-            MM.vec3(+.0, +.00, -.50),
-            MM.vec3(+.5, +.15, +.50),
-            MM.vec3(+.0, -.35, +.35)
+            MM.vec3(-0.5, +0.15, +0.50),
+            MM.vec3(+0.0, +0.35, +0.35),
+            MM.vec3(+0.0, +0.00, -0.50),
+            MM.vec3(+0.5, +0.15, +0.50),
+            MM.vec3(+0.0, -0.35, +0.35)
         ], [
             0, 2, 1, //Duplicate so certain rotations render
 
@@ -235,15 +240,15 @@ angular.module('mallet') .factory('Geometry', ['MalletMath', function(MM){
                  *   |   | /
                  * 0 +---+ 3
                  */
-                MM.vec3(-.5, -.5, +.5), //LBF 0
-                MM.vec3(-.5, +.5, +.5), //LTF 1
-                MM.vec3(+.5, +.5, +.5), //RTF 2
-                MM.vec3(+.5, -.5, +.5), //RBF 3
+                MM.vec3(-0.5, -0.5, +0.5), //LBF 0
+                MM.vec3(-0.5, +0.5, +0.5), //LTF 1
+                MM.vec3(+0.5, +0.5, +0.5), //RTF 2
+                MM.vec3(+0.5, -0.5, +0.5), //RBF 3
 
-                MM.vec3(-.5, -.5, -.5), //LBB 4
-                MM.vec3(-.5, +.5, -.5), //LTB 5
-                MM.vec3(+.5, +.5, -.5), //RTB 6
-                MM.vec3(+.5, -.5, -.5)],//RBB 7
+                MM.vec3(-0.5, -0.5, -0.5), //LBB 4
+                MM.vec3(-0.5, +0.5, -0.5), //LTB 5
+                MM.vec3(+0.5, +0.5, -0.5), //RTB 6
+                MM.vec3(+0.5, -0.5, -0.5)],//RBB 7
             [
                 0, 1, 2,  0, 2, 3, //F
                 2, 6, 3,  3, 6, 7, //R
@@ -254,15 +259,15 @@ angular.module('mallet') .factory('Geometry', ['MalletMath', function(MM){
                 0, 3, 7,  0, 7, 4  //Bottom
             ]),
         Spike: new Mesh([
-            MM.vec3(-.12, -.12, +.12), //LBF 0
-            MM.vec3(-.12, +.12, +.12), //LTF 1
-            MM.vec3(+.12, +.12, +.12), //RTF 2
-            MM.vec3(+.12, -.12, +.12), //RBF 3
+            MM.vec3(-0.12, -0.12, +0.12), //LBF 0
+            MM.vec3(-0.12, +0.12, +0.12), //LTF 1
+            MM.vec3(+0.12, +0.12, +0.12), //RTF 2
+            MM.vec3(+0.12, -0.12, +0.12), //RBF 3
 
-            MM.vec3(-.12, -.12, -.12), //LBB 4
-            MM.vec3(-.12, +.12, -.12), //LTB 5
-            MM.vec3(+.12, +.12, -.12), //RTB 6
-            MM.vec3(+.12, -.12, -.12), //RBB 7
+            MM.vec3(-0.12, -0.12, -0.12), //LBB 4
+            MM.vec3(-0.12, +0.12, -0.12), //LTB 5
+            MM.vec3(+0.12, +0.12, -0.12), //RTB 6
+            MM.vec3(+0.12, -0.12, -0.12), //RBB 7
 
             MM.vec3(+0.0, +0.5, +0.0), //TC 8
             MM.vec3(+0.0, -0.5, +0.0), //BC 9
@@ -289,5 +294,5 @@ angular.module('mallet') .factory('Geometry', ['MalletMath', function(MM){
         Mesh: Mesh,
 
         meshes: meshes
-    }
+    };
 }]);

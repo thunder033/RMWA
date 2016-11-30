@@ -1,7 +1,7 @@
 /**
  * Created by gjr8050 on 9/16/2016.
  */
-"use strict";
+'use strict';
 var EventTarget = require('eventtarget');
 
 (()=>{
@@ -231,7 +231,8 @@ var EventTarget = require('eventtarget');
             // create new AudioContext
             // The || is because WebAudio has not been standardized across browsers yet
             // http://webaudio.github.io/web-audio-api/#the-audiocontext-interface
-            audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext);
+            /* jshint -W056 */
+            audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
         };
 
         /**

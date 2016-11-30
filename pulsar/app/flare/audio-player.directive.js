@@ -1,8 +1,8 @@
 /**
  * Created by gjr8050 on 9/16/2016.
  */
-"use strict";
-angular.module('pulsar.flare').directive('audioPlayer', ['audio.Player', function(AudioPlayer){
+'use strict';
+require('angular').module('pulsar.flare').directive('audioPlayer', ['audio.Player', function(AudioPlayer){
     return {
         restrict: 'E',
         replace: true,
@@ -10,7 +10,7 @@ angular.module('pulsar.flare').directive('audioPlayer', ['audio.Player', functio
         link: function(scope, elem){
             scope.player = AudioPlayer;
             scope.getPlaybarSize = function(){
-                return AudioPlayer.completionPct * 100 + '%'
+                return AudioPlayer.completionPct * 100 + '%';
             };
             
             function getMouse(e){
@@ -22,10 +22,10 @@ angular.module('pulsar.flare').directive('audioPlayer', ['audio.Player', functio
             
             scope.seek = function(e){
                 var mouse = getMouse(e),
-                    playBar = elem[0].querySelector(".play-bar"),
+                    playBar = elem[0].querySelector('.play-bar'),
                     pctPos = mouse.x / playBar.clientWidth;
                 AudioPlayer.seekTo(pctPos);
-            }
+            };
         }
-    }
+    };
 }]);

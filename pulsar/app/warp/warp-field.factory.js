@@ -2,7 +2,7 @@
  * Created by gjr8050 on 11/11/2016.
  */
 (()=>{
-    "use strict";
+    'use strict';
     angular.module('pulsar.warp').factory('warp.WarpField', [
         'mallet.Thread',
         'audio.DataUtils',

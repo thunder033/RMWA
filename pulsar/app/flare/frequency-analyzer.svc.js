@@ -1,13 +1,13 @@
 /**
  * Created by gjr8050 on 10/19/2016.
  */
-"use strict";
+'use strict';
 
 (()=>{
     /**
      * Performs analysis on frequency data each frame to generate metrics
      */
-    angular.module('pulsar.flare').service('flare.FrequencyAnalyzer', [
+    require('angular').module('pulsar.flare').service('flare.FrequencyAnalyzer', [
         'MScheduler',
         'audio.RealtimeData',
         'audio.const.FrequencyRanges',
@@ -84,6 +84,6 @@
             getMetrics(){
                 return results;
             }
-        }
+        };
     }
 })();

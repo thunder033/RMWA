@@ -2,7 +2,7 @@
  * Created by Greg on 9/18/2016.
  */
 (()=>{
-    "use strict";
+    'use strict';
     
     angular.module('pulsar.media').directive('playlist', [
         'audio.Player',
@@ -46,9 +46,9 @@
                 };
 
                 scope.isPlaying = function(clipId) {
-                    return typeof clipId === 'number' && (AudioPlayer.playing || {}).id == clipId;
+                    return typeof clipId === 'number' && (AudioPlayer.playing || {}).id === clipId;
                 };
             }
-        }
+        };
     }
 })();

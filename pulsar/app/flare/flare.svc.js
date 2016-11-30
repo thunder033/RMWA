@@ -2,8 +2,8 @@
  * Created by Greg on 9/18/2016.
  */
 (()=>{
-    "use strict";
-    angular.module('pulsar.flare').service('Flare', [
+    'use strict';
+    require('angular').module('pulsar.flare').service('Flare', [
         'MScheduler',
         'MEasel',
         'flare.const.Effects',
@@ -34,7 +34,7 @@
             waveform: WaveformAnalyzer.getMetrics(),
             velocity: 0,
             hue: 0,
-            noiseThreshold: .1,
+            noiseThreshold: 0.1,
             angle: 0,
             frequencyMaxes: FrequencyAnalyzer.getMetrics().maxRangeLoudness
         };
@@ -120,15 +120,18 @@
             var gradient2 = ctx.createRadialGradient(origin.x, origin.y, 0, origin.x, origin.y, maxRadius);
 
             //Add stops for each pulse
-            var it = radialPulses.getIterator(), pulse;
+            var it = radialPulses.getIterator(),
+                pulseVelocity = 0.008,
+                pulse;
+
             while (!it.isEnd()) {
                 pulse = it.next();
-                pulse.pos += .008;
+                pulse.pos += pulseVelocity;
 
                 var stopPos = Math.min(pulse.pos, 1),
-                    stopEnd = Math.min(pulse.pos + .05, 1),
+                    stopEnd = Math.min(pulse.pos + 0.05, 1),
                 //I'm sure there's a name for this, but this math makes the opacity fall off after reaching a stop value of .5
-                    a = stopPos > .5 ? (1 - (stopPos - .5) * 2) : 1,
+                    a = stopPos > 0.5 ? (1 - (stopPos - 0.5) * 2) : 1,
                     opacity = a * a * pulse.energy;
 
                 gradient2.addColorStop(stopPos, MColor.rgba(255, 255, 255, opacity));
@@ -166,9 +169,9 @@
 
             //calculate how large the curve should be drawn
             //if the curve has a lower energy value it will start shrinking
-            var weight = pulse.energy < .1 ? (pulse.energy) * 10 : 1;
+            var weight = pulse.energy < 0.1 ? (pulse.energy) * 10 : 1;
             //the curve will grow out from the center instead snapping into existence
-            var positionWeight = pulse.position < .15 ? pulse.position / .15 : 1;
+            var positionWeight = pulse.position < 0.15 ? pulse.position / 0.15 : 1;
 
             var cp1x = curveStartX + curveSize / 3;
             var cp2x = curveStartX + 2 * curveSize / 3;
@@ -179,7 +182,7 @@
             ctx.closePath();
 
             //Curves at the lower end of the frequency spectrum will be brighter
-            var alpha = .5 + .5 * ((1 - pulse.frequencyRange) / FrequencyRanges.length);
+            var alpha = 0.5 + 0.5 * ((1 - pulse.frequencyRange) / FrequencyRanges.length);
             ctx.fillStyle = MColor.rgba(255, 255, 255, alpha);
             ctx.fill();
         }
@@ -193,8 +196,8 @@
          */
         function drawQuarterLinearPulses(ctx, origin, width, height) {
             //Linear Pulses
-            var pulseDecayRate = .04, //The rate at which the energy pulses decay - how long they persist
-                pulseThreshold = .0001, //The minimum energy value a pulse must have to be rendered
+            var pulseDecayRate = 0.04, //The rate at which the energy pulses decay - how long they persist
+                pulseThreshold = 0.0001, //The minimum energy value a pulse must have to be rendered
                 pulseVelocity = 0.005 + visualizer.velocity / 1.7, //The speed at which pulses travel from center (0) to edge (1)
                 nextPulses = [], //The pulses that will be rendered next frame
                 largestPulses = new Array(FrequencyRanges.length); //Array of highest energy pulses for each frequency range
@@ -208,7 +211,7 @@
 
                     //Update pulse properties
                     pulse.energy *= (1 - pulseDecayRate);
-                    pulse.position += pulse.position > .85 ? pulseVelocity * ((1 - pulse.position) / .15) : pulseVelocity;
+                    pulse.position += pulse.position > 0.85 ? pulseVelocity * ((1 - pulse.position) / 0.15) : pulseVelocity;
 
                     renderLinearPulse(pulse, ctx, origin, width, height);
 
@@ -236,7 +239,7 @@
                         volume: visualizer.frequencyMaxes[i],
                         //frequency range the pulse was generated for
                         frequencyRange: i
-                    })
+                    });
                 }
             }
 
@@ -265,7 +268,7 @@
             //Update the particle emitter
             var avgLoudness = FrequencyAnalyzer.getMetrics().avgLoudness;
             //Particles should exist short when things are more active or if frame rate is bad
-            MParticleEmitter2D.setInitEnergy((MScheduler.FPS / 12.5) * .8 - (avgLoudness / 256));
+            MParticleEmitter2D.setInitEnergy((MScheduler.FPS / 12.5) * 0.8 - (avgLoudness / 256));
             MParticleEmitter2D.incrementEmission(avgLoudness / 5);
             MParticleEmitter2D.setParticleSpeed(visualizer.velocity * 1200);
 

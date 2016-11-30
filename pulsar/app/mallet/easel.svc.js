@@ -1,8 +1,8 @@
 /**
  * Created by gjrwcs on 9/15/2016.
  */
-"use strict";
-angular.module('mallet').service('MEasel', [function () {
+'use strict';
+require('angular').module('mallet').service('MEasel', [function () {
 
     var contexts = {},
         defaultKey = 'default';
@@ -70,14 +70,14 @@ angular.module('mallet').service('MEasel', [function () {
                 canvas.width *= ratio;
                 canvas.height *= ratio;
 
-                canvas.style.width = oldWidth + "px";
-                canvas.style.height = oldHeight + "px";
+                canvas.style.width = oldWidth + 'px';
+                canvas.style.height = oldHeight + 'px';
                 
                 //We don't appear to need this working w/ relative sizes
                 //ctx.scale(ratio, ratio);
 
-                ctx = canvas.getContext("2d");
+                ctx = canvas.getContext('2d');
             }
         }
-    }
+    };
 }]);

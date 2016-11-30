@@ -14,7 +14,7 @@
          */
         function Thread(script) {
             if(!window.Worker){
-                throw new Error('Web workers are not supported by your browser.')
+                throw new Error('Web workers are not supported by your browser.');
             }
 
             var opId = 0,
@@ -74,6 +74,6 @@
             create(script){
                 return new Thread(script);
             }
-        }
+        };
     }
 })();

@@ -2,9 +2,9 @@
  * Created by gjrwcs on 9/15/2016.
  */
 (()=>{
-    "use strict";
+    'use strict';
 
-    angular.module('pulsar.flare').directive('controlPanel', ['Flare','flare.const.Effects','MScheduler','media.Library','audio.Player', 'media.const.Type', controlPanel]);
+    require('angular').module('pulsar.flare').directive('controlPanel', ['Flare','flare.const.Effects','MScheduler','media.Library','audio.Player', 'media.const.Type', controlPanel]);
 
     function controlPanel(Visualizer, Effects, MScheduler, MediaLibrary, AudioPlayer, MediaType){
         return {
@@ -42,6 +42,6 @@
                 MScheduler.schedule(()=>scope.$apply());
             },
             controller: 'ControlPanelCtrl'
-        }
+        };
     }
 })();

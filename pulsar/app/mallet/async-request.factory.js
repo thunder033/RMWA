@@ -2,9 +2,9 @@
  * Created by Greg on 11/20/2016.
  */
 (()=>{
-    "use strict";
+    'use strict';
 
-    angular.module('mallet').service('mallet.AsyncRequest', [
+    require('angular').module('mallet').service('mallet.AsyncRequest', [
         'mallet.Thread',
         '$q',
         asyncRequestFactory]);
@@ -125,6 +125,6 @@
         return {
             send: createRequest,
             createRequestPool: createRequestPool
-        }
+        };
     }
 })();

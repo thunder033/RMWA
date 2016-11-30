@@ -1,12 +1,12 @@
 /**
  * Created by gjr8050 on 10/19/2016.
  */
-"use strict";
+'use strict';
 (()=>{
     /**
      * Provides access to audio data and processing utilities
      */
-    angular.module('pulsar.audio').service('audio.RealtimeData', [
+    require('angular').module('pulsar.audio').service('audio.RealtimeData', [
         'MScheduler',
         'mallet.const.SampleCount',
         'audio.Player',

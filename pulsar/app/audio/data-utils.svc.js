@@ -2,12 +2,12 @@
  * Created by Greg on 11/25/2016.
  */
 (()=>{
-    "use strict";
+    'use strict';
 
     /**
      * @module audio.DataUtils
      */
-    angular.module('pulsar.audio').service('audio.DataUtils', [
+    require('angular').module('pulsar.audio').service('audio.DataUtils', [
         'mallet.const.SampleCount',
         '$q',
         DataUtils]);
@@ -26,7 +26,8 @@
         this.getAudioBuffer = (rawBuffer) => {
             var renderOp = $q.defer();
 
-            var audioCtx = new (window.AudioContext || window.webkitAudioContext);
+            /* jshint -W056 */
+            var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
             function handleError(e){
                 renderOp.reject(e);
@@ -85,8 +86,8 @@
                         frameBuffers: frameBuffers,
                         sampleRate: buffer.sampleRate / 4,
                         duration: buffer.duration
-                    }});
+                    };});
             });
-        }
+        };
     }
 })();

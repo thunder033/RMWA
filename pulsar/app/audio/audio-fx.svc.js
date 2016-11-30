@@ -1,10 +1,11 @@
 /**
  * Created by gjr8050 on 11/11/2016.
  */
-"use strict";
-angular.module('pulsar.audio').factory('audio.AudioFx', ['media.Library', 'audio.DataUtils', function (MediaLibrary, AudioData) {
+'use strict';
+require('angular').module('pulsar.audio').factory('audio.AudioFx', ['media.Library', 'audio.DataUtils', function (MediaLibrary, AudioData) {
 
-    var audioCtx = new (window.AudioContext || window.webkitAudioContext),
+    /* jshint -W056 */
+    var audioCtx = new (window.AudioContext || window.webkitAudioContext)(),
         autoId = 0,
         masterGain = audioCtx.createGain();
 
@@ -70,5 +71,5 @@ angular.module('pulsar.audio').factory('audio.AudioFx', ['media.Library', 'audio
 
     return {
         Effect: Effect
-    }
+    };
 }]);

@@ -2,7 +2,7 @@
  * Created by gjr8050 on 11/16/2016.
  */
 (()=>{
-    "use strict";
+    'use strict';
 
     angular.module('pulsar.media').factory('media.AudioClip', [
         'media.const.Type',

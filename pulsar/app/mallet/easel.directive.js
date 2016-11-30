@@ -1,8 +1,8 @@
 /**
  * Created by gjrwcs on 9/15/2016.
  */
-"use strict";
-angular.module('mallet').directive('mEasel', ['MEasel','MScheduler', 'mallet.state', function(MEasel, Scheduler, MState){
+'use strict';
+require('angular').module('mallet').directive('mEasel', ['MEasel','MScheduler', 'mallet.state', function(MEasel, Scheduler, MState){
 
     var canvas, ctx, scale = 1;
 
@@ -16,7 +16,7 @@ angular.module('mallet').directive('mEasel', ['MEasel','MScheduler', 'mallet.sta
         link: function(scope, elem, attr){
 
             canvas = elem[0].querySelector('canvas');
-            canvas.style.background = "#000";
+            canvas.style.background = '#000';
             ctx = canvas.getContext(attr.context || '2d');
 
             window.addEventListener('resize', ()=>MEasel.resizeCanvas(canvas, ctx));
@@ -28,12 +28,13 @@ angular.module('mallet').directive('mEasel', ['MEasel','MScheduler', 'mallet.sta
             MEasel.createNewCanvas('quarterRender', baseCanvas.width / 2, baseCanvas.height / 2);
 
             Scheduler.schedule(()=>{
+                var lowResScale = 0.75;
                 //Reduce canvas resolution is performance is bad
-                if(Scheduler.FPS < 30 && scale == 1){
-                    scale = .75;
+                if(Scheduler.FPS < 30 && scale === 1){
+                    scale = lowResScale;
                     MEasel.resizeCanvas(canvas, ctx, scale);
                 }
-                else if(Scheduler.FPS > 40 && scale == .75){
+                else if(Scheduler.FPS > 40 && scale === lowResScale){
                     scale = 1;
                     MEasel.resizeCanvas(canvas, ctx, scale);
                 }
@@ -43,12 +44,11 @@ angular.module('mallet').directive('mEasel', ['MEasel','MScheduler', 'mallet.sta
 
                 if(MState.is(MState.Debug)){
                     Scheduler.draw(() => {
-                        ctx.fillStyle = "#fff";
-                        ctx.fillText("FPS: " + (~~Scheduler.FPS), 25, 25);
+                        ctx.fillStyle = '#fff';
+                        ctx.fillText('FPS: ' + (~~Scheduler.FPS), 25, 25);
                     });
                 }
             });
-
         }
-    }
+    };
 }]);

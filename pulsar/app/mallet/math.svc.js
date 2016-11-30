@@ -160,7 +160,7 @@ var math = require('angular').module('mallet-math', []).service('MalletMath', [f
      * @returns {string}
      */
     Vector3.prototype.toString = function(){
-        return '{' + this.x + ', ' + this.y + ', ' + this.z + '}'
+        return '{' + this.x + ', ' + this.y + ', ' + this.z + '}';
     };
 
     Vector3.prototype.toBuffer = function(){
@@ -302,7 +302,7 @@ var math = require('angular').module('mallet-math', []).service('MalletMath', [f
      */
     this.average = (values) => {
         return values.reduce((avg, value) => avg + value / values.length, 0);
-    }
+    };
 }]);
 
 module.exports = math;

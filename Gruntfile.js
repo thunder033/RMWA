@@ -13,10 +13,18 @@ module.exports = function(grunt){
                     'pulsar/dist/generateAudioField.js': 'pulsar/assets/js/workers/generateAudioField.js'
                 }
             }
+        },
+        jshint: {
+            options: {
+                jshintrc: true,
+                reporter: require('jshint-stylish')
+            },
+            all: ['pulsar/app/**/*.js']
         }
     });
 
     grunt.loadNpmTasks('grunt-browserify');
+    grunt.loadNpmTasks('grunt-contrib-jshint');
 
-    grunt.registerTask('default', ['browserify']);
+    grunt.registerTask('default', ['jshint:all', 'browserify']);
 };
