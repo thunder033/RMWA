@@ -34,26 +34,6 @@ html, body {
 .toggleButton input:checked + span {
     background: #222;
 }
-
-li.playing {
-    font-weight: bold;
-    color: #ccffcc;
-    border-left: 3px #ccffcc solid;
-    background: #444;
-}
-
-li.playing::before {
-    content: '';
-    height: 0;
-    width: 0;
-    border-left: 15px #ccffcc solid;
-    border-top: 10px transparent solid;
-    border-bottom: 10px transparent solid;
-    position: absolute;
-    top: 5px;
-    left: -2em;
-}
-
 .color-input, .select-box {
     background: #222;
     padding: .5em;
@@ -87,26 +67,4 @@ li.playing::before {
     height: 1em;
     padding: 0;
     margin-bottom: .5em;
-}
-
-.playlist {
-    overflow-y: scroll;
-    max-height: 13em;
-    background: #2a2a2a;
-}
-
-.playlist ul {
-
-}
-
-.playlist li {
-    list-style: none;
-    padding: .3em;
-    border-bottom: 1px #333 solid;
-    position: relative;
-}
-
-.playlist li:hover {
-    cursor: pointer;
-    background: #555;
 }
