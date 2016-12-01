@@ -8,9 +8,10 @@
         'audio.Player',
         'media.Library',
         'media.const.Type',
+        'media.Playlist',
         playlistDirective]);
 
-    function playlistDirective(AudioPlayer, MediaLibrary, MediaType){
+    function playlistDirective(AudioPlayer, MediaLibrary, MediaType, Playlist){
         return {
             restrict: 'E',
             replace: true,
@@ -20,10 +21,14 @@
             templateUrl: 'views/playlist.html',
             link: function(scope){
                 scope.clips = null;
+                scope.page = 0;
                 scope.clipList = [];
                 //Retrieve songs from the media library
                 MediaLibrary.getAudioClips(MediaType.Song)
-                    .then(clips => scope.clips = clips);
+                    .then(clips => {
+                        scope.clips = new Playlist(clips);
+                        scope.getPage(scope.page, scope.clipList);
+                    });
 
                 // By default send a played clip to the audio player
                 scope.playClip = function(clip) {
@@ -39,9 +44,13 @@
                  * Gets a subset of results from a clip queue
                  * @param {number} page
                  * @param {Array} clipList
-                 * @returns {Array<AudioClip>}
+                 * @returns {void}
                  */
                 scope.getPage = function(page, clipList) {
+                    if(scope.clips === null){
+                        return;
+                    }
+
                     scope.clips.getPage(page, clipList);
                 };
 

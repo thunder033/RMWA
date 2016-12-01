@@ -42,14 +42,15 @@
                 })).then(trackList => {
                     //Parse each track in the list
                     trackList.forEach(track => {
-                        var fileName = track.name || track,
-                            url = (track.type === MediaType.ReverbImpulse ? MediaPath.ReverbImpulse : MediaPath.Base) + fileName;
+                        var type = track.type || MediaType.Song,
+                            fileName = track.name || track,
+                            url = MediaPath[type] + fileName;
 
                         //Load the local track into the cache
                         this._cachedTracks.push(new AudioClip({
                             source: this,
                             name: fileName,
-                            type: track.type || MediaType.Song,
+                            type: type,
                             uri: url
                         }));
                     });

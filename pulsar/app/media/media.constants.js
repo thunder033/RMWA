@@ -2,12 +2,17 @@
  * Created by gjr8050 on 11/16/2016.
  */
 angular.module('pulsar.media')
-//Media Loading
-    .constant('media.const.Path', Object.freeze({
-        Base: 'assets/audio/',
-        ReverbImpulse: 'assets/reverb-impulses/',
-        Tracks: 'assets/data/localAudio.json'
-    }))
+    //Media Loading
+    .factory('media.const.Path', ['pulsar.const.Env', function(Env){
+        var base = 'assets/audio/';
+        return {
+            Base: base,
+            ReverbImpulse: base + '/reverb-impulses/',
+            Song: Env === 'dev' ? base + 'songs/' : 'https://thunderlab.net/pulsar-media/songs/',
+            Effect: base + 'effects/',
+            Tracks: 'assets/data/localAudio.json'
+        };
+    }])
     .constant('media.const.Sources', Object.freeze({
         Pulsar: 'Pulsar'
     }))

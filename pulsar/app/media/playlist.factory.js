@@ -24,7 +24,7 @@ function playlistFactory(MediaState, IPlayable){
     class Playlist extends IPlayable {
 
         /**
-         * @param {PriorityQueue} [clips
+         * @param {PriorityQueue} [clips]
          */
         constructor(clips) {
             super();
