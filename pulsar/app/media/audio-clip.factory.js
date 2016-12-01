@@ -98,12 +98,13 @@
             }
 
             /**
-             * Returns true if the clip has an audio buffer
-             * @returns {boolean}
+             * @returns {string|media.State}
              */
-            isBuffered() {
-                return this.buffer !== null;
+            getState() {
+                return this.state;
             }
+
+
         }
 
         AudioClip._IdKey = 'pulsar-media-item-id';

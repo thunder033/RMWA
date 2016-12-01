@@ -6,11 +6,17 @@
 require('angular')
     .module('pulsar.media')
     .factory('media.Playlist', [
-        'media.State',
+        'media.const.State',
         'media.IPlayable',
         playlistFactory
     ]);
 
+/**
+ *
+ * @param {media.const.State} MediaState
+ * @param {media.IPlayable} IPlayable
+ * @returns {Playlist}
+ */
 function playlistFactory(MediaState, IPlayable){
     /**
      * @implements IPlayable
@@ -71,9 +77,10 @@ function playlistFactory(MediaState, IPlayable){
          * Gets a subset of results from a clip queue
          * @param {number} page
          * @param {Array} clipList
+         * @param {number} [pageSize=10]
          * @returns {Array<AudioClip>}
          */
-        getPage(page, clipList) {
+        getPage(page, clipList, pageSize) {
             // clear the clip list
             clipList.length = 0;
             // return an empty array if given an invalid page
@@ -81,7 +88,8 @@ function playlistFactory(MediaState, IPlayable){
                 return clipList;
             }
 
-            var pageSize = 10, pos = 0;
+            pageSize = pageSize || 10;
+            var  pos = 0;
             var it = this._queue.getIterator();
             // iterate through queue until end or page is filled
             while(!it.isEnd() && clipList.length < pageSize){
@@ -97,11 +105,17 @@ function playlistFactory(MediaState, IPlayable){
         }
 
         /**
-         *
          * @returns {IPromise.<AudioBuffer>|Promise}
          */
         getBuffer(){
             return this.getNextPlayable().getBuffer();
+        }
+
+        /**
+         * @returns {media.State|string}
+         */
+        getState(){
+            return MediaState.Ready;
         }
     }
 

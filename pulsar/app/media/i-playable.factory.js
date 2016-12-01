@@ -22,6 +22,13 @@ class IPlayable {
     getBuffer() {
         throw new Error('not implemented');
     }
+
+    /**
+     * @returns {media.State|string} the media state of the playable
+     */
+    getState() {
+        throw new Error('not implemented');
+    }
 }
 
 function iPlayableFactory(){

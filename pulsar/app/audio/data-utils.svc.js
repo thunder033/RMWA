@@ -15,6 +15,8 @@
     /**
      * @param SampleCount
      * @param $q
+     * @property getAudioBuffer
+     * @property renderFrameBuffers
      * @constructor
      */
     function DataUtils(SampleCount, $q) {
