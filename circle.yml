@@ -17,11 +17,11 @@ deployment:
   production:
     branch: prod
     commands:
-      - sh ./deploy.sh
+      - sh ./scripts/deploy.sh
   staging:
     branch: master
     commands:
-      - sh ./deploy.sh
+      - sh ./scripts/deploy.sh
 general:
   artifacts:
     - "dist.tar.gz"

@@ -11,6 +11,12 @@ module.exports = function(grunt){
                     'pulsar/dist/bundle.js': 'pulsar/app/app.module.js',
                     'pulsar/dist/asyncHttpRequest.js': 'pulsar/assets/js/workers/asyncHttpRequest.js',
                     'pulsar/dist/generateAudioField.js': 'pulsar/assets/js/workers/generateAudioField.js'
+                },
+                options: {
+                    alias: {
+                        'angular': './scripts/angular.min.js',
+                        'angular-ui-router': './node_modules/angular-ui-router/release/angular-ui-router.min.js'
+                    }
                 }
             }
         },
