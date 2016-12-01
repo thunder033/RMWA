@@ -43,7 +43,7 @@ function playQueueDirective(Playlist, MM){
                 }
 
                 scope.pos -= dir;
-            }
+            };
         }
     };
 }

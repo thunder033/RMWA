@@ -22,7 +22,7 @@ function playQueueFactory(MediaState, IPlayable) {
             audioPlayer.addEventListener('ended', ()=>{
                 var next = this.getNext();
                 if(next !== null){
-                    scope.audioPlayer.playClip(next);
+                    this._player.playClip(next);
                 }
             });
         }
