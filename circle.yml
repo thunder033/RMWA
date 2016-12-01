@@ -24,7 +24,7 @@ deployment:
       - sh ./deploy.sh
 general:
   artifacts:
-    - "dist.tar"
+    - "dist.tar.gz"
 notify:
   webhooks:
     - url: http://thunderlab.net/deployRMWA.php
