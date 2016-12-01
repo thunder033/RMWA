@@ -157,6 +157,10 @@ var EventTarget = require('eventtarget');
             trackLength = buffer.duration;
         };
 
+        /**
+         * Seek to a position in the song
+         * @param {number} [pct=0] song position from 0 to 1
+         */
         this.seekTo = (pct) => {
             if(playing){
                 var time = trackLength * (pct || 0);
@@ -166,6 +170,9 @@ var EventTarget = require('eventtarget');
 
         };
 
+        /**
+         * Stop playblack
+         */
         this.stop = () => {
             //playing = null;
             if(sourceNode){

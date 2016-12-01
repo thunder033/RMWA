@@ -19,6 +19,14 @@ class IPlayable {
      * Construct an IPlayable instance
      */
     constructor(){}
+
+    /**
+     * @returns {string} the name of the item
+     */
+    getName() {
+        throw new Error('not implemented');
+    }
+
     /**
      * @returns {IPromise<AudioBuffer>|Promise} an audio buffer to play
      */

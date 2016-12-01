@@ -42,6 +42,10 @@ function playlistFactory(MediaState, IPlayable){
             this._it = this._queue.getIterator();
         }
 
+        getName() {
+            return 'Playlist';
+        }
+
         /**
          * Adds a new track to the end of the list
          * @param clip

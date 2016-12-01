@@ -69,6 +69,14 @@
             }
 
             /**
+             * The name of the audio clip, derived from file name
+             * @returns {string}
+             */
+            getName() {
+                return this.name;
+            }
+
+            /**
              * Load the audio buffer for this clip
              * @returns {Promise}
              * @private
