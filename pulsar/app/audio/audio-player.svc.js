@@ -148,9 +148,9 @@ var EventTarget = require('eventtarget');
 
             self.createAudioSource();
             sourceNode.buffer = buffer;
-            state = states.PLAYING;
             gainNode.gain.value = 1;
             sourceNode.start(0 , startTime || 0);
+            state = states.PLAYING;
             sourceNode.onended = () => this.dispatchEvent('ended');
             this.dispatchEvent('play');
             trackStart = getNow();
@@ -170,9 +170,11 @@ var EventTarget = require('eventtarget');
             //playing = null;
             if(sourceNode){
                 sourceNode.onended = null;
-                sourceNode.stop(0);
-                state = states.STOPPED;
+                if(state === states.PLAYING || state === states.PAUSED){
+                    sourceNode.stop(0);
+                }
             }
+            state = states.STOPPED;
         };
 
         /**

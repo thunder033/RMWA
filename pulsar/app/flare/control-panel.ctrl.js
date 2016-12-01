@@ -10,5 +10,7 @@ require('angular').module('pulsar.flare').controller('ControlPanelCtrl', [
     ControlPanelCtrl]);
 
 function ControlPanelCtrl($timeout, MediaLibrary, AudioPlayer, MediaState){
-
+    MediaLibrary.isReady().then(()=>{
+        AudioPlayer.stop();
+    });
 }

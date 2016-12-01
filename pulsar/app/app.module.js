@@ -21,9 +21,6 @@ var angular = require('angular'),
     flare = require('./flare'),
     warp = require('./warp');
 
-require('angular-ui-router');
-require('checklist-model');
-
 var app = angular.module('pulsar', [
     constants.name,
     shared.name,
@@ -33,8 +30,8 @@ var app = angular.module('pulsar', [
     warp.name,
     media.name,
     simpleRequest.name,
-    'checklist-model',
-    'ui.router'
+    require('checklist-model'),
+    require('angular-ui-router')
 ]).config(function($stateProvider, $urlRouterProvider) {
     $urlRouterProvider.otherwise('/flare');
 
