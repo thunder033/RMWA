@@ -8,7 +8,7 @@ angular.module('pulsar.media')
         return {
             Base: base,
             ReverbImpulse: base + '/reverb-impulses/',
-            Song: Env === 'dev' ? base + 'songs/' : 'https://thunderlab.net/pulsar-media/songs/',
+            Song: Env === 'dev' ? base + 'songs/' : 'http://thunderlab.net/pulsar-media/songs/',
             Effect: base + 'effects/',
             Tracks: 'assets/data/localAudio.json'
         };
