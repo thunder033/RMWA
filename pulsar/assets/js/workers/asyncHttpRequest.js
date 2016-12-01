@@ -22,7 +22,6 @@ var appPath = '../../../app/';
 
 // Import angular
 var angular = require('angular');
-//self.importScripts(`${modulesPath}angular/angular.min.js`);
 
 self.angular = angular;
 

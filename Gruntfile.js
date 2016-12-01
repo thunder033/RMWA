@@ -14,7 +14,7 @@ module.exports = function(grunt){
                 },
                 options: {
                     alias: {
-                        'angular': './scripts/angular.min.js',
+                        'angular': './scripts/angular.min.proxy.js',
                         'angular-ui-router': './node_modules/angular-ui-router/release/angular-ui-router.min.js'
                     }
                 }
