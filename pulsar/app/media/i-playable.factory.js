@@ -10,11 +10,14 @@ require('angular')
     ]);
 
 /**
- * An object that provides a playable audio buffer
+ * @description An object that provides a playable audio buffer
  * @interface IPlayable
  */
 class IPlayable {
 
+    /**
+     * Construct an IPlayable instance
+     */
     constructor(){}
     /**
      * @returns {IPromise<AudioBuffer>|Promise} an audio buffer to play
@@ -31,6 +34,9 @@ class IPlayable {
     }
 }
 
+/**
+ * @returns {IPlayable}
+ */
 function iPlayableFactory(){
     return IPlayable;
 }

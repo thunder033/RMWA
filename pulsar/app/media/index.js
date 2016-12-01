@@ -4,7 +4,8 @@
 'use strict';
 /**
  * Sourcing and access of media content
- * @module pulsar.media
+ * @ngdoc module
+ * @name pulsar.media
  */
 var media = require('angular').module('pulsar.media', []);
 
