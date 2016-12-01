@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "./node_modules/.bin/mocha --reporter spec pulsar/test/*.js",
-    "build": "grunt",
+    "build": "grunt build-prod",
     "preversion": "npm test",
     "version": "npm run build",
     "postversion": "git push && git push --tags"
@@ -30,6 +30,8 @@
     "chai": "^3.5.0",
     "grunt": "^1.0.1",
     "grunt-browserify": "^5.0.0",
+    "grunt-contrib-clean": "^1.0.0",
+    "grunt-contrib-copy": "^1.0.0",
     "grunt-contrib-jshint": "^1.1.0",
     "jshint": "^2.9.4",
     "jshint-stylish": "^2.2.1",
