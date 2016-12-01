@@ -1,6 +1,8 @@
 <div class="control-panel">
     <audio-player></audio-player>
 
+    <play-queue audio-player="player" queue="playQueue"></play-queue>
+
     <br>
     <h4>Effects</h4>
     <label ng-repeat="(name, effect) in effects" class="toggleButton effectOption">
@@ -21,5 +23,5 @@
     </label>
 
     <h4>Songs</h4>
-    <playlist></playlist>
+    <playlist action-override="queueClip"></playlist>
 </div>

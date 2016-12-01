@@ -14,8 +14,11 @@ require('./media.constants');
 require('./i-playable.factory.js');
 require('./audio-clip.factory');
 require('./playlist.factory');
+require('./play-queue.factory');
 
+require('./play-queue.directive');
 require('./playlist.directive');
+
 require('./media-library.svc');
 require('./source.factory');
 require('./source.Pulsar.factory');

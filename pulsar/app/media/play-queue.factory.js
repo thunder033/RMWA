@@ -2,6 +2,8 @@
 /**
  * Created by Greg on 12/1/2016.
  */
+var EventTarget = require('eventtarget');
+
 require('angular')
     .module('pulsar.media')
     .factory('media.PlayQueue', [
@@ -12,8 +14,14 @@ require('angular')
 
 function playQueueFactory(MediaState, IPlayable) {
 
-    class PlayQueue {
+    /**
+     * @extends EventTarget
+     */
+    class PlayQueue extends EventTarget {
+
         constructor(audioPlayer){
+            super();
+
             /** @type {Array<IPlayable>} */
             this._queue = [];
             /** @type {audio.Player} */
@@ -49,13 +57,16 @@ function playQueueFactory(MediaState, IPlayable) {
                 throw new TypeError('Only objects of type IPlayable can be queued');
             }
 
+            console.log('add item ' + playable.getName());
             placement = typeof placement === 'undefined' ? PlayQueue.PlayNext : placement;
             switch (placement){
                 case PlayQueue.PlayNext:
                     this._queue.unshift(playable);
+                    this.dispatchEvent(new Event('itemAdded'));
                     break;
                 case PlayQueue.QueueEnd:
                     this._queue.push(playable);
+                    this.dispatchEvent(new Event('itemAdded'));
                     break;
                 case PlayQueue.PlayNow:
                     this._player.playClip(playable);
