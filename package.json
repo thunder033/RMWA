@@ -1,6 +1,6 @@
 {
   "name": "rmwa",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "description": "collection of web-apps for IGME 330",
   "main": "index.js",
   "scripts": {
