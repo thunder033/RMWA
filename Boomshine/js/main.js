@@ -384,7 +384,7 @@ app.main = {
 		// schedule a call to update()
 	 	this.animationID = requestAnimationFrame(this.update.bind(this));
 	 	
-	 	// 2) PAUSED?
+	 	// 2) Paused?
 	 	// if so, bail out of loop
     if(this.paused){
       this.drawPauseScreen(this.ctx);

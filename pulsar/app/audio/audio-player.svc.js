@@ -21,9 +21,9 @@ var EventTarget = require('eventtarget');
 
         var states = Object.freeze({
             Loading: 'Loading',
-            PLAYING: 'PLAYING',
-            PAUSED: 'PAUSED',
-            STOPPED: 'STOPPED',
+            Playing: 'Playing',
+            Paused: 'Paused',
+            Stopped: 'Stopped',
             Error: 'Error'
         });
 
@@ -53,9 +53,9 @@ var EventTarget = require('eventtarget');
 
         function getPlaybackTime(){
             switch(state){
-                case states.PAUSED:
+                case states.Paused:
                     return pausedAt;
-                case states.PLAYING:
+                case states.Playing:
                     return (getNow() - trackStart) / 1000;
                 default:
                     return 0;
@@ -85,11 +85,11 @@ var EventTarget = require('eventtarget');
          * Pause playback if the player is playing
          */
         this.pause = () => {
-            if(state === states.PLAYING){
+            if(state === states.Playing){
                 sourceNode.onended = null;
                 gainNode.gain.exponentialRampToValueAtTime(0.00000001, audioCtx.currentTime + 0.5);
                 pausedAt = self.playbackTime;
-                state = states.PAUSED;
+                state = states.Paused;
             }
         };
 
@@ -97,7 +97,7 @@ var EventTarget = require('eventtarget');
          * Resume playback if the player is currently paused
          */
         this.resume = () =>{
-            if(state === states.PAUSED){
+            if(state === states.Paused){
                 gainNode.gain.cancelScheduledValues(audioCtx.currentTime);
                 self.playBuffer(sourceNode.buffer, pausedAt);
                 gainNode.gain.value = 1;
@@ -109,7 +109,7 @@ var EventTarget = require('eventtarget');
          * If the player is playing
          */
         this.togglePlaying = () => {
-            if(state === states.PLAYING){
+            if(state === states.Playing){
                 self.pause();
             }
             else {
@@ -150,7 +150,7 @@ var EventTarget = require('eventtarget');
             sourceNode.buffer = buffer;
             gainNode.gain.value = 1;
             sourceNode.start(0 , startTime || 0);
-            state = states.PLAYING;
+            state = states.Playing;
             sourceNode.onended = () => this.dispatchEvent(new Event('ended'));
             this.dispatchEvent(new Event('play'));
             trackStart = getNow();
@@ -177,11 +177,11 @@ var EventTarget = require('eventtarget');
             //playing = null;
             if(sourceNode){
                 sourceNode.onended = null;
-                if(state === states.PLAYING || state === states.PAUSED){
+                if(state === states.Playing || state === states.Paused){
                     sourceNode.stop(0);
                 }
             }
-            state = states.STOPPED;
+            state = states.Stopped;
         };
 
         /**
