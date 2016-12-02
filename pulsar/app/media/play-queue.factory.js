@@ -14,9 +14,7 @@ require('angular')
 
 function playQueueFactory(MediaState, IPlayable) {
 
-    /**
-     * @extends EventTarget
-     */
+
     class PlayQueue extends EventTarget {
 
         constructor(audioPlayer){
@@ -44,6 +42,7 @@ function playQueueFactory(MediaState, IPlayable) {
 
                 next = this._queue.shift();
             } while (next.getState() === MediaState.Error );
+            this.dispatchEvent(new Event('itemDequeued'));
             return next;
         }
 
@@ -57,7 +56,6 @@ function playQueueFactory(MediaState, IPlayable) {
                 throw new TypeError('Only objects of type IPlayable can be queued');
             }
 
-            console.log('add item ' + playable.getName());
             placement = typeof placement === 'undefined' ? PlayQueue.PlayNext : placement;
             switch (placement){
                 case PlayQueue.PlayNext:
