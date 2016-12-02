@@ -6,9 +6,7 @@ dependencies:
     - /opt/circleci/nodejs/v5.5.0/bin
     - /opt/circleci/nodejs/v5.5.0/lib/node_modules
   pre:
-    - browserify --version || npm i browserify -g
-    - grunt --version || npm i grunt grunt-cli -g
-    - jshint --version || npm i jshint -g
+    - sh ./scripts/global_modules.sh
   override:
     - npm install
   post:
