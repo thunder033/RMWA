@@ -1,7 +1,6 @@
 <div>
-    <span ng-bind="page.length"></span>
-    <span ng-if="playing !== null" ng-bind="playing.getName()"></span>
+    <h3>Play Queue</h3>
     <ul>
-        <li ng-repeat="playable in page track by $index" ng-bind="playable.getName()"></li>
+        <li ng-repeat="playable in page track by $index" ng-class="[playable.constructor.name]" ng-bind="playable.getName()"></li>
     </ul>
 </div>

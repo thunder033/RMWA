@@ -23,24 +23,38 @@ function playQueueDirective(Playlist, MM){
             scope.page = [];
             scope.pos = 0;
             scope.playing = null;
-            
+
+            var startPos = 0,
+                endPos = 0;
+
+            /**
+             * In place swap the start/end position pointers
+             */
+            function swapPositions(){
+                endPos = startPos - endPos;
+                startPos = startPos - endPos;
+                endPos = startPos + endPos;
+            }
+
             var pageLength = 10;
             scope.seekPage = function (direction) {
-                var dir = MM.sign(direction); //guarantee -1, 0, or 1
+                var dir = MM.sign(direction), //guarantee -1, 0, or 1
+                    queueSize = scope.queue.getItems().length;
 
-                // If seeking up the queue, move the position pointer to the start of the current page
-                if(dir <= 0){
-                    // Because were working with zero-indexed page, subtract 1 from length
-                    // If the page was empty though, don't subtract a negative length
-                    scope.pos -= MM.clamp(scope.page.length - 1, 0, Number.MAX_VALUE);
-                } else {
-                    scope.pos++; // Start page with the next item if moving forward
-                }
-
-                // 0 indicates refreshing the current page, so still move down the list
-                // (after resetting the position)
-                if(dir === 0){
-                    dir = 1;
+                switch(dir){
+                    case -1:
+                        // If seeking up the queue, move the position pointer to the start of the current page
+                        startPos = MM.max(startPos - 1, 0);
+                        endPos = startPos;
+                        break;
+                    case 0:
+                        endPos = startPos;
+                        // 0 indicates refreshing the current page, so still move down the list
+                        dir = 1;
+                        break;
+                    case 1:
+                        endPos = MM.min(endPos + 1, queueSize);
+                        startPos = endPos;
                 }
 
                 // Clear the page
@@ -50,14 +64,18 @@ function playQueueDirective(Playlist, MM){
                     pageWeight = 0, // combined weight of items currently on the page
                     func = dir > 0 ? 'push' : 'unshift'; // how items will be addded to the page
 
-                while(pageWeight < pageLength && scope.pos < items.length && scope.pos >= 0) {
-                    scope.page[func](items[scope.pos]);
-                    pageWeight += (items[scope.pos] instanceof Playlist) ? 5 : 1;
-                    scope.pos += dir;
+                while(pageWeight < pageLength && endPos < queueSize && endPos >= 0) {
+                    scope.page[func](items[endPos]);
+                    pageWeight += (items[endPos] instanceof Playlist) ? 5 : 1;
+                    endPos += dir;
                 }
 
                 // Cancel out the last position move, so the position pointer is always at the last item on the page
-                scope.pos -= dir;
+                endPos -= dir;
+
+                if(dir < 0){
+                    swapPositions();
+                }
             };
 
             function playNext(){
