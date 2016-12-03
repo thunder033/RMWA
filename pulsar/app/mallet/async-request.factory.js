@@ -11,6 +11,12 @@
 
     var basePath = '../';
 
+    /**
+     * Provides a simple set of interfaces for making HTTP requests through web workers
+     * @param Thread
+     * @param $q
+     * @returns {{send: createRequest, createRequestPool: createRequestPool}}
+     */
     function asyncRequestFactory(Thread, $q){
 
         //TODO: make this a variable somehow...maybe mallet config

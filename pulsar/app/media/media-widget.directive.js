@@ -1,3 +1,19 @@
+'use strict';
 /**
- * Created by gjr8050 on 11/30/2016.
+ * @author Greg Rozmarynowycz <greg@thunderlab.net>
  */
+require('angular')
+    .module('pulsar.media')
+    .directive('mediaWidget', [
+        mediaWidgetDirective
+    ]);
+
+function mediaWidgetDirective(){
+    return {
+        restrict: 'E',
+        templateUrl: 'views/media-widget.html',
+        link: function(){
+
+        }
+    };
+}

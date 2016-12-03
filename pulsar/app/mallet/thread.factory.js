@@ -23,16 +23,18 @@
 
             /**
              * Determine which invocation was responded to and resolve its promise
-             * @param {Event} e
+             * @param {MessageEvent} e
              */
             function notifyClient(e) {
-
                 if(typeof e.data._id === 'undefined'){
                     throw new ReferenceError('Worker script did not provide operation ID');
                 }
 
                 //check the return status of the worker
-                if(e.data._status === 'ERROR'){
+                if(typeof invocations[e.data._id] === 'undefined') {
+                    //If we can't find the invocation give a warning
+                    console.warn(`Response for invocation ${e.data._id} (${e.data._status}) of ${script} could not be resolved`);
+                } else if(e.data._status === 'ERROR'){
                     //If it returned with an error, reject the promise
                     invocations[e.data._id].reject(e.data.message);
                 }
