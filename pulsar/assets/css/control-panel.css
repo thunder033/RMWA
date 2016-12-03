@@ -115,7 +115,7 @@ html, body {
     transition: max-height .2s;
 }
 
-.ps-accordion-header:hover {
+.collapsed .ps-accordion-header:hover {
     cursor: pointer;
     background: #555;
 }

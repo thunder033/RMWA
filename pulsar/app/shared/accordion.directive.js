@@ -39,6 +39,9 @@ function psAccordionDirective(){
             };
 
             this.addTab = function(tab){
+                if(tabs.length === 0){
+                    $scope.expand(tab);
+                }
                 $scope.tabs.push(tab);
             };
         }]

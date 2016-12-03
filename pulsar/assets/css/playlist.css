@@ -66,6 +66,7 @@
 
 .play-queue ul {
     height: 10em;
+    padding: 0;
 }
 
 .pq-seek {
@@ -90,4 +91,15 @@
 
 .pq-seek-prev {
     top: -1.25em;
+}
+
+.play-queue li.pq-message {
+    border: 0;
+    text-align: center;
+    padding: 1em;
+}
+
+.play-queue li.pq-message:hover {
+    background: transparent;
+    cursor: default;
 }
