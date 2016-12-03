@@ -1,4 +1,6 @@
-<div>
+<div class="play-queue cp-container">
+    <button class="cp-button cp-button-small pq-seek pq-seek-prev" title="Previous Page"><span class="fa fa-arrow-up"></span></button>
+    <button class="cp-button cp-button-small pq-seek pq-seek-next" title="Next Page"><span class="fa fa-arrow-down"></span></button>
     <ul>
         <li ng-repeat="playable in page track by $index" ng-class="[playable.constructor.name]" ng-bind="playable.getName()"></li>
     </ul>

@@ -2,27 +2,14 @@
     width: 7em;
     height: 7em;
     border-radius: 3.5em;
-    border: 1px #eee solid;
-    box-sizing: border-box;
-    background: #4a4a4a;
-    position: relative;
     float: left;
     margin-right: .5em;
-    box-shadow: 0 0 1px #bbb;
 }
 
 .audio-player .volume-btn {
-    box-sizing: border-box;
-    border: 1px #eee solid;
-    position: relative;
-    background: #4a4a4a;
-    height: 2.5em;
-    width: 2.5em;
     float: left;
     top: -1em;
     left: -2.25em;
-    border-radius: 1.25em;
-    box-shadow: 0 0 1px #bbb;
 }
 
 .audio-player .volume-btn .fa-stack {
@@ -37,13 +24,6 @@
     color: #d55;
 }
 
-.play-button,
-.play-button:active,
-.audio-player .volume-btn,
-.audio-player .volume-btn:active {
-    outline: none;
-}
-
 .clip-title {
     font-size: 1.5em;
     font-weight: bold;
@@ -54,10 +34,9 @@
     font-family: "Droid Sans Mono", "Courier New",  monospace ;
 }
 
-.play-button.paused:hover,
-.play-button.playing:hover,
-.audio-player .volume-btn:hover {
-    cursor: pointer;
+.play-button.stopped:hover,
+.play-button.loading:hover {
+    cursor: default;
     background: #555;
 }
 
@@ -86,13 +65,14 @@
 
 .play-button.stopped:after {
     content: "";
-    background: #ffffff;
+    background: #fff;
     width: 2.5em;
     height: 2.5em;
     position: absolute;
     top: 50%;
     left: 50%;
     margin:  -1.25em 0 0 -1.25em;
+    box-shadow: 0 0 2px #333;
 }
 
 .play-bar {

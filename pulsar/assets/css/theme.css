@@ -29,7 +29,9 @@ body, html {
 
 h4 {
     font-size: 1.1em;
-    margin: 1em 0 .2em;
+    margin: 0;
+    padding: .5em;
+    border-top: 1px #555 solid;
 }
 
 .clearfix:after {

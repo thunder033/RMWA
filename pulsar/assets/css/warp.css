@@ -64,7 +64,7 @@
     content: 'x';
 }
 
-.volume-btn {
+.hud .volume-btn {
     position: fixed;
     top: 1em;
     right: 1em;
@@ -75,6 +75,6 @@
     border: 0;
 }
 
-.volume-btn:hover {
+.hud .volume-btn:hover {
     background: rgba(130,130,130,.6);;
 }

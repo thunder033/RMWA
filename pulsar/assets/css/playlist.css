@@ -1,21 +1,22 @@
 .playlist {
     overflow-y: scroll;
     max-height: 13em;
-    background: #2a2a2a;
 }
 
 .playlist ul {
 
 }
 
-.playlist li {
+.playlist li,
+.play-queue li {
     list-style: none;
     padding: .3em;
     border-bottom: 1px #333 solid;
     position: relative;
 }
 
-.playlist li:hover {
+.playlist li:hover,
+.play-queue li:hover {
     cursor: pointer;
     background: #555;
 }
@@ -56,4 +57,37 @@
 .playlist li.error:hover {
     cursor: not-allowed;
     background: #2a2a2a;
+}
+
+.play-queue {
+    position: relative;
+    top: -.5em;
+}
+
+.play-queue ul {
+    height: 10em;
+}
+
+.pq-seek {
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%, 0);
+    z-index: 10;
+    transition: all .3s;
+    opacity: 0;
+    font-size: .75em;
+}
+
+.play-queue:hover .pq-seek {
+    display: block;
+    opacity: 1;
+    transition: all .3s;
+}
+
+.pq-seek-next {
+    bottom: -.7em;
+}
+
+.pq-seek-prev {
+    top: -1.25em;
 }
