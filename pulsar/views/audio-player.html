@@ -6,4 +6,6 @@
     <span class="timestamp">{{ player.playbackTime | secondsToDate | date:'m:ss' }} / {{ player.trackLength | secondsToDate | date:'m:ss' }}</span>
 
     <span class="play-bar" ng-click="seek($event)"><span class="play-bar-progress" ng-style="{width: getPlaybarSize()}"></span></span>
+
+    <button class="volume-btn" ng-click="toggleMute()" ng-bind-html="toTrusted(muted ? '&#128263;' : '&#128266;')"></button>
 </div>
