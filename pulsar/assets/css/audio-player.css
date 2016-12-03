@@ -25,6 +25,18 @@
     box-shadow: 0 0 1px #bbb;
 }
 
+.audio-player .volume-btn .fa-stack {
+    margin: -1em;
+    top: -.1em;
+    left: -.1em;
+    font-size: .7em;
+    text-align: left;
+}
+
+.text-danger {
+    color: #d55;
+}
+
 .play-button,
 .play-button:active,
 .audio-player .volume-btn,
@@ -89,7 +101,7 @@
     height: 1em;
     background: #111;
     display: inline-block;
-    margin-left: -1.05em;
+    margin-left: -.7em;
     border: 1px #777 solid;
     border-bottom-right-radius: .5em;
     border-top-right-radius: .5em;
@@ -99,6 +111,6 @@
 .play-bar-progress {
     height: 1em;
     display: inline-block;
-    background: #eee;
+    background: #ccc;
     border-right: 1px #fff solid;
 }

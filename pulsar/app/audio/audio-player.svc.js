@@ -79,6 +79,8 @@ var EventTarget = require('eventtarget');
             analyzerNode = self.createAnalyzerNode(audioCtx);
             gainNode = self.createMasterGainNode(audioCtx);
             convolverNode = self.createConvolverNode(audioCtx);
+
+            this.addEventListener('ended', ()=>{this.stop();});
         };
 
         /**
@@ -181,6 +183,9 @@ var EventTarget = require('eventtarget');
                     sourceNode.stop(0);
                 }
             }
+            trackLength = 0;
+            pausedAt = 0;
+            trackStart = 0;
             state = states.Stopped;
         };
 
