@@ -1,4 +1,4 @@
-<div class="playlist">
+<div class="playlist cp-container">
     <ul>
         <li ng-class="[clip.state, {playing: isPlaying(clip.id)}]" ng-repeat="clip in clipList" ng-click="playClip(clip)">
             {{clip.name}}

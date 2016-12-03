@@ -12,6 +12,10 @@ html, body {
     box-sizing: border-box;
 }
 
+.control-panel h4 .fa {
+    margin-right: .5em;
+}
+
 .toggleButton span {
     margin: .5em .25em .5em 0;
     padding: .5em;
@@ -67,4 +71,29 @@ html, body {
     height: 1em;
     padding: 0;
     margin-bottom: .5em;
+}
+
+.cp-container ul {
+    background: #2a2a2a;
+    margin: .5em 0 0;
+}
+.expanded {
+    transition: max-height .2s;
+    max-height: 20em;
+    overflow: hidden;
+}
+
+.collapsed {
+    max-height: 2.4em;
+    overflow: hidden;
+    transition: max-height .2s;
+}
+
+.ps-accordion-header:hover {
+    cursor: pointer;
+    background: #555;
+}
+
+.ps-accordion-icon {
+    float: right;
 }

@@ -1,5 +1,4 @@
 <div>
-    <h3>Play Queue</h3>
     <ul>
         <li ng-repeat="playable in page track by $index" ng-class="[playable.constructor.name]" ng-bind="playable.getName()"></li>
     </ul>

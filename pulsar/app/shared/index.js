@@ -12,5 +12,6 @@ require('./capitalize.filter');
 require('./es6-warning-banner.directive');
 require('./loader.directive');
 require('./secondsToDate.filter');
+require('./accordion.directive');
 
 module.exports = shared;
