@@ -32,24 +32,20 @@ var app = angular.module('pulsar', [
     simpleRequest.name,
     require('checklist-model'),
     require('angular-ui-router')
-]).config(function($stateProvider, $urlRouterProvider) {
+]).config(['$stateProvider', '$urlRouterProvider', function($stateProvider, $urlRouterProvider) {
     $urlRouterProvider.otherwise('/flare');
 
     $stateProvider.state('flare', {
         url: '/flare',
         template: '<control-panel></control-panel><m-easel id="visualizer"></m-easel>',
-        controller: function FlareCtrl(Flare, $timeout) {
-            $timeout(()=>Flare.init());
-        }
+        controller: 'flare.FlareController'
     }).state('warp', {
         url: '/warp',
         template: '<m-easel id="warp"></m-easel><warp-hud></warp-hud>',
         controller: 'warp.GameController'
     });
 
-
-})
-.run(['MScheduler', '$rootScope', 'audio.Player', function(MScheduler, $rootScope, AudioPlayer){
+}]).run(['MScheduler', '$rootScope', 'audio.Player', function(MScheduler, $rootScope, AudioPlayer){
     MScheduler.startMainLoop();
 
     $rootScope.$on('$stateChangeStart', ()=>{

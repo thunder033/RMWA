@@ -11,6 +11,7 @@ require('./flare.svc');
 require('./frequency-analyzer.svc');
 require('./frequency-pinwheel.svc');
 require('./waveform-analyzer.svc');
+require('./flare.ctrl');
 
 /**
  * @type {IModule}

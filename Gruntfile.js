@@ -58,9 +58,19 @@ module.exports = function(grunt){
         },
         copy: {
             prod: {
+                options: {
+                    process: function (content, srcpath) {
+                        if(srcpath.indexOf('index.html') > -1){
+                            content = content.replace('bundle.js', 'bundle.min.js');
+                        }
+                        return content;
+                    },
+                    noProcess: ['pulsar/assets/**/*','pulsar/dist/fonts/*']
+                },
                 files: [{expand: true, src: [
                     // Pulsar
                     'pulsar/dist/**',
+                    '!pulsar/dist/bundle.js', // Don't included unminified bundle
                     'pulsar/index.html',
                     'pulsar/assets/**',
                     'pulsar/views/**',
@@ -87,6 +97,12 @@ module.exports = function(grunt){
                     { expand: true, cwd: 'pulsar/assets/fonts', src: ['*'], dest: 'pulsar/dist/fonts/'}
                 ]
             }
+        },
+        uglify: {
+            dist: {
+                src: 'pulsar/dist/bundle.js',
+                dest: 'pulsar/dist/bundle.min.js'
+            }
         }
     });
 
@@ -95,6 +111,7 @@ module.exports = function(grunt){
     grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-contrib-clean');
     grunt.loadNpmTasks('grunt-contrib-cssmin');
+    grunt.loadNpmTasks('grunt-contrib-uglify');
 
     grunt.registerTask('default', ['build-dev']);
 
@@ -111,6 +128,7 @@ module.exports = function(grunt){
         'clean:pulsarDist',
         'clean:tmp',
         'browserify:dist',
+        'uglify:dist',
         'cssmin',
         'copy:pulsarAssets',
         'copy:prod']);
