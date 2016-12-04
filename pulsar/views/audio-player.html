@@ -1,4 +1,9 @@
 <div class="audio-player clearfix">
+
+    <button class="cp-button cp-button-small ap-seek ap-seek-back">
+        <span class="fa fa-step-backward"></span>
+    </button>
+
     <button class="cp-button play-button" ng-class="player.state.toLowerCase()" ng-click="player.togglePlaying()">
         <loader-icon ng-if="player.state === 'Loading'"></loader-icon>
     </button>
@@ -7,10 +12,21 @@
 
     <span class="play-bar" ng-click="seek($event)"><span class="play-bar-progress" ng-style="{width: getPlaybarSize()}"></span></span>
 
-    <button class="cp-button cp-button-small volume-btn" ng-click="toggleMute()">
-        <span ng-class="[muted ? 'fa-stack' : 'fa fa-volume-up fa-lg']">
-            <i ng-if="muted" class="fa fa-stack-2x fa-volume-off fa-nudge-left"></i>
-            <i ng-if="muted" class="fa fa-times fa-right text-danger" style="font-size: 1em"></i>
-        </span>
+    <div class="volume-panel">
+        <button class="cp-button cp-button-small volume-btn" ng-click="toggleMute()">
+            <span ng-class="[muted ? 'fa-stack' : 'fa fa-volume-up fa-lg']">
+                <i ng-if="muted" class="fa fa-stack-2x fa-volume-off fa-nudge-left"></i>
+                <i ng-if="muted" class="fa fa-times fa-lg fa-right text-danger" style="font-size: 1em"></i>
+            </span>
+        </button>
+
+        <div class="volume-bar">
+            <div class="volume-fill"></div>
+            <div class="volume-handle"></div>
+        </div>
+    </div>
+
+    <button class="cp-button cp-button-small ap-seek ap-seek-forward">
+        <span class="fa fa-step-forward"></span>
     </button>
 </div>

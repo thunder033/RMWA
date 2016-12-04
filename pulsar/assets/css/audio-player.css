@@ -6,10 +6,62 @@
     margin-right: .5em;
 }
 
-.audio-player .volume-btn {
+.audio-player .ap-seek-forward {
     float: left;
     top: -1em;
     left: -2.25em;
+}
+
+.volume-panel {
+    display: inline-block;
+    width: 6.5em;
+    top: .4em;
+    left: -2em;
+    position: relative;
+}
+
+.volume-bar {
+    width: 4em;
+    background: #111;
+    border: 1px #777 solid;
+    height: .3em;
+    border-radius: .15em;
+    margin-left: 1.5em;
+    position: relative;
+}
+
+.volume-fill {
+    width: 50%;
+    height: .3em;
+    background: #fff;
+}
+
+.volume-handle {
+    box-sizing: border-box;
+    height: .6em;
+    width: .6em;
+    background: #fff;
+    border: 1px #ccc solid;
+    border-radius: .3em;
+    left: 50%;
+    top: 50%;
+    margin: -.3em 0 0 -.3em;
+    position: absolute;
+}
+
+.volume-btn {
+    transform: scale(.65);
+    float: left;
+    top: -1em;
+    z-index: 5;
+}
+
+.audio-player .ap-seek-back {
+    position: relative;
+    top: 4.35em;
+    margin-right: -1.75em;
+    float: left;
+    z-index: 5;
 }
 
 .audio-player .volume-btn .fa-stack {
