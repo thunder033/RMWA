@@ -2,7 +2,7 @@
     <audio-player></audio-player>
 
     <div ps-accordion-tab>
-        <h4 class="ps-accordion-header"><span class="fa fa-list"></span>Play Queue</h4>
+        <h4 class="ps-accordion-header"><span class="fa fa-list"></span>Play Queue<span ng-bind="playQueue.getItems().length" class="pq-count"></span></h4>
         <play-queue audio-player="player" queue="playQueue"></play-queue>
     </div>
 

@@ -6,6 +6,7 @@ body, html {
     background: #eee;
     font-size: 100%;
     font-family: 'Cuprum', "Century Gothic", sans-serif;
+    -webkit-font-smoothing: antialiased;
 }
 
 .wrapper {

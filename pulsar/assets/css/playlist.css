@@ -64,6 +64,22 @@
     top: -.5em;
 }
 
+.pq-count {
+    background: #eee;
+    margin-left: .5em;
+    display: inline-block;
+    box-sizing: border-box;
+    width: 1.4em;
+    height: 1.4em;
+    border-radius: .7em;
+    color: #333;
+    text-align: center;
+    padding-top: .05em;
+    font-size: .7em;
+    vertical-align: middle;
+    margin-bottom: .1em;
+}
+
 .play-queue ul {
     height: 10em;
     padding: 0;
