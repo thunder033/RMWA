@@ -10,11 +10,11 @@
     <span class="clip-title" ng-bind="player.playing.name"></span><br>
     <span class="timestamp">{{ player.playbackTime | secondsToDate | date:'m:ss' }} / {{ player.trackLength | secondsToDate | date:'m:ss' }}</span>
 
-    <span class="play-bar" ng-click="seek($event)"><span class="play-bar-progress" ng-style="{width: getPlaybarSize()}"></span></span>
+    <span class="play-bar" ng-click="setGain($event)"><span class="play-bar-progress" ng-style="{width: getPlaybarSize()}"></span></span>
 
     <ap-volume player="player"></ap-volume>
 
-    <button ng-class="seekForward()" class="cp-button cp-button-small ap-seek ap-seek-forward" title="Skip Forward">
+    <button ng-click="seekForward()" class="cp-button cp-button-small ap-seek ap-seek-forward" title="Skip Forward">
         <span class="fa fa-step-forward"></span>
     </button>
 </div>

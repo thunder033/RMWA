@@ -2,23 +2,26 @@
  * Created by gjr8050 on 9/16/2016.
  */
 'use strict';
-require('angular').module('pulsar.flare').directive('audioPlayer', ['audio.Player', '$timeout', function(AudioPlayer, $timeout){
+require('angular').module('pulsar.flare').directive('audioPlayer', [function(){
     return {
         restrict: 'E',
         replace: true,
         templateUrl: 'views/audio-player.html',
+        scope: {
+            player: '=',
+            queue: '='
+        },
         link: function(scope, elem){
-            scope.player = AudioPlayer;
             scope.getPlaybarSize = function(){
-                return AudioPlayer.completionPct * 100 + '%';
+                return scope.player.completionPct * 100 + '%';
             };
             
             scope.seekForward = function(){
-                
+                scope.player.playClip(scope.queue.getNext());
             };
             
             scope.seekBack = function(){
-                
+                scope.player.playClip(scope.player.playing);
             };
             
             function getMouse(e){
@@ -28,11 +31,11 @@ require('angular').module('pulsar.flare').directive('audioPlayer', ['audio.Playe
                 return mouse;
             }
             
-            scope.seek = function(e){
+            scope.setGain = function(e){
                 var mouse = getMouse(e),
                     playBar = elem[0].querySelector('.play-bar'),
                     pctPos = mouse.x / playBar.clientWidth;
-                AudioPlayer.seekTo(pctPos);
+                scope.player.seekTo(pctPos);
             };
         }
     };
