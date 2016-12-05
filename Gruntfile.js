@@ -65,12 +65,12 @@ module.exports = function(grunt){
                         }
                         return content;
                     },
-                    noProcess: ['pulsar/assets/**/*','pulsar/dist/fonts/*']
+                    noProcess: ['pulsar/assets/**/*','pulsar/dist/*']
                 },
                 files: [{expand: true, src: [
                     // Pulsar
-                    'pulsar/dist/**',
-                    '!pulsar/dist/bundle.js', // Don't included unminified bundle
+                    'pulsar/dist/**/*.gz',
+                    'pulsar/dist/fonts/*',
                     'pulsar/index.html',
                     'pulsar/assets/**',
                     'pulsar/views/**',
@@ -103,6 +103,26 @@ module.exports = function(grunt){
                 src: 'pulsar/dist/bundle.js',
                 dest: 'pulsar/dist/bundle.min.js'
             }
+        },
+        compress: {
+            prod: {
+                options: {
+                    mode: 'gzip'
+                },
+                files: [{
+                    expand: true,
+                    cwd: 'pulsar/dist/',
+                    src: ['**/*.js'],
+                    dest: 'pulsar/dist',
+                    ext: '.js.gz'
+                }, {
+                    expand: true,
+                    cwd: 'pulsar/dist/css',
+                    src: ['**/*.css'],
+                    dest: 'pulsar/dist/css',
+                    ext: '.css.gz'
+                }]
+            }
         }
     });
 
@@ -112,6 +132,7 @@ module.exports = function(grunt){
     grunt.loadNpmTasks('grunt-contrib-clean');
     grunt.loadNpmTasks('grunt-contrib-cssmin');
     grunt.loadNpmTasks('grunt-contrib-uglify');
+    grunt.loadNpmTasks('grunt-contrib-compress');
 
     grunt.registerTask('default', ['build-dev']);
 
@@ -130,6 +151,9 @@ module.exports = function(grunt){
         'browserify:dist',
         'uglify:dist',
         'cssmin',
+        'compress:prod',
         'copy:pulsarAssets',
-        'copy:prod']);
+        'copy:prod',
+        'clean:pulsarDist'
+    ]);
 };
