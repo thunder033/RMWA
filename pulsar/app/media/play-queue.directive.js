@@ -36,6 +36,14 @@ function playQueueDirective(Playlist, MM){
                 endPos = startPos + endPos;
             }
 
+            scope.isFirstPage = function(){
+                return startPos === 0;
+            };
+
+            scope.isLastPage = function(){
+                return endPos >= scope.queue.getItems().length;
+            };
+
             var pageLength = 10;
             scope.seekPage = function (direction) {
                 var dir = MM.sign(direction), //guarantee -1, 0, or 1

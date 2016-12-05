@@ -1,6 +1,6 @@
 <div class="audio-player clearfix">
 
-    <button class="cp-button cp-button-small ap-seek ap-seek-back">
+    <button ng-click="seekBack()" class="cp-button cp-button-small ap-seek ap-seek-back" title="Skip Backward">
         <span class="fa fa-step-backward"></span>
     </button>
 
@@ -14,8 +14,7 @@
 
     <ap-volume player="player"></ap-volume>
 
-
-    <button class="cp-button cp-button-small ap-seek ap-seek-forward">
+    <button ng-class="seekForward()" class="cp-button cp-button-small ap-seek ap-seek-forward" title="Skip Forward">
         <span class="fa fa-step-forward"></span>
     </button>
 </div>
