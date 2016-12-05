@@ -16,18 +16,7 @@ require('angular').module('pulsar.flare').directive('audioPlayer', ['audio.Playe
             scope.toTrusted = function(html){
                 return $sce.trustAsHtml(html);
             };
-
-            scope.toggleMute = () => {
-                scope.muted = !scope.muted;
-                localStorage.setItem('pulsar-muted', scope.muted === true ? '1' : '0');
-                AudioPlayer.setOutputGain(scope.muted ? 0 : 1);
             };
-            var cachedMute = parseInt(localStorage.getItem('pulsar-muted') || '0');
-            scope.muted = cachedMute === 1;
-
-            if(scope.muted){
-                $timeout(()=>  AudioPlayer.setOutputGain(0));
-            }
             
             function getMouse(e){
                 var mouse = {}; // make an object

@@ -14,6 +14,7 @@ require('./audio-fx.svc');
 require('./audio-player.svc');
 require('./data-utils.svc');
 require('./realtime-data.svc');
+require('./volume.directive');
 
 /**
  * @type {IModule}
