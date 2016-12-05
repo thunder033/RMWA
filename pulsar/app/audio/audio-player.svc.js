@@ -7,15 +7,15 @@ var EventTarget = require('eventtarget');
 (()=>{
     require('angular').module('pulsar.audio').service('audio.Player', [
         'mallet.const.SampleCount',
+        '$timeout',
         Player]);
 
     /**
      *
-     * @param SampleCount
      * @constructor
      * @extends EventTarget
      */
-    function Player(SampleCount){
+    function Player(SampleCount, $timeout){
 
         EventTarget.call(this);
 
@@ -136,6 +136,11 @@ var EventTarget = require('eventtarget');
 
             return playing.getBuffer().then(buffer => {
                 self.playBuffer(buffer, startTime || 0);
+            }, () => {
+                self.stop();
+                $timeout(()=>{
+                    this.dispatchEvent(new Event('ended'));
+                }, 200);
             });
         };
 
@@ -150,6 +155,7 @@ var EventTarget = require('eventtarget');
 
             self.createAudioSource();
             sourceNode.buffer = buffer;
+            gainNode.gain.cancelScheduledValues(audioCtx.currentTime);
             gainNode.gain.value = 1;
             sourceNode.start(0 , startTime || 0);
             state = states.Playing;
@@ -177,6 +183,7 @@ var EventTarget = require('eventtarget');
          */
         this.stop = () => {
             //playing = null;
+            gainNode.gain.value = 0;
             if(sourceNode){
                 sourceNode.onended = null;
                 if(state === states.Playing || state === states.Paused){
