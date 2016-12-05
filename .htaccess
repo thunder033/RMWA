@@ -11,3 +11,7 @@ RewriteCond %{REQUEST_FILENAME}.gz -f
 RewriteRule (.+) $1.gz [QSA,L]
 </IfModule>
 # END gzip
+
+<Files *.css.gz>
+ForceType text/css
+</Files>

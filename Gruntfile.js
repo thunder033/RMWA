@@ -65,7 +65,7 @@ module.exports = function(grunt){
                         }
                         return content;
                     },
-                    noProcess: ['pulsar/assets/**/*','pulsar/dist/*']
+                    noProcess: ['pulsar/assets/**/*','pulsar/dist/**/*']
                 },
                 files: [{expand: true, src: [
                     // Pulsar
