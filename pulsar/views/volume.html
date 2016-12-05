@@ -6,8 +6,8 @@
             </span>
     </button>
 
-    <div class="volume-bar">
-        <div class="volume-fill"></div>
-        <div class="volume-handle"></div>
+    <div class="volume-bar" ng-click="setGain($event)">
+        <div class="volume-fill" ng-style="{width: getGain() * 100 + '%'}"></div>
+        <div class="volume-handle" ng-style="{left: getGain() * 100 + '%'}"></div>
     </div>
 </div>

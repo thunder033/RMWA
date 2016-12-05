@@ -24,6 +24,7 @@ require('./async-request.factory');
 
 //Input
 require('./keys.svc');
+require('./mouse-utils.svc');
 
 //3D Rendering
 require('./camera.svc');

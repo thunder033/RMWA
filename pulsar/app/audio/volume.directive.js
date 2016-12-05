@@ -5,9 +5,9 @@
 
 require('angular')
     .module('pulsar.audio')
-    .directive('apVolume', ['$timeout', apVolumeDirective]);
+    .directive('apVolume', ['$timeout', 'mallet.MouseUtils', apVolumeDirective]);
 
-function apVolumeDirective($timeout){
+function apVolumeDirective($timeout, MouseUtils){
     return {
         restrict: 'E',
         replace: true,
@@ -15,7 +15,9 @@ function apVolumeDirective($timeout){
             player: '='
         },
         templateUrl: 'views/volume.html',
-        controller: ['$scope', function($scope){
+        controller: ['$scope', '$element', function($scope, $element){
+            var gain = 0.5;
+
             $scope.toggleMute = () => {
                 $scope.muted = !$scope.muted;
                 localStorage.setItem('pulsar-muted', $scope.muted === true ? '1' : '0');
@@ -27,6 +29,17 @@ function apVolumeDirective($timeout){
             if($scope.muted){
                 $timeout(()=>  $scope.player.setOutputGain(0));
             }
+
+            $scope.getGain = function(){
+                return gain;
+            };
+
+            $scope.setGain = function(e){
+                var volumeBar = $element[0].querySelector('.volume-bar'),
+                    mouse = MouseUtils.getElementCoords(e, volumeBar);
+                gain = mouse.x / volumeBar.clientWidth;
+                $scope.player.setOutputGain(gain);
+            };
         }]
     };
 }
