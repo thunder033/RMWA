@@ -123,3 +123,8 @@ html, body {
 .ps-accordion-icon {
     float: right;
 }
+
+.cp-control-title {
+    font-weight: bold;
+    margin-right: .3em;
+}

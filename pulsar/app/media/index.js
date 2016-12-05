@@ -16,6 +16,7 @@ require('./audio-clip.factory');
 require('./playlist.factory');
 require('./play-queue.factory');
 
+require('./media-widget.directive');
 require('./play-queue.directive');
 require('./playlist.directive');
 

@@ -17,8 +17,4 @@ function ControlPanelCtrl($scope, MediaLibrary, AudioPlayer, MediaState, PlayQue
 
     $scope.player = AudioPlayer;
     $scope.playQueue = new PlayQueue(AudioPlayer);
-
-    $scope.queueClip = function (clip) {
-        $scope.playQueue.addItem(clip);
-    };
 }
