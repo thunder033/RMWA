@@ -117,6 +117,12 @@ module.exports = function(grunt){
                     ext: '.js.gz'
                 }, {
                     expand: true,
+                    cwd: 'pulsar/dist/',
+                    src: ['**/*.min.js'],
+                    dest: 'pulsar/dist',
+                    ext: '.min.js.gz'
+                }, {
+                    expand: true,
                     cwd: 'pulsar/dist/css',
                     src: ['**/*.css'],
                     dest: 'pulsar/dist/css',
