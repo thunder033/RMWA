@@ -129,6 +129,12 @@ module.exports = function(grunt){
                     ext: '.css.gz'
                 }]
             }
+        },
+        watch: {
+            css: {
+                files: ['pulsar/assets/css/*.css'],
+                tasks: ['cssmin']
+            }
         }
     });
 
@@ -139,6 +145,7 @@ module.exports = function(grunt){
     grunt.loadNpmTasks('grunt-contrib-cssmin');
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-compress');
+    grunt.loadNpmTasks('grunt-contrib-watch');
 
     grunt.registerTask('default', ['build-dev']);
 
