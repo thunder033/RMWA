@@ -2,7 +2,15 @@
     <audio-player player="player" queue="playQueue"></audio-player>
 
     <div ps-accordion-tab>
-        <h4 class="ps-accordion-header"><span class="fa fa-list"></span>Play Queue<span ng-bind="playQueue.getItems().length" class="pq-count"></span></h4>
+        <h4 class="ps-accordion-header">
+            <span class="fa fa-list"></span>
+            Play Queue<span ng-bind="playQueue.getItems().length" class="pq-count"></span>
+            <!--Notification for new item in queue-->
+            <span class="cp-notification text-primary" ng-class="{active: isActiveNotification()}">
+                <span class="fa fa-plus-circle"></span>
+                <span>Added "{{playQueueAdded}}"</span>
+            </span>
+        </h4>
         <play-queue audio-player="player" queue="playQueue"></play-queue>
     </div>
 

@@ -24,6 +24,18 @@ html, body {
     cursor: pointer;
 }
 
+.cp-notification {
+    font-size: .8em;
+    font-weight: normal;
+    opacity: 0;
+    transition: all .3s;
+}
+
+.cp-notification.active {
+    opacity: 1;
+    transition: all .3s;
+}
+
 .toggleButton span:hover {
     background: #999;
 }
