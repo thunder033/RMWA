@@ -16,19 +16,20 @@
             restrict: 'E',
             replace: true,
             scope: {
-                actionOverride: '='
+                actionOverride: '=',
+                playlist: '='
             },
             templateUrl: 'views/playlist.html',
             link: function(scope){
-                scope.clips = null;
                 scope.page = 0;
                 scope.clipList = [];
-                //Retrieve songs from the media library
-                MediaLibrary.getAudioClips(MediaType.Song)
-                    .then(clips => {
-                        scope.clips = new Playlist(clips);
-                        scope.getPage(scope.page, scope.clipList);
-                    });
+
+                scope.playlist.addEventListener('itemsSet', ()=> {
+                    scope.page = 0;
+                    scope.getPage(scope.page, scope.clipList);
+                });
+
+                scope.playlist.addEventListener('itemAdded', ()=> scope.getPage(scope.page, scope.clipList));
 
                 // By default send a played clip to the audio player
                 scope.playClip = function(clip) {
@@ -47,12 +48,14 @@
                  * @returns {void}
                  */
                 scope.getPage = function(page, clipList) {
-                    if(scope.clips === null){
+                    if(scope.playlist === null){
                         return;
                     }
 
-                    scope.clips.getPage(page, clipList);
+                    scope.playlist.getPage(page, clipList);
                 };
+
+                scope.getPage(0, scope.clipList);
 
                 scope.isPlaying = function(clipId) {
                     return typeof clipId === 'number' && (AudioPlayer.playing || {}).id === clipId;

@@ -19,7 +19,14 @@ function mediaWidgetDirective(){
         link: function(){
 
         },
-        controller: ['$scope', 'media.PlayQueue', function ($scope, PlayQueue) {
+        controller: ['$scope', 'media.PlayQueue', 'media.Playlist', 'media.const.Type', 'media.Library', function ($scope, PlayQueue, Playlist, MediaType, MediaLibrary) {
+
+            $scope.playlist = new Playlist();
+
+            //Retrieve initial set of songs from the media library
+            MediaLibrary.isReady()
+                .then(() => MediaLibrary.getAudioClips(MediaType.Song))
+                .then(clips => $scope.playlist.setItems(clips));
 
             $scope.queueOptions = [
                 {value: PlayQueue.PlayNext, name: 'Play Next', icon: ''},
