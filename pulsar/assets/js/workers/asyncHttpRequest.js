@@ -42,20 +42,29 @@ function isTransferable(data) {
     return data instanceof ArrayBuffer || data instanceof ImageBitmap || data instanceof MessagePort;
 }
 
-function processMessage(e) {
-    workerApp.run(['simple-request.SimpleHttp', function(SimpleHttp){
-        var data = e.data;
-        SimpleHttp[data.method || 'get'](data.url, data.body || data, data)
-            .then(response => {
-                var transferList = (isTransferable(response)) ? [response] : [];
-                postMessage({_id: e.data._id, _status: 'OK', data: response}, transferList);
-            }, error => {
-                postMessage({_id: e.data._id, _status: 'ERROR', message: error});
-            });
-    }]);
+var invocation = 0,
+    simpleHttp = null;
 
-    // Bootstrap the app
-    self.angular.bootstrap(null, ['worker-app']);
+function processMessage(e) {
+    //Only create the angular app if it's the first invocation of the worker
+    if(invocation++ === 0){
+        workerApp.run(['simple-request.SimpleHttp', function(SimpleHttp){
+            simpleHttp = SimpleHttp;
+        }]);
+
+        // Bootstrap the app
+        self.angular.bootstrap(null, ['worker-app']);
+    }
+
+    var data = e.data;
+    //Use the simleHttp service to invoke an http request
+    simpleHttp[data.method || 'get'](data.url, data.body || data, data)
+        .then(response => {
+            var transferList = (isTransferable(response)) ? [response] : [];
+            postMessage({_id: e.data._id, _status: 'OK', data: response}, transferList);
+        }, error => {
+            postMessage({_id: e.data._id, _status: 'ERROR', message: error});
+        });
 }
 
 self.addEventListener('message', processMessage);
