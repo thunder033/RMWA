@@ -101,9 +101,9 @@ var EventTarget = require('eventtarget');
         this.resume = () =>{
             if(state === states.Paused){
                 gainNode.gain.cancelScheduledValues(audioCtx.currentTime);
-                self.playBuffer(sourceNode.buffer, pausedAt);
-                gainNode.gain.value = 1;
-                trackStart = getNow() - pausedAt * 1000;
+                self.playBuffer(sourceNode.buffer, pausedAt).then(()=>{
+                    trackStart = getNow() - pausedAt * 1000;
+                });
             }
         };
 
@@ -129,18 +129,18 @@ var EventTarget = require('eventtarget');
          * @param {number} [startTime=0]
          */
         this.playClip = (clip, startTime) => {
-            self.stop();
+            return self.stop().then(()=>{
+                playing = clip;
+                state = states.Loading;
 
-            playing = clip;
-            state = states.Loading;
-
-            return playing.getBuffer().then(buffer => {
-                self.playBuffer(buffer, startTime || 0);
-            }, () => {
-                self.stop();
-                $timeout(()=>{
-                    this.dispatchEvent(new Event('ended'));
-                }, 200);
+                return playing.getBuffer().then(buffer => {
+                    self.playBuffer(buffer, startTime || 0);
+                }, () => {
+                    self.stop();
+                    $timeout(()=>{
+                        this.dispatchEvent(new Event('ended'));
+                    }, 200);
+                });
             });
         };
 
@@ -150,19 +150,18 @@ var EventTarget = require('eventtarget');
          * @param {number} [startTime=0]
          */
         this.playBuffer = (buffer, startTime) => {
-
-            self.stop();
-
-            self.createAudioSource();
-            sourceNode.buffer = buffer;
-            gainNode.gain.cancelScheduledValues(audioCtx.currentTime);
-            gainNode.gain.value = 1;
-            sourceNode.start(0 , startTime || 0);
-            state = states.Playing;
-            sourceNode.onended = () => this.dispatchEvent(new Event('ended'));
-            this.dispatchEvent(new Event('play'));
-            trackStart = getNow();
-            trackLength = buffer.duration;
+            return self.stop().then(() => {
+                self.createAudioSource();
+                sourceNode.buffer = buffer;
+                gainNode.gain.cancelScheduledValues(audioCtx.currentTime);
+                gainNode.gain.value = 1;
+                sourceNode.start(0 , startTime || 0);
+                state = states.Playing;
+                sourceNode.onended = () => this.dispatchEvent(new Event('ended'));
+                this.dispatchEvent(new Event('play'));
+                trackStart = getNow();
+                trackLength = buffer.duration;
+            });
         };
 
         /**
@@ -172,28 +171,37 @@ var EventTarget = require('eventtarget');
         this.seekTo = (pct) => {
             if(playing){
                 var time = trackLength * (pct || 0);
-                self.playBuffer(sourceNode.buffer, time);
-                trackStart = getNow() - time * 1000;
+                self.playBuffer(sourceNode.buffer, time).then(()=>{
+                    trackStart = getNow() - time * 1000;
+                });
             }
 
         };
 
         /**
-         * Stop playblack
+         * Stop playblack and reset player values
          */
         this.stop = () => {
-            //playing = null;
             gainNode.gain.value = 0;
-            if(sourceNode){
-                sourceNode.onended = null;
-                if(state === states.Playing || state === states.Paused){
-                    sourceNode.stop(0);
+            // We have to wait a digest cycle for the audio gain to 'take affect'
+            // Immediately stopping the source "freezes" the values returned from analyzer node
+            return $timeout(function(){
+
+                if(sourceNode){
+                    sourceNode.onended = null;
+                    if(state === states.Playing || state === states.Paused){
+                        sourceNode.stop(0);
+                    }
                 }
-            }
-            trackLength = 0;
-            pausedAt = 0;
-            trackStart = 0;
-            state = states.Stopped;
+
+                //clear the old source
+                self.createAudioSource();
+
+                trackLength = 0;
+                pausedAt = 0;
+                trackStart = 0;
+                state = states.Stopped;
+            });
         };
 
         /**
