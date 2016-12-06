@@ -1,4 +1,7 @@
 <div class="media-widget">
+
+    <input type="text" ng-model="model.search" placeholder="Search" ng-model-options="{debounce: 500}">
+
     <label class="cp-control-title">Queue Action</label>
     <div class="mw-queue-options">
         <div class="mw-queue-option" ng-repeat="option in queueOptions track by $index" ng-class="{'selected': option.value === model.queueMode}">

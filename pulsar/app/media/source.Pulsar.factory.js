@@ -69,6 +69,18 @@
                     switch(params.field)
                     {
                         case 'name':
+                            if(params.term.length === 0){
+                                return $q.when(this._cachedTracks);
+                            }
+
+                            var term = params.term.toLowerCase();
+
+                            var results = this._cachedTracks.filter(track => {
+                                var name = track.getName().toLowerCase();
+                                return (name.indexOf(term) > -1);
+                            });
+
+                            return $q.when(results);
                         case 'type':
                             return $q.when(this._cachedTracks.filter(track => track[params.field] === params.term));
                         default:

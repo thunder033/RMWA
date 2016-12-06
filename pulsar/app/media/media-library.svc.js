@@ -60,17 +60,12 @@
             });
         };
 
-        /**
-         * Get all audio clips of one type
-         * @param type {media.Type}
-         * @returns {Promise<PriorityQueue>}
-         */
-        this.getAudioClips = (type) => {
+        function search(field, term){
             var defer = $q.defer(),
                 clipList = new PriorityQueue();
 
             //define parameters to search for audio clips with
-            var searchParam = {field: 'type', term: type || MediaType.Song};
+            var searchParam = {field: field, term: term};
 
             //invoke a search from each source
             $q.all(values(sources).map(source => source.search(searchParam).then(results => {
@@ -78,11 +73,24 @@
                 results.forEach(clip => clipList.enqueue(0, clip));
                 defer.notify(clipList);
             })))
-                //indicate when the search has completed
+            //indicate when the search has completed
                 .then(() => defer.resolve(clipList))
                 .catch(defer.reject);
 
             return defer.promise;
+        }
+
+        this.searchByName = function(term) {
+            return search('name', term);
+        };
+
+        /**
+         * Get all audio clips of one type
+         * @param type {media.Type}
+         * @returns {Promise<PriorityQueue>}
+         */
+        this.getAudioClips = (type) => {
+            return search(type || MediaType.Song, type);
         };
     }
 })();

@@ -35,12 +35,34 @@ function mediaWidgetDirective(){
             ];
 
             $scope.model = {
-                queueMode: PlayQueue.PlayNext
+                queueMode: PlayQueue.PlayNext,
+                search: '',
             };
 
+            /**
+             * Add a clip to the play queue the the user-selected queue mode
+             * @param clip
+             */
             $scope.queueClip = function (clip) {
                 $scope.queue.addItem(clip, $scope.model.queueMode);
             };
+
+            /**
+             * Execute a search of the media library
+             */
+            $scope.search = function(){
+                if($scope.model.search.length === 0){
+                    return MediaLibrary.getAudioClips(MediaType.Song)
+                        .then(clips => $scope.playlist.setItems(clips));
+                }
+
+                MediaLibrary.searchByName($scope.model.search).then(results => {
+                    console.log(results.asArray());
+                    $scope.playlist.setItems(results);
+                });
+            };
+
+            $scope.$watch('model.search', $scope.search);
         }]
     };
 }
