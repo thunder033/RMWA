@@ -7,10 +7,11 @@ require('angular').module('pulsar.media').factory('media.source.SoundCloud', [
     'media.Source',
     'simple-request.HttpConfig',
     'media.const.Type',
+    'media.AudioClip',
     sourceSoundCloudFactory
 ]);
 
-function sourceSoundCloudFactory(Source, HttpConfig, MediaType){
+function sourceSoundCloudFactory(Source, HttpConfig, MediaType, AudioClip){
 
     class SoundCloud extends Source {
 
