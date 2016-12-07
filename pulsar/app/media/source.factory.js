@@ -55,7 +55,7 @@
              * Send a request using the source request pool
              * @param config
              * @returns {Promise.<Object>|*}
-             * @private
+             * @protected
              */
             static _queueRequest(config){
                 return requestPool.send(config);

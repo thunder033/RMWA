@@ -42,6 +42,10 @@ function HttpConfig(params)
     this.responseType = params.responseType || XMLHttpRequest.responseType;
 }
 
+HttpConfig.get = function(url){
+    return new HttpConfig({url: url});
+};
+
 function SimpleHttp($http)
 {
     function doRequest(config)
