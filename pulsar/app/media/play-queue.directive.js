@@ -41,7 +41,7 @@ function playQueueDirective(Playlist, MM){
             };
 
             scope.isLastPage = function(){
-                return endPos >= scope.queue.getItems().length;
+                return (endPos + 1) >= scope.queue.getItems().length;
             };
 
             var pageLength = 10;
@@ -52,7 +52,7 @@ function playQueueDirective(Playlist, MM){
                 switch(dir){
                     case -1:
                         // If seeking up the queue, move the position pointer to the start of the current page
-                        startPos = MM.max(startPos - 1, 0);
+                        startPos = Math.max(startPos - 1, 0);
                         endPos = startPos;
                         break;
                     case 0:
@@ -61,7 +61,7 @@ function playQueueDirective(Playlist, MM){
                         dir = 1;
                         break;
                     case 1:
-                        endPos = MM.min(endPos + 1, queueSize);
+                        endPos = Math.min(endPos + 1, queueSize);
                         startPos = endPos;
                 }
 
@@ -88,7 +88,7 @@ function playQueueDirective(Playlist, MM){
 
             function playNext(){
                 scope.playing = scope.queue.getNext();
-                if(typeof scope.playing !== 'undefined'){
+                if(scope.playing !== null){
                     scope.audioPlayer.playClip(scope.playing);
                 }
             }

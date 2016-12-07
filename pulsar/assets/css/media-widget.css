@@ -1,0 +1,71 @@
+.mw-queue-options {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.mw-queue-option {
+    display: inline-block;
+    width: 2.3em;
+    height: 2em;
+    overflow: hidden;
+    border: 1px #777 solid;
+    border-left: 0;
+    transition: width .3s;
+}
+
+.mw-queue-option:not(.selected):hover {
+    cursor: pointer;
+    background: #666666;
+}
+
+.mw-queue-option:not(.selected):hover * {
+    cursor: pointer;
+}
+
+.mw-queue-option:first-child {
+    border-left: 1px #777777 solid;
+    border-top-left-radius: .3em;
+    border-bottom-left-radius: .3em;
+}
+
+.mw-queue-option:last-child {
+    border-top-right-radius: .3em;
+    border-bottom-right-radius: .3em;
+}
+
+.mw-queue-option.selected {
+    background: #444;
+    width: 8em;
+    transition: width .3s;
+}
+
+.mw-queue-option input {
+    display: none;
+}
+
+.mw-queue-option label {
+    display: inline-block;
+    padding: .3em;
+}
+
+.mw-queue-option-icon {
+    width: 1.7em;
+    height: 1.4em;
+    margin-bottom: .3em;
+    display: inline-block;
+    vertical-align: top;
+    text-align: center;
+}
+
+.mw-option-name {
+    display: inline-block;
+    height: 1.4em;
+    vert-align: middle;
+    margin-top: .2em;
+}
+
+.mw-queue-option .fa,
+.mw-queue-option .fa-stack {
+
+}
+

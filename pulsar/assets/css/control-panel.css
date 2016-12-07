@@ -24,6 +24,18 @@ html, body {
     cursor: pointer;
 }
 
+.cp-notification {
+    font-size: .8em;
+    font-weight: normal;
+    opacity: 0;
+    transition: all .3s;
+}
+
+.cp-notification.active {
+    opacity: 1;
+    transition: all .3s;
+}
+
 .toggleButton span:hover {
     background: #999;
 }
@@ -122,4 +134,9 @@ html, body {
 
 .ps-accordion-icon {
     float: right;
+}
+
+.cp-control-title {
+    font-weight: bold;
+    margin-right: .3em;
 }

@@ -52,6 +52,16 @@
             }
 
             /**
+             * Send a request using the source request pool
+             * @param config
+             * @returns {Promise.<Object>|*}
+             * @private
+             */
+            static _queueRequest(config){
+                return requestPool.send(config);
+            }
+
+            /**
              * Queues an http request and promises an audio buffer
              * @param {HttpConfig} config
              * @returns {Promise<ArrayBuffer>}

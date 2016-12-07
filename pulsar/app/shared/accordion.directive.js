@@ -2,8 +2,7 @@
 /**
  * Created by Greg on 12/3/2016.
  */
-require('angular')
-    .module('shared')
+require('angular').module('shared')
     /**
      * @ngdoc directive
      * @description Container for an accordion
@@ -17,6 +16,7 @@ require('angular')
     /**
      * @ngdoc directive
      * @description A header that can be activated to expand a tab in the accordion
+     *
      */
     .directive('psAccordionHeader', [psAccordianHeaderDirective]);
 
@@ -59,6 +59,9 @@ function psAccordionTabDirective(){
             scope.test = 'testing';
             scope.expand = accordionCtrl.expand;
             accordionCtrl.addTab(scope);
+            if(attrs.hasOwnProperty('selected')){
+                scope.expand(scope);
+            }
         },
         controller: ['$scope', '$element', PsAccordionTabCtrl]
     };

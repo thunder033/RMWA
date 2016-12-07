@@ -14,7 +14,9 @@ require('angular')
 
 function playQueueFactory(MediaState, IPlayable) {
 
-
+    /**
+     * Holds the list of items to be sent to be played
+     */
     class PlayQueue extends EventTarget {
 
         constructor(audioPlayer){
@@ -33,6 +35,10 @@ function playQueueFactory(MediaState, IPlayable) {
             });
         }
 
+        /**
+         * Dequeue and return the next playable item
+         * @returns {IPlayable}
+         */
         getNext(){
             var next = null;
             do {
@@ -57,14 +63,16 @@ function playQueueFactory(MediaState, IPlayable) {
             }
 
             placement = typeof placement === 'undefined' ? PlayQueue.PlayNext : placement;
+            var evt = new Event('itemAdded');
+            evt.item = playable;
             switch (placement){
                 case PlayQueue.PlayNext:
                     this._queue.unshift(playable);
-                    this.dispatchEvent(new Event('itemAdded'));
+                    this.dispatchEvent(evt);
                     break;
                 case PlayQueue.QueueEnd:
                     this._queue.push(playable);
-                    this.dispatchEvent(new Event('itemAdded'));
+                    this.dispatchEvent(evt);
                     break;
                 case PlayQueue.PlayNow:
                     this._player.playClip(playable);
