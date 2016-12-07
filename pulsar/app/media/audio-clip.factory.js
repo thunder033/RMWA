@@ -24,9 +24,10 @@
          * @returns {string}
          */
         function getNiceName (fileName) {
+            var fileExts = ['mp3','wav'];
             var pcs = fileName.split('.');
-            pcs.pop();
-            return pcs.join('.');
+            var ext = pcs.pop();
+            return (fileExts.indexOf(ext) > -1) ? pcs.join('.') : ext;
         }
 
         /**

@@ -1,5 +1,5 @@
 /**
- * TODO: [Description]
+ * Handles requests to the SoundCloud API endpoint
  * @author Greg Rozmarynowycz <greg@thunderlab.net>
  */
 'use strict';
@@ -31,10 +31,11 @@ function sourceSoundCloudFactory(Source, HttpConfig, MediaType, AudioClip){
             var reqUrl = this.apiUrl;
             switch(reqType) {
                 case 'search':
-                    reqUrl += `tracks?q=${params.term}`;
+                    var term = encodeURIComponent(params.term);
+                    reqUrl += `tracks?q=${term}&limit=50`;
                     break;
                 case 'track':
-                    reqUrl += `tracks/${params.trackId}/streams`;
+                    reqUrl += `tracks/${params.trackId}/stream`;
                     break;
                 default:
                     return null;
@@ -44,23 +45,31 @@ function sourceSoundCloudFactory(Source, HttpConfig, MediaType, AudioClip){
         }
 
         search(params) {
+            if(params.term === '' || params.field !== 'name'){
+                return super.search(params);
+            }
+
             var url = this._getRequestUrl('search', {term: params.term});
+
+            function trackCompare(a, b)
+            {
+                return parseInt(a.playback_count) > parseInt(b.playback_count) ? -1 : 1;
+            }
 
             return Source._queueRequest(HttpConfig.get(url))
                 .then(results => {
                     //Parse each track in the list
-                    results.forEach(track => {
-
+                    return results.sort(trackCompare).map(track => {
+                        console.log(track.title);
                         //Load the local track into the cache
-                        this._cachedTracks.push(new AudioClip({
+                        return new AudioClip({
                             source: this,
-                            name: track.title,
+                            sourceId: track.id,
+                            name: track.title + `(${track.playback_count})`,
                             type: MediaType.Song,
                             uri: track.stream_url
-                        }));
+                        });
                     });
-
-                    return this._cachedTracks;
                 });
         }
 
@@ -68,14 +77,12 @@ function sourceSoundCloudFactory(Source, HttpConfig, MediaType, AudioClip){
             var url = this._getRequestUrl('track', {trackId: sourceId});
             // Example SoundCloud URI (using proxy script)
             // http://thunderlab.net/pulsar-media/api/soundcloud/tracks/231543423
-            return Source._queueRequest(HttpConfig.get(url)).then(streamUrl => {
-                return super.getRawBuffer(new HttpConfig({
-                    url: streamUrl,
-                    responseType: 'arraybuffer'
-                }));
-            });
+            return super.getRawBuffer(new HttpConfig({
+                url: url,
+                responseType: 'arraybuffer'
+            }));
         }
     }
 
-    return SoundCloud;
+    return new SoundCloud();
 }

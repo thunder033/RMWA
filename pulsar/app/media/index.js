@@ -23,6 +23,7 @@ require('./playlist.directive');
 require('./media-library.svc');
 require('./source.factory');
 require('./source.Pulsar.factory');
+require('./source.SoundCloud.factory');
 
 
 media.run(['media.Library', function (MediaLibrary) {

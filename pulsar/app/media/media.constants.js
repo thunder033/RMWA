@@ -14,7 +14,8 @@ angular.module('pulsar.media')
         };
     }])
     .constant('media.const.Sources', Object.freeze({
-        Pulsar: 'Pulsar'
+        Pulsar: 'Pulsar',
+        SoundCloud: 'SoundCloud'
     }))
     /**
      * @description Indicates what state a media object is in
