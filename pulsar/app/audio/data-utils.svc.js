@@ -33,16 +33,16 @@
 
             function handleError(e){
                 renderOp.reject(e);
-                audioCtx.close();
             }
 
             audioCtx.decodeAudioData(rawBuffer, function(buffer) {
                 renderOp.resolve(buffer);
-                audioCtx.close();
                 //Utilize both catch methods for different browsers
             }, handleError).catch(handleError);
             
-            return renderOp.promise;
+            return renderOp.promise.finally(()=>{
+                audioCtx.close();
+            });
         };
 
         /**
