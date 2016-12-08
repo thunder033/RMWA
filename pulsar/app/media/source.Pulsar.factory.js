@@ -41,21 +41,30 @@
                     url: MediaPath.Tracks
                 })).then(trackList => {
                     //Parse each track in the list
-                    trackList.forEach(track => {
+                    return $q.all(trackList.map(track => {
                         var type = track.type || MediaType.Song,
                             fileName = track.name || track,
                             url = MediaPath[type] + fileName;
 
-                        //Load the local track into the cache
-                        this._cachedTracks.push(new AudioClip({
-                            source: this,
-                            name: fileName,
-                            type: type,
-                            uri: url
-                        }));
+                        //ensure the track exists before loading it
+                        return Source.queueRequest(new HttpConfig({
+                            method: 'HEAD',
+                            url: url
+                        })).then(()=>{
+                            //Load the local track into the cache
+                            this._cachedTracks.push(new AudioClip({
+                                source: this,
+                                name: fileName,
+                                type: type,
+                                uri: url
+                            }));
+                        }, err => {
+                            var status = err.status || err;
+                            console.warn(`Pulsar track "${fileName}" could not be loaded: ${status}`);
+                        });
+                    })).then(()=>{
+                        return this._cachedTracks;
                     });
-
-                    return this._cachedTracks;
                 });
             }
 

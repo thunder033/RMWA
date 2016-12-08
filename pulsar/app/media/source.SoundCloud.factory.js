@@ -56,7 +56,7 @@ function sourceSoundCloudFactory(Source, HttpConfig, MediaType, AudioClip){
                 return parseInt(a.playback_count) > parseInt(b.playback_count) ? -1 : 1;
             }
 
-            return Source._queueRequest(HttpConfig.get(url))
+            return Source.queueRequest(HttpConfig.get(url))
                 .then(results => {
                     //Parse each track in the list
                     return results.sort(trackCompare).map(track => {

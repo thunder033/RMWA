@@ -79,7 +79,7 @@
              * @returns {Promise.<Object>|*}
              * @protected
              */
-            static _queueRequest(config){
+            static queueRequest(config){
                 return requestPool.send(config);
             }
 
