@@ -65,7 +65,7 @@ function sourceSoundCloudFactory(Source, HttpConfig, MediaType, AudioClip){
                         return new AudioClip({
                             source: this,
                             sourceId: track.id,
-                            name: track.title + `(${track.playback_count})`,
+                            name: track.title,
                             type: MediaType.Song,
                             uri: track.stream_url
                         });
