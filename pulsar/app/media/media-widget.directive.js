@@ -56,8 +56,7 @@ function mediaWidgetDirective(){
                         .then(clips => $scope.playlist.setItems(clips));
                 }
 
-                MediaLibrary.searchByName($scope.model.search).then(results => {
-                    console.log(results.asArray());
+                MediaLibrary.searchByName($scope.model.search).then(null, null, results => {
                     $scope.playlist.setItems(results);
                 });
             };

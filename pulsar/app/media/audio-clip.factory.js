@@ -47,6 +47,7 @@
              * @param {string} [params.name]
              * @param {media.Type} [params.type]
              * @param {string} [params.uri]
+             * @param {number} [params.sourceRank]
              * @constructor
              */
             constructor(params) {
@@ -61,12 +62,21 @@
                     this.clip = null;
                     this.buffer = null;
                     this.source = params.source;
+                    this.rank = params.sourceRank || 0;
 
                     this.state = MediaState.Ready;
                 }
                 else {
                     throw new ReferenceError('Cached Clips not yet supported');
                 }
+            }
+
+            /**
+             * The relative importance of the track, 0 - 10, where 0 is better
+             * @returns {number}
+             */
+            getRank(){
+                return this.rank;
             }
 
             /**

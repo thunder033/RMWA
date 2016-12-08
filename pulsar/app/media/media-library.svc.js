@@ -60,6 +60,16 @@
             });
         };
 
+        /**
+         * Get the ranking of the track in the search
+         * @param {AudioClip} clip
+         * @param {Object} params
+         * @returns {number} 0 - 10, where 0 is better
+         */
+        function getSearchRank(clip, params) {
+            return clip.getRank();
+        }
+
         function search(field, term){
             var defer = $q.defer(),
                 clipList = new PriorityQueue();
@@ -70,7 +80,10 @@
             //invoke a search from each source
             $q.all(values(sources).map(source => source.search(searchParam).then(results => {
                 //start providing resources as soon as a source returns
-                results.forEach(clip => clipList.enqueue(0, clip));
+                results.forEach(clip => {
+                    var rank = getSearchRank(clip, searchParam);
+                    clipList.enqueue(rank, clip);
+                });
                 defer.notify(clipList);
             })))
             //indicate when the search has completed
