@@ -68,22 +68,26 @@
             var data = imgData.data,
                 length = data.length,
                 noiseThreshold = parseFloat(visualizer.noiseThreshold),
-                activeEffects = getActiveEffects();
+                activeEffects = getActiveEffects(),
+
+                noise = activeEffects[Effects.NOISE],
+                invert = activeEffects[Effects.INVERT],
+                desaturate = activeEffects[Effects.DESATURATE];
 
             //iterate over each pixel, applying active effects;
             for (var i = 0; i < length; i += 4) {
 
-                if (activeEffects[Effects.NOISE] === true && Math.random() < noiseThreshold) {
+                if (noise === true && Math.random() < noiseThreshold) {
                     data[i] = data[i + 1] = data[i + 2] = 255 * Math.random();
                 }
 
-                if (activeEffects[Effects.INVERT] === true) {
+                if (invert === true) {
                     data[i] = 255 - data[i];
                     data[i + 1] = 255 - data[i + 1];
                     data[i + 2] = 255 - data[i + 2];
                 }
 
-                if (activeEffects[Effects.DESATURATE] === true) {
+                if (desaturate === true) {
                     //StackOverflow user Shmiddty
                     //http://stackoverflow.com/questions/13348129/using-native-javascript-to-desaturate-a-colour
                     var grey = (data[i] * 0.3086 + data[i + 1] * 0.6094 + data[i + 2] * 0.0820);
