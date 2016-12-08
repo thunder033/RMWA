@@ -36,6 +36,7 @@
          * @property {string} name
          * @property {string} uri
          * @property {Source} source
+         * @property {string} artist
          * @implements IPlayable
          */
         class AudioClip extends IPlayable {
@@ -48,6 +49,9 @@
              * @param {media.Type} [params.type]
              * @param {string} [params.uri]
              * @param {number} [params.sourceRank]
+             * @param {string} [params.artist='Unknown']
+             * @param {string} [params.deepLink='']
+             * @param {string} [params.album='']
              * @constructor
              */
             constructor(params) {
@@ -62,7 +66,12 @@
                     this.clip = null;
                     this.buffer = null;
                     this.source = params.source;
+
                     this.rank = params.sourceRank || 0;
+
+                    this.deepLink = params.deepLink || '';
+                    this.artist = params.artist || 'Unknown';
+                    this.album = params.album || '';
 
                     this.state = MediaState.Ready;
                 }

@@ -20,36 +20,12 @@ function sourceSoundCloudFactory(Source, HttpConfig, MediaType, AudioClip){
             this.apiUrl = 'http://thunderlab.net/pulsar-media/api/soundcloud/';
         }
 
-        /**
-         *
-         * @param reqType
-         * @param params
-         * @returns {*}
-         * @private
-         */
-        _getRequestUrl(reqType, params){
-            var reqUrl = this.apiUrl;
-            switch(reqType) {
-                case 'search':
-                    var term = encodeURIComponent(params.term);
-                    reqUrl += `tracks?q=${term}&limit=50`;
-                    break;
-                case 'track':
-                    reqUrl += `tracks/${params.trackId}/stream`;
-                    break;
-                default:
-                    return null;
-            }
-
-            return reqUrl;
-        }
-
         search(params) {
             if(params.term === '' || params.field !== 'name'){
                 return super.search(params);
             }
 
-            var url = this._getRequestUrl('search', {term: params.term});
+            var url = this.getRequestUrl('search', {term: params.term});
 
             function trackCompare(a, b)
             {
@@ -60,7 +36,6 @@ function sourceSoundCloudFactory(Source, HttpConfig, MediaType, AudioClip){
                 .then(results => {
                     //Parse each track in the list
                     return results.sort(trackCompare).map(track => {
-                        console.log(track.title);
                         //Load the local track into the cache
                         return new AudioClip({
                             source: this,
@@ -74,7 +49,7 @@ function sourceSoundCloudFactory(Source, HttpConfig, MediaType, AudioClip){
         }
 
         getRawBuffer(sourceId) {
-            var url = this._getRequestUrl('track', {trackId: sourceId});
+            var url = this.getRequestUrl('track', {trackId: sourceId});
             // Example SoundCloud URI (using proxy script)
             // http://thunderlab.net/pulsar-media/api/soundcloud/tracks/231543423
             return super.getRawBuffer(new HttpConfig({

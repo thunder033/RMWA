@@ -19,8 +19,12 @@
             clipList = [];
 
         this.init = function() {
-            //Invoke the creation of each source
-            Object.keys(Sources).map(source => $injector.get(`media.source.${source}`));
+            //Invoke the creation of each (enabled) source
+            Object.keys(Sources).forEach(source => {
+                if(Sources[source] === true){
+                    $injector.get(`media.source.${source}`);
+                }
+            });
             //Get a reference to the sources collection
             sources = Source.getSources();
         };

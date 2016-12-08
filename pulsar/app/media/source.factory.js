@@ -37,6 +37,35 @@
             isActive(){
                 return this._active;
             }
+
+            /**
+             *
+             * @param reqType
+             * @param params
+             * @returns {*}
+             * @protected
+             */
+            getRequestUrl(reqType, params){
+                var reqUrl = this.apiUrl;
+                switch(reqType) {
+                    case 'search':
+                        var term = encodeURIComponent(params.term);
+                        reqUrl += `tracks?q=${term}&limit=50`;
+                        break;
+                    case 'track':
+                        reqUrl += `tracks/${params.trackId}/stream`;
+                        break;
+                    default:
+                        return null;
+                }
+
+                return reqUrl;
+            }
+
+            /**
+             * Return the location of source icon
+             * @returns {string}
+             */
             getIcon() {
                 var path = 'assets/images/',
                     name = this.getName().toLowerCase();
