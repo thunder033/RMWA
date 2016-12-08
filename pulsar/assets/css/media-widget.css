@@ -1,10 +1,11 @@
 .mw-search {
-    background: #eee;
+    background: #ddd;
     position: relative;
     border: 1px #777 solid;
     border-radius: .3em;
     overflow: hidden;
     margin-bottom: .3em;
+    font-size: 1.2em;
 }
 
 .mw-search-input {
@@ -13,12 +14,16 @@
     box-sizing: border-box;
     background: transparent;
     border: 0;
+    font-size: inherit;
+    z-index: 4;
 }
 
 .mw-search-icon {
     position: absolute;
+    font-size: inherit;
     right: .3em;
-    top: .2em;
+    top: .4em;
+    z-index: 2;
 }
 
 .mw-queue-options {
