@@ -4,7 +4,7 @@
 }
 
 .playlist ul {
-
+    padding: 0;
 }
 
 .playlist li,
@@ -24,37 +24,42 @@
 .playlist li.playing {
     font-weight: bold;
     color: #ccffcc;
-    border-left: 3px #ccffcc solid;
-    background: #444;
 }
 
-.playlist li.playing::before {
+.playlist li.playing span.track-title:after {
     content: '';
     height: 0;
     width: 0;
-    border-left: 15px #ccffcc solid;
-    border-top: 10px transparent solid;
-    border-bottom: 10px transparent solid;
-    position: absolute;
-    top: 5px;
-    left: -2em;
+    border-left: 10px #ccffcc solid;
+    border-top: 8px transparent solid;
+    border-bottom: 8px transparent solid;
+    margin-left: .5em;
+    line-height: 0;
+    display: inline-block;
+    vertical-align: top;
 }
 
-.playlist li.error {
+.playlist li img.source-icon {
+    display: inline-block;
+    width: 1.5em;
+    height: 1.5em;
+    float: right;
+}
+
+.playlist li.Error {
     color: #aaa;
 }
 
-.playlist li.error::after {
-    content: '\00D7';
-    color: #CC7A7A;
+.playlist li.Error span.track-title:after {
+    content: " [error]";
+    color: #d55;
     font-weight: bold;
-    font-size: 2em;
-    line-height: .3em;
     display: inline-block;
-    vertical-align: middle;
+    vertical-align: top;
+    padding-left: .5em;
 }
 
-.playlist li.error:hover {
+.playlist li.Error:hover {
     cursor: not-allowed;
     background: #2a2a2a;
 }

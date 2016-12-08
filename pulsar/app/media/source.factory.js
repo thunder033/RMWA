@@ -29,6 +29,20 @@
                 this._ready = this.loadCachedTracks();
             }
 
+            getIcon() {
+                var path = 'assets/images/',
+                    name = this.getName().toLowerCase();
+                return `${path}/${name}-icon.png`;
+            }
+
+            /**
+             * The name of the source
+             * @returns {string}
+             */
+            getName(){
+                return this.name;
+            }
+
             getCachedTracks() {
                 return $q.when(this._cachedTracks);
             }
