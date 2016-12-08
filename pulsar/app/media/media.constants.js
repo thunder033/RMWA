@@ -17,6 +17,7 @@ angular.module('pulsar.media')
         //{Source Name}: [enabled - true/false]
         Pulsar: true,
         SoundCloud: true,
+        Groove: false
     }))
     /**
      * @description Indicates what state a media object is in

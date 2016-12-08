@@ -7,7 +7,9 @@
  * @ngdoc module
  * @name pulsar.media
  */
-var media = require('angular').module('pulsar.media', []);
+var media = require('angular').module('pulsar.media', [
+        require('modular-adal-angular')
+    ]);
 
 require('./media.constants');
 
@@ -24,11 +26,29 @@ require('./media-library.svc');
 require('./source.factory');
 require('./source.Pulsar.factory');
 require('./source.SoundCloud.factory');
+require('./source.Groove.factory');
 
-
-media.run(['media.Library', function (MediaLibrary) {
+media.config([
+    //'$routeProvider',
+    '$httpProvider',
+    'adalAuthenticationServiceProvider',
+    mediaConfig
+]).run(['media.Library', function (MediaLibrary) {
     MediaLibrary.init();
 }]);
+
+function mediaConfig($httpProvider, adalProvider){
+    adalProvider.init({
+        // Use this value for the public instance of Azure AD
+        instance: 'https://login.microsoftonline.com',
+        // The 'common' endpoint is used for multi-tenant applications like this one
+        tenent: 'common',
+
+        clientId: 'Pulsar',
+
+        anonymousEndpoints: ['/','/flare','/warp']
+    }, $httpProvider);
+}
 
 /**
  * @type {IModule}

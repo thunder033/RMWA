@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Groove Authenticate</title>
+    <script>
+        function getUrlParams(){
+            var params = {};
+            location.search.split('&').forEach(param => {
+                var kvp = param.split('=');
+                params[kvp[0]] = kvp[1];
+            });
+            return params;
+        }
+
+        if(parent){
+            var params = getUrlParams();
+            var token = params.access_token;
+            parent.resolveGrooveAccessToken(token);
+        }
+    </script>
+</head>
+<body>
+<h2>Authenticating...</h2>
+</body>
+</html>
