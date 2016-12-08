@@ -48,3 +48,16 @@ h4 {
 * html .clearfix { height: 1%; }
 .clearfix { display: block; }
 /* close commented backslash hack */
+
+
+.text-danger {
+    color: #d55;
+}
+
+.text-primary {
+    color: #48d;
+}
+
+.text-info {
+    color: #ccc;
+}

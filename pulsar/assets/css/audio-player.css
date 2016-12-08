@@ -72,17 +72,34 @@
     text-align: left;
 }
 
-.text-danger {
-    color: #d55;
-}
-
-.text-primary {
-    color: #48d;
-}
+/* http://stackoverflow.com/questions/21233033/css3-marquee-effect */
 
 .clip-title {
     font-size: 1.5em;
     font-weight: bold;
+    white-space: nowrap;
+    width: 10em;
+    display: inline-block;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.clip-title span {
+    display: inline-block;
+}
+
+.clip-title.marquee span {
+    animation: marquee 20s linear infinite;
+}
+
+.clip-title span:hover {
+    animation-play-state: paused
+}
+
+/* Make it move */
+@keyframes marquee {
+    0%   { transform: translate(10em, 0); }
+    100% { transform: translate(-100%, 0); }
 }
 
 .timestamp {

@@ -12,6 +12,8 @@ require('angular').module('pulsar.flare').directive('audioPlayer', [function(){
             queue: '='
         },
         link: function(scope, elem){
+            scope.marqueeClipTitle = false;
+
             scope.getPlaybarSize = function(){
                 return scope.player.completionPct * 100 + '%';
             };
@@ -37,6 +39,12 @@ require('angular').module('pulsar.flare').directive('audioPlayer', [function(){
                     pctPos = mouse.x / playBar.clientWidth;
                 scope.player.seekTo(pctPos);
             };
+
+            var clipTitle = elem[0].querySelector('.clip-title'),
+                clipTitleText = elem[0].querySelector('.clip-title span');
+            scope.$watch('player.playing.name', (o, n) =>{
+                scope.marqueeClipTitle = clipTitleText.clientWidth > clipTitle.clientWidth;
+            });
         }
     };
 }]);
