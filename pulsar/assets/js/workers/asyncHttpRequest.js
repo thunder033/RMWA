@@ -58,10 +58,10 @@ function processMessage(e) {
 
     var data = e.data;
     //Use the simleHttp service to invoke an http request
-    simpleHttp[data.method || 'get'](data.url, data.body || data, data)
+    simpleHttp.request(data)
         .then(response => {
             var transferList = (isTransferable(response)) ? [response] : [];
-            postMessage({_id: e.data._id, _status: 'OK', data: response}, transferList);
+            postMessage({_id: e.data._id, _status: 'OK', data: response || ''}, transferList);
         }, error => {
             postMessage({_id: e.data._id, _status: 'ERROR', message: error});
         });

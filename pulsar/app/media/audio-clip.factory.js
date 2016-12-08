@@ -104,7 +104,7 @@
                         //Temporary error handling until we get an error service
                         console.log(err);
                         this.state = MediaState.Error;
-                        throw err;
+                        return $q.reject(err);
                     });
             }
 

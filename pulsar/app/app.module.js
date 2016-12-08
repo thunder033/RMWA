@@ -33,6 +33,8 @@ var app = angular.module('pulsar', [
     require('checklist-model'),
     require('angular-ui-router')
 ]).config(['$stateProvider', '$urlRouterProvider', function($stateProvider, $urlRouterProvider) {
+    //message about error messages
+    console.info('READMEEEEE: Any HEAD requests with status 404 are expected. Network errors cannot be suppressed through JavaScript.');
     $urlRouterProvider.otherwise('/flare');
 
     $stateProvider.state('flare', {

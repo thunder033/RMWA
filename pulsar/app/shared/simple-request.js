@@ -10,7 +10,7 @@
 var simpleRequest = require('angular').module('simple-request', []);
 
 simpleRequest
-    .service('simple-request.SimpleHttp', ['$http', SimpleHttp])
+    .service('simple-request.SimpleHttp', ['$http', '$q', SimpleHttp])
     .factory('simple-request.HttpConfig', [httpConfigFactory]);
 
 /**
@@ -46,16 +46,21 @@ HttpConfig.get = function(url){
     return new HttpConfig({url: url});
 };
 
-function SimpleHttp($http)
+function SimpleHttp($http, $q)
 {
     function doRequest(config)
     {
         return $http(config).then(response => {
-            return response.data || response;
+            return typeof response.data !== 'undefined' ? response.data : response;
         }, error => {
-            throw `${error.status || error.statusCode}: ${JSON.stringify(error.message || error.data || error)}`;
+            return $q.reject(`${error.status || error.statusCode} ${JSON.stringify(error.message || error.statusText || error.data || error)}`);
         });
     }
+
+    this.request = (params) => {
+        var config = (params instanceof HttpConfig) ? params : new HttpConfig(params);
+        return doRequest(config);
+    };
 
     /**
      * Execute a GET request
