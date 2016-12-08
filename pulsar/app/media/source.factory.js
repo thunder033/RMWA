@@ -25,10 +25,18 @@
                 this.name = name;
                 this._cachedTracks = [];
                 this._tracks = {};
+                this._active = true;
 
                 this._ready = this.loadCachedTracks();
             }
 
+            /**
+             * Indicates if the source is active and should be used for searches
+             * @returns {boolean}
+             */
+            isActive(){
+                return this._active;
+            }
             getIcon() {
                 var path = 'assets/images/',
                     name = this.getName().toLowerCase();

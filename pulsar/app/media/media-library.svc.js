@@ -77,15 +77,19 @@
             //define parameters to search for audio clips with
             var searchParam = {field: field, term: term};
 
-            //invoke a search from each source
-            $q.all(values(sources).map(source => source.search(searchParam).then(results => {
+            function mergeResults(results){
                 //start providing resources as soon as a source returns
                 results.forEach(clip => {
                     var rank = getSearchRank(clip, searchParam);
                     clipList.enqueue(rank, clip);
                 });
                 defer.notify(clipList);
-            })))
+            }
+
+            //invoke a search from each source
+            $q.all(values(sources)
+                .filter(source => source.isActive())
+                .map(source => source.search(searchParam).then(mergeResults)))
             //indicate when the search has completed
                 .then(() => defer.resolve(clipList))
                 .catch(defer.reject);
@@ -103,7 +107,7 @@
          * @returns {Promise<PriorityQueue>}
          */
         this.getAudioClips = (type) => {
-            return search(type || MediaType.Song, type);
+            return search('type', type || MediaType.Song);
         };
     }
 })();
