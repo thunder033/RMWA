@@ -29,6 +29,7 @@ function httpConfigFactory(){
  * @param {string} params.url the url to request
  * @param {string} [params.method="get"] a request method
  * @param {string} [params.responseType=""] a valid XMLHttpRequest response type
+ * @param {Object} [params.queryParams] a set of parameters to attach to the url
  * @constructor
  */
 function HttpConfig(params)
@@ -38,7 +39,16 @@ function HttpConfig(params)
     }
 
     this.method = params.method || 'get';
-    this.url = params.url;
+
+    var queryString = '';
+    if(typeof params.queryParams === 'object' && params.queryParams !== null){
+        queryString = params.url.indexOf('?') > -1 ? '&' : '?';
+        queryString += Object.keys(params.queryParams).map(key => {
+            return `${key}=${encodeURIComponent(params.queryParams[key])}`;
+        }).join('&');
+    }
+
+    this.url = params.url + queryString;
     this.responseType = params.responseType || XMLHttpRequest.responseType;
 }
 

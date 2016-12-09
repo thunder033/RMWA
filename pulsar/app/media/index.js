@@ -40,11 +40,11 @@ media.config([
 function mediaConfig($httpProvider, adalProvider){
     adalProvider.init({
         // Use this value for the public instance of Azure AD
-        instance: 'https://login.microsoftonline.com',
+        instance: 'https://login.microsoftonline.com/',
         // The 'common' endpoint is used for multi-tenant applications like this one
         tenent: 'common',
 
-        clientId: 'Pulsar',
+        clientId: '5e289711-ad30-47c4-9be8-e17a4325a143',
 
         anonymousEndpoints: ['/','/flare','/warp']
     }, $httpProvider);
