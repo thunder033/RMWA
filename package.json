@@ -21,7 +21,7 @@
   },
   "homepage": "https://github.com/thunder033/RMWA#readme",
   "dependencies": {
-    "angular": "^1.5.8",
+    "angular": "1.5.8",
     "angular-ui-router": "^0.3.1",
     "checklist-model": "^0.10.0",
     "eventtarget": "^0.1.0",
