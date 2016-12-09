@@ -14,6 +14,10 @@
         <play-queue audio-player="player" queue="playQueue"></play-queue>
     </div>
 
+    <div class="cp-logo" ng-class="{visible: player.state !== 'Playing'}">
+        <img src="assets/images/pulsar-icon.png" alt="Pulsar Logo">
+        <h2>Flare</h2>
+    </div>
 
     <div ps-accordion-tab>
         <h4 class="ps-accordion-header"><span class="fa fa-star"></span>Effects</h4>

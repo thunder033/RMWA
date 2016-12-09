@@ -12,6 +12,44 @@ html, body {
     box-sizing: border-box;
 }
 
+.cp-logo {
+    position: fixed;
+    transform: translate(12.5em, 0);
+    margin: -4em 0 0 -11em;
+    top: 50%;
+    left: 50%;
+    height: 8em;
+    width: 22em;
+    text-align: center;
+    opacity: 0;
+    transition: opacity .75s;
+}
+
+.cp-logo.visible {
+    opacity: 1;
+    transition: opacity .25s;
+}
+
+.cp-logo h2 {
+    font-size: 6em;
+    font-weight: bold;
+    display: inline-block;
+    vertical-align: baseline;
+    margin-left: .03em;
+}
+
+.cp-logo img {
+    vertical-align: baseline;
+    height: 4.8em;
+    width: 4.8em;
+    background: #ddd;
+    box-sizing: border-box;
+    position: relative;
+    top: .15em;
+    border-radius: .3em;
+    border: .2em #ddd solid;
+}
+
 .control-panel h4 .fa {
     margin-right: .5em;
 }
