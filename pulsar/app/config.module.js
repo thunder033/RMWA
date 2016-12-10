@@ -6,7 +6,7 @@ var config = require('angular')
     .module('config', []);
 
 config.constant('config.Env', (()=>{
-    var host = location.host;
+    var host = location.href;
     if(host.indexOf('localhost') > -1){
         return 'dev';
     }
