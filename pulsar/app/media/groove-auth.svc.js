@@ -50,7 +50,9 @@ function GrooveAuth($window, $q, $cookies, HttpConfig, Path){
      * @param resp
      */
     function resolveAuthRequest(resp){
-        if(resp.scope === AUTH_SCOPE){
+        if(resp.error){
+            authDefer.reject(decodeURIComponent(resp.error_description || resp.error));
+        } else if(resp.scope === AUTH_SCOPE){
             accessToken = resp.access_token;
 
             var now = new Date();
@@ -116,7 +118,9 @@ function GrooveAuth($window, $q, $cookies, HttpConfig, Path){
             }
         };
 
-        return authDefer.promise;
+        return authDefer.promise.catch(err => {
+            console.error(err);
+        });
     };
 
     this.getAccessToken = function(){
