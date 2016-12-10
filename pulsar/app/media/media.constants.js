@@ -2,22 +2,11 @@
  * Created by gjr8050 on 11/16/2016.
  */
 angular.module('pulsar.media')
-    //Media Loading
-    .factory('media.const.Path', ['pulsar.const.Env', function(Env){
-        var base = 'assets/audio/';
-        return {
-            Base: base,
-            ReverbImpulse: base + '/reverb-impulses/',
-            Song: Env === 'dev' ? base + 'songs/' : 'http://thunderlab.net/pulsar-media/songs/',
-            Effect: base + 'effects/',
-            Tracks: 'assets/data/localAudio.json'
-        };
-    }])
     .constant('media.const.Sources', Object.freeze({
         //{Source Name}: [enabled - true/false]
         Pulsar: true,
         SoundCloud: true,
-        Groove: false
+        Groove: true
     }))
     /**
      * @description Indicates what state a media object is in

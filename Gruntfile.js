@@ -88,6 +88,7 @@ module.exports = function(grunt){
 
                     '.htaccess',
                     'index.html',
+                    'grooveAuthenticate.html',
                     'LICENSE',
                     'package.json'
                 ], dest: '.tmp'}]

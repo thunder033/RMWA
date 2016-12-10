@@ -8,8 +8,9 @@
  * @name pulsar.media
  */
 var media = require('angular').module('pulsar.media', [
-        require('modular-adal-angular')
-    ]);
+    require('../config.module').name,
+    require('angular-cookies')
+]);
 
 require('./media.constants');
 
@@ -26,29 +27,21 @@ require('./media-library.svc');
 require('./source.factory');
 require('./source.Pulsar.factory');
 require('./source.SoundCloud.factory');
+require('./groove-auth.svc');
 require('./source.Groove.factory');
 
-media.config([
-    //'$routeProvider',
-    '$httpProvider',
-    'adalAuthenticationServiceProvider',
-    mediaConfig
-]).run(['media.Library', function (MediaLibrary) {
+media.config(['config.PathProvider', 'config.Env', function(pathProvider, Env){
+    var base = 'assets/audio/';
+    pathProvider.addPath('media', {
+        Base: base,
+        ReverbImpulse: base + '/reverb-impulses/',
+        Song: Env === 'dev' ? base + 'songs/' : 'http://thunderlab.net/pulsar-media/songs/',
+        Effect: base + 'effects/',
+        Tracks: 'assets/data/localAudio.json'
+    });
+}]).run(['media.Library', function (MediaLibrary) {
     MediaLibrary.init();
 }]);
-
-function mediaConfig($httpProvider, adalProvider){
-    adalProvider.init({
-        // Use this value for the public instance of Azure AD
-        instance: 'https://login.microsoftonline.com/',
-        // The 'common' endpoint is used for multi-tenant applications like this one
-        tenent: 'common',
-
-        clientId: '5e289711-ad30-47c4-9be8-e17a4325a143',
-
-        anonymousEndpoints: ['/','/flare','/warp']
-    }, $httpProvider);
-}
 
 /**
  * @type {IModule}

@@ -30,6 +30,14 @@
                 this._ready = this.loadCachedTracks();
             }
 
+            deactivate(){
+                this._active = false;
+            }
+
+            activate(){
+                this._active = true;
+            }
+
             /**
              * Indicates if the source is active and should be used for searches
              * @returns {boolean}

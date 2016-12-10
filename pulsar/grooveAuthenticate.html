@@ -6,7 +6,8 @@
     <script>
         function getUrlParams(){
             var params = {};
-            location.search.split('&').forEach(param => {
+            var hash = window.location.hash.replace('#', '');
+            hash.split('&').forEach(param => {
                 var kvp = param.split('=');
                 params[kvp[0]] = kvp[1];
             });
@@ -15,12 +16,13 @@
 
         if(parent){
             var params = getUrlParams();
-            var token = params.access_token;
-            parent.resolveGrooveAccessToken(token);
+            params._message = 'grooveAuth';
+            window.opener.postMessage(params, window.location.origin);
+            self.close();
         }
     </script>
 </head>
 <body>
-<h2>Authenticating...</h2>
+<h2 style="font-family: Arial, sans-serif">Authenticating...</h2>
 </body>
 </html>

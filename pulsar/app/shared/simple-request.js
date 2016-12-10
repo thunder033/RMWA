@@ -43,15 +43,29 @@ function HttpConfig(params)
     var queryString = '';
     if(typeof params.queryParams === 'object' && params.queryParams !== null){
         queryString = params.url.indexOf('?') > -1 ? '&' : '?';
-        queryString += Object.keys(params.queryParams).map(key => {
-            return `${key}=${encodeURIComponent(params.queryParams[key])}`;
-        }).join('&');
+        queryString += HttpConfig.getQueryString(params.queryParams);
     }
 
     this.url = params.url + queryString;
     this.responseType = params.responseType || XMLHttpRequest.responseType;
 }
 
+/**
+ * Encode a map into a query string
+ * @param {Object} params
+ * @returns {string} URI query string
+ */
+HttpConfig.getQueryString = function(params){
+    return Object.keys(params).map(key => {
+        return `${key}=${encodeURIComponent(params[key])}`;
+    }).join('&');
+};
+
+/**
+ * Execute a GET request on the URL
+ * @param {string} url
+ * @returns {HttpConfig}
+ */
 HttpConfig.get = function(url){
     return new HttpConfig({url: url});
 };

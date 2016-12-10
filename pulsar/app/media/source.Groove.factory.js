@@ -8,17 +8,22 @@ require('angular').module('pulsar.media').factory('media.source.Groove', [
     'simple-request.HttpConfig',
     'media.AudioClip',
     'media.const.Type',
-    'adalAuthenticationService',
-    '$rootScope',
+    'media.GrooveAuth',
+    'config.Path',
     sourceGrooveFactory
 ]);
 
-function sourceGrooveFactory(Source, HttpConfig, AudioClip, MediaType, adalAuth, $rootScope){
-
-    $rootScope.$on('adal:loginSuccess', function () {
-        console.log('ms success');
-        //$scope.testMessage = "loginSuccess";
-    });
+/**
+ *
+ * @param Source
+ * @param HttpConfig
+ * @param AudioClip
+ * @param MediaType
+ * @param {GrooveAuth} GrooveAuth
+ * @param {config.Path} Path
+ * @returns {Groove}
+ */
+function sourceGrooveFactory(Source, HttpConfig, AudioClip, MediaType, GrooveAuth, Path){
 
 
     function trackCompare(a, b)
@@ -38,7 +43,38 @@ function sourceGrooveFactory(Source, HttpConfig, AudioClip, MediaType, adalAuth,
 
         constructor(){
             super('Groove');
-            this.apiUrl = 'http://thunderlab.net/pulsar-media/api/groove/';
+            this.apiUrl = `${Path.api}/groove/`;
+
+            if(!GrooveAuth.isAuthenticated()){
+                //this.deactivate();
+            }
+        }
+
+        /**
+         * Only active the groove service if we can authenticate with Microsoft AD
+         */
+        activate(){
+            if(!GrooveAuth.isAuthenticated()){
+                GrooveAuth.login().then(()=>{
+                    Source.queueRequest(new HttpConfig({
+                        url: `${this.apiUrl}subscription`,
+                        queryParams: {authToken: GrooveAuth.getAccessToken()}
+                    })).then(resp => {
+                        if(resp.HasSubscription === true){
+                            console.log('Has Groove Music Pass');
+                            super.activate();
+                        }
+                        else {
+                            console.warn('No Groove Music Pass');
+                            //GrooveAuth.logout();
+                            super.activate();
+                        }
+                    });
+                });
+            }
+            else {
+                super.activate();
+            }
         }
 
         search(params) {
@@ -47,26 +83,10 @@ function sourceGrooveFactory(Source, HttpConfig, AudioClip, MediaType, adalAuth,
                 return super.search(params);
             }
 
-            console.log($rootScope.userInfo);
-            if(!$rootScope.userInfo || !$rootScope.userInfo.isAuthenticated){
-                adalAuth.login();
-            }
-            else {
-                console.log('getting a token');
-                adalAuth.acquireToken('http://music.xboxlive.com', function(token){
-                    console.log('got a token');
-                    console.log(token);
-                });
-            }
+            this.activate();
 
             var url = this.getRequestUrl('search', {term: params.term});
 
-            /**
-             * http://localhost:63342/RMWA/pulsar/index.html#
-             * id_token=eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6IlJyUXF1OXJ5ZEJWUldtY29jdVhVYjIwSEdSTSIsImtpZCI6IlJyUXF1OXJ5ZEJWUldtY29jdVhVYjIwSEdSTSJ9.eyJhdWQiOiI1ZTI4OTcxMS1hZDMwLTQ3YzQtOWJlOC1lMTdhNDMyNWExNDMiLCJpc3MiOiJodHRwczovL3N0cy53aW5kb3dzLm5ldC85MTg4MDQwZC02YzY3LTRjNWItYjExMi0zNmEzMDRiNjZkYWQvIiwiaWF0IjoxNDgxMjU4NDQ1LCJuYmYiOjE0ODEyNTg0NDUsImV4cCI6MTQ4MTI2MjM0NSwiYW1yIjpbInB3ZCJdLCJlbWFpbCI6ImNyYXNodGVzdDFAbGl2ZS5jb20iLCJmYW1pbHlfbmFtZSI6IlJvem1hcnlub3d5Y3oiLCJnaXZlbl9uYW1lIjoiR3JlZyIsImlkcCI6ImxpdmUuY29tIiwiaXBhZGRyIjoiMTI5LjIxLjI4LjM2IiwibmFtZSI6IkdyZWcgUm96bWFyeW5vd3ljeiIsIm5vbmNlIjoiN2VlYTI0NDQtNzIxZC00MzM5LWE3OWItODIzNTZkNjFmMjY0Iiwib2lkIjoiMGEzNzY2OTMtOGRhZS00NjU2LWE4OTYtYjBkY2M0NTU1ZDQwIiwicGxhdGYiOiIzIiwic3ViIjoiZFpHby1oRWF5ekdUNUprTzlwb0pCN295S29raWZ5QjZxWjd0NHZtSGYyQSIsInRpZCI6IjkxODgwNDBkLTZjNjctNGM1Yi1iMTEyLTM2YTMwNGI2NmRhZCIsInVuaXF1ZV9uYW1lIjoibGl2ZS5jb20jY3Jhc2h0ZXN0MUBsaXZlLmNvbSIsInZlciI6IjEuMCJ9.QvvYdqAr4YfHgBsoUdoEFtaX2ayNB-ZtFjSWKTaVpPS6sdaRqYdpMb3LIdhCZfRfGxd-jK2VmehJ8rTcXtkxirXMcNtVXILBAYcJYJwz2jydyO54YGG6OGByF8DoQcXOJLjlSr8nf87ZnwecpqQuMKOwSI4NU78JQv3GipxLSpsAKlxRotxsJ-O9XUkwmiQzHSzvUsYJmO8Pc3e-o9v1rVy738N_R22_aNzyVXFDGtON_6LxV31tgXMSZNSd8yOErOkBn1iOk7rRFSEZQrsl-MMS6_3ELlXCpyJwgP3Q7O-QGSHTIxFhJI-87Wifm0gi6iku8B9vdzlxdCSxnQvn8g
-             * &state=1b1459a6-e437-464e-b1e3-05b55a0dae2a
-             * &session_state=2abdd3b8-c409-4e7a-b38e-6a4814f81a22
-             */
             return Source.queueRequest(HttpConfig.get(url))
                 .then(getTracks)
                 .then(results => {
@@ -92,11 +112,11 @@ function sourceGrooveFactory(Source, HttpConfig, AudioClip, MediaType, adalAuth,
             // Example SoundCloud URI (using proxy script)
             // http://thunderlab.net/pulsar-media/api/soundcloud/tracks/231543423
             return super.getRawBuffer(new HttpConfig({
-                queryParams: {
-                    authToken: '',
-                    clientInstanceId: ''
-                },
                 url: url,
+                queryParams: {
+                    authToken: GrooveAuth.getAccessToken(),
+                    clientInstanceId: GrooveAuth.getClientId()
+                },
                 responseType: 'arraybuffer'
             }));
         }
