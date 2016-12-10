@@ -25,4 +25,4 @@ general:
     - "dist.tar.gz"
 notify:
   webhooks:
-    - url: http://thunderlab.net/deployRMWA.php
+    - url: https://thunderlab.net/deployRMWA.php

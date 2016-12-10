@@ -35,7 +35,7 @@ media.config(['config.PathProvider', 'config.Env', function(pathProvider, Env){
     pathProvider.addPath('media', {
         Base: base,
         ReverbImpulse: base + '/reverb-impulses/',
-        Song: Env === 'dev' ? base + 'songs/' : 'http://thunderlab.net/pulsar-media/songs/',
+        Song: Env === 'dev' ? base + 'songs/' : 'https://thunderlab.net/pulsar-media/songs/',
         Effect: base + 'effects/',
         Tracks: 'assets/data/localAudio.json'
     });
