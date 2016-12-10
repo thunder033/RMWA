@@ -7,20 +7,20 @@
     require('angular').module('mallet').service('mallet.AsyncRequest', [
         'mallet.Thread',
         '$q',
+        'config.Path',
         asyncRequestFactory]);
-
-    var basePath = '../';
 
     /**
      * Provides a simple set of interfaces for making HTTP requests through web workers
-     * @param Thread
+     * @param {mallet.Thread} Thread
      * @param $q
+     * @param {config.Path} Path
      * @returns {{send: createRequest, createRequestPool: createRequestPool}}
      */
-    function asyncRequestFactory(Thread, $q){
+    function asyncRequestFactory(Thread, $q, Path){
 
         //TODO: make this a variable somehow...maybe mallet config
-        var asyncScript = 'dist/asyncHttpRequest.js';
+        var asyncScript = 'asyncHttpRequest';
 
         /**
          * Finds an idle thread in the pool, if there are any
@@ -51,7 +51,7 @@
 
             // Create thread pool of specified size
             for(var o = 0; o < (size || 1); o++) {
-                threads.push(Thread.create(asyncScript));
+                threads.push(Thread.create(Path.forScript(asyncScript)));
             }
 
             /**
@@ -113,11 +113,11 @@
          * @returns {RequestPool}
          */
         function createRequestPool(threadCount, base){
-            return new RequestPool(threadCount, base || basePath);
+            return new RequestPool(threadCount, base || Path.relativeBase);
         }
 
         //Create a default request pool for arbitrary usage
-        var defaultPool = createRequestPool(1, basePath);
+        var defaultPool = createRequestPool(1, Path.relativeBase);
 
         /**
          * Sends a request using the default async pool

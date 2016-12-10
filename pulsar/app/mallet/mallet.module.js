@@ -3,6 +3,7 @@
  */
 'use strict';
 var math = require('./math.svc'),
+    config = require('../config.module'),
     constants = require('./mallet.constants'),
     simpleRequest = require('../shared/simple-request');
 
@@ -12,6 +13,7 @@ var math = require('./math.svc'),
  */
 var mallet = require('angular')
     .module('mallet', [
+        config.name,
         constants.name,
         math.name,
         simpleRequest.name]);

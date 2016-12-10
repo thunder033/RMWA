@@ -1,14 +1,15 @@
-/**
- * Created by gjr8050 on 10/24/2016.
- */
+
 (()=>{
     'use strict';
+    /**
+     * Client for a web worker
+     * @class Thread
+     */
     angular.module('mallet').factory('mallet.Thread', ['$q', threadFactory]);
 
     function threadFactory($q){
 
         /**
-         * Client for a web worker
          * @param {string} script name of the file to use in the worker
          * @constructor
          */

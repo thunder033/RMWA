@@ -100,8 +100,11 @@ module.exports = function(grunt){
         },
         uglify: {
             dist: {
-                src: 'pulsar/dist/bundle.js',
-                dest: 'pulsar/dist/bundle.min.js'
+                files: {
+                    'pulsar/dist/bundle.min.js': ['pulsar/dist/bundle.js'],
+                    'pulsar/dist/asyncHttpRequest.min.js': ['pulsar/dist/asyncHttpRequest.js'],
+                    'pulsar/dist/generateAudioField.min.js': ['pulsar/dist/generateAudioField.js']
+                }
             }
         },
         compress: {
@@ -110,12 +113,6 @@ module.exports = function(grunt){
                     mode: 'gzip'
                 },
                 files: [{
-                    expand: true,
-                    cwd: 'pulsar/dist/',
-                    src: ['**/*.js'],
-                    dest: 'pulsar/dist',
-                    ext: '.js.gz'
-                }, {
                     expand: true,
                     cwd: 'pulsar/dist/',
                     src: ['**/*.min.js'],

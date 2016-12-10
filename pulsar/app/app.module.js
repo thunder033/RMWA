@@ -14,6 +14,7 @@ var angular = require('angular'),
     simpleRequest = require('./shared/simple-request'),
 
     //Pulsar modules
+    config = require('./config.module'),
     constants = require('./app.constants'),
     shared = require('./shared'),
     audio = require('./audio'),
@@ -22,6 +23,7 @@ var angular = require('angular'),
     warp = require('./warp');
 
 var app = angular.module('pulsar', [
+    config.name,
     constants.name,
     shared.name,
     mallet.name,

@@ -9,14 +9,14 @@
         'simple-request.HttpConfig',
         'media.AudioClip',
         'media.const.Type',
-        'media.const.Path',
+        'config.Path',
         '$q',
         sourcePulsarFactory]);
 
     /**
      * @returns {Pulsar}
      */
-    function sourcePulsarFactory(Source, AsyncRequest, HttpConfig, AudioClip, MediaType, MediaPath, $q){
+    function sourcePulsarFactory(Source, AsyncRequest, HttpConfig, AudioClip, MediaType, Path, $q){
 
         /**
          * @extends Source
@@ -38,13 +38,13 @@
 
                 //Request the local track listing, these tracks are permanently "cached"
                 return AsyncRequest.send(new HttpConfig({
-                    url: MediaPath.Tracks
+                    url: Path.media.Tracks
                 })).then(trackList => {
                     //Parse each track in the list
                     return $q.all(trackList.map(track => {
                         var type = track.type || MediaType.Song,
                             fileName = track.name || track,
-                            url = MediaPath[type] + fileName;
+                            url = Path.media[type] + fileName;
 
                         //ensure the track exists before loading it
                         return Source.queueRequest(new HttpConfig({

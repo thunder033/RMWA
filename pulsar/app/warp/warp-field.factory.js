@@ -7,12 +7,12 @@
         'mallet.Thread',
         'audio.DataUtils',
         'mallet.const.SampleCount',
-        'pulsar.const.Path',
+        'config.Path',
         Field]);
 
     function Field(Thread, DataUtils, SampleCount, Path){
         //Create a web worker with the analysis script
-        var fieldGenerator = Thread.create(Path.Assets + 'generateAudioField.js');
+        var fieldGenerator = Thread.create(Path.forScript('generateAudioField'));
 
         /**
          * A WarpField defines a level in Warp, generated from an audio file

@@ -8,16 +8,17 @@ require('angular').module('pulsar.media').factory('media.source.SoundCloud', [
     'simple-request.HttpConfig',
     'media.const.Type',
     'media.AudioClip',
+    'config.Path',
     sourceSoundCloudFactory
 ]);
 
-function sourceSoundCloudFactory(Source, HttpConfig, MediaType, AudioClip){
+function sourceSoundCloudFactory(Source, HttpConfig, MediaType, AudioClip, Path){
 
     class SoundCloud extends Source {
 
         constructor() {
             super('SoundCloud');
-            this.apiUrl = 'http://thunderlab.net/pulsar-media/api/soundcloud/';
+            this.apiUrl = `${Path.api}/soundcloud/`;
         }
 
         search(params) {
