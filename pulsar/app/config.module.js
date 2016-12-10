@@ -49,10 +49,12 @@ function PathProvider(Env) {
         }
     }
 
+    var protocol = Env === 'dev' ? 'http://' : 'https://'; 
     var paths = {
-        host: Env === 'dev' ? 'http://localhost:63342' : 'http://thunderlab.net',
+        protocol: protocol,
+        host: Env === 'dev' ? `${protocol}localhost:63342` : `${protocol}thunderlab.net`,
         appPath: getPathBase(Env),
-        api: 'http://thunderlab.net/pulsar-media/api',
+        api: `${protocol}thunderlab.net/pulsar-media/api`,
         scriptModifier: getScriptModifier(Env),
         relativeBase: '../',
 

@@ -8,7 +8,7 @@ function buildPath(args) {
 }
 
 function getLastCommit(user, repo, branch){
-    var githubUrl = "http://api.github.com/repos";
+    var githubUrl = "https://api.github.com/repos";
     var queryPath  = 'commits';
     var queryUri = buildPath([githubUrl, user, repo, queryPath]) + "?sha=" + encodeURIComponent(branch);
 
