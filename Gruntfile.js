@@ -72,6 +72,7 @@ module.exports = function(grunt){
                     'pulsar/dist/**/*.gz',
                     'pulsar/dist/fonts/*',
                     'pulsar/index.html',
+                    'pulsar/grooveAuthenticate.html',
                     'pulsar/assets/**',
                     'pulsar/views/**',
                     // Prod audio files are stored in an external directory
@@ -88,7 +89,6 @@ module.exports = function(grunt){
 
                     '.htaccess',
                     'index.html',
-                    'grooveAuthenticate.html',
                     'LICENSE',
                     'package.json'
                 ], dest: '.tmp'}]

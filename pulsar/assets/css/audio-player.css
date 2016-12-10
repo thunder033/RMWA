@@ -58,7 +58,7 @@
 
 .audio-player .ap-seek-back {
     position: relative;
-    top: 4.35em;
+    top: 4em;
     margin-right: -1.75em;
     float: left;
     z-index: 5;

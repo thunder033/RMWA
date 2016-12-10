@@ -3,7 +3,7 @@
  */
 
 /**
- * Utilities and services for working with web audio
+ * Utilities and services for playback and analysis of audio
  * @module pulsar.audio
  */
 var audio = require('angular')
