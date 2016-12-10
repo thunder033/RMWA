@@ -132,6 +132,10 @@ module.exports = function(grunt){
             css: {
                 files: ['pulsar/assets/css/*.css'],
                 tasks: ['cssmin']
+            },
+            js: {
+                files: ['pulsar/app/**/*.js'],
+                tasks: ['jshint:all','browserify:dev']
             }
         }
     });
