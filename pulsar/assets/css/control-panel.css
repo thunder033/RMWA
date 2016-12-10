@@ -123,9 +123,12 @@ html, body {
     margin-bottom: .5em;
 }
 
+.cp-container {
+    margin-top: .5em;
+}
+
 .cp-container ul {
     background: #2a2a2a;
-    margin: .5em 0 0;
 }
 
 .cp-button {
@@ -135,9 +138,15 @@ html, body {
     background: #555;
     box-shadow: 0 0 1px #bbb;
     color: #fff;
+    font-family: 'Cuprum', "Century Gothic", sans-serif;
 }
 
-.cp-button-small {
+.cp-button-md {
+    padding: .4em;
+    border-radius: .25em;
+}
+
+.cp-button-round-sm {
     width: 2.5em;
     height: 2.5em;
     border-radius: 1.25em;
