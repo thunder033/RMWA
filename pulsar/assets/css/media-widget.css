@@ -16,14 +16,63 @@
     border: 0;
     font-size: inherit;
     z-index: 4;
+    margin-right: 4.5em;
 }
 
 .mw-search-icon {
     position: absolute;
     font-size: inherit;
-    right: .3em;
+    right: 5.8em;
     top: .4em;
     z-index: 2;
+}
+
+.mw-source-toggle {
+    position: absolute;
+    top: 0;
+    right: 0;
+    font-size: .8em;
+    padding: .5em;
+    box-sizing: border-box;
+    width: 5.2em;
+}
+
+.mw-source-toggle.expanded {
+    background: #2a2a2a;
+}
+
+.mw-sources {
+    position: absolute;
+    top: 0;
+    right: 0;
+    box-sizing: border-box;
+    text-align: right;
+    border-left: 1px #999 solid;
+    padding-left: .15em;
+}
+
+.mw-source {
+    display: inline-block;
+    padding: .15em .15em 0 0;
+    position: relative;
+}
+
+.mw-working {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin: -.475em 0 0 -.61em;
+    color: #fff;
+    text-shadow: 0 0 2px #555;
+}
+
+.mw-source.inactive {
+    opacity: .5;
+}
+
+.mw-source img {
+    border-radius: .3em;
+    max-height: 1.6em;
 }
 
 .mw-queue-options {
@@ -96,4 +145,3 @@
 .mw-queue-option .fa-stack {
 
 }
-

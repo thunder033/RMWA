@@ -26,6 +26,7 @@
                 this._cachedTracks = [];
                 this._tracks = {};
                 this._active = true;
+                this._opCount = 0;
 
                 this._ready = this.loadCachedTracks();
             }
@@ -36,6 +37,19 @@
 
             activate(){
                 this._active = true;
+            }
+
+            toggleActive(){
+                if(this.isActive()){
+                    this.deactivate();
+                }
+                else {
+                    this.activate();
+                }
+            }
+
+            isWorking(){
+                return this._opCount > 0;
             }
 
             /**
@@ -116,8 +130,10 @@
              * @returns {Promise.<Object>|*}
              * @protected
              */
-            static queueRequest(config){
-                return requestPool.send(config);
+            queueRequest(config){
+                this._opCount++;
+                return requestPool.send(config)
+                    .finally(()=>this._opCount--);
             }
 
             /**
@@ -126,7 +142,9 @@
              * @returns {Promise<ArrayBuffer>}
              */
             getRawBuffer(config) {
-                return requestPool.send(config);
+                this._opCount++;
+                return requestPool.send(config)
+                    .finally(()=>this._opCount--);
             }
 
             /**

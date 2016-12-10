@@ -3,8 +3,22 @@
     <div class="mw-search">
         <input type="text" class="mw-search-input" ng-model="model.search" placeholder="Search" ng-model-options="{debounce: 500}">
         <span class="fa fa-search mw-search-icon text-primary"></span>
-    </div>
 
+        <!--<button class="mw-source-toggle cp-button cp-button-md">-->
+            <!--<span class="fa fa-plus"></span>-->
+            <!--<span>Sources</span>-->
+        <!--</button>-->
+        <div class="mw-sources">
+            <div class="mw-source"
+                 ng-repeat="source in sources"
+                 ng-class="[{inactive: !source.isActive()}]"
+                 ng-click="source.toggleActive()"
+                 title="{{source.getName()}}">
+                <span ng-if="source.isWorking()" class="mw-working fa fa-circle-o-notch fa-spin"></span>
+                <img ng-src="{{source.getIcon()}}" alt="{{source.getName()}}">
+            </div>
+        </div>
+    </div>
 
     <label class="cp-control-title">Queue Action</label>
     <div class="mw-queue-options">

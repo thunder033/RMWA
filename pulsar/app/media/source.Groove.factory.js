@@ -46,7 +46,7 @@ function sourceGrooveFactory(Source, HttpConfig, AudioClip, MediaType, GrooveAut
             this.apiUrl = `${Path.api}/groove/`;
 
             if(!GrooveAuth.isAuthenticated()){
-                //this.deactivate();
+                this.deactivate();
             }
         }
 
@@ -56,7 +56,7 @@ function sourceGrooveFactory(Source, HttpConfig, AudioClip, MediaType, GrooveAut
         activate(){
             if(!GrooveAuth.isAuthenticated()){
                 GrooveAuth.login().then(()=>{
-                    Source.queueRequest(new HttpConfig({
+                    this.queueRequest(new HttpConfig({
                         url: `${this.apiUrl}subscription`,
                         queryParams: {authToken: GrooveAuth.getAccessToken()}
                     })).then(resp => {
@@ -66,6 +66,7 @@ function sourceGrooveFactory(Source, HttpConfig, AudioClip, MediaType, GrooveAut
                         }
                         else {
                             console.warn('No Groove Music Pass');
+                            //Since were only doing previews, don't have to worry about music pass...
                             //GrooveAuth.logout();
                             super.activate();
                         }
@@ -87,7 +88,7 @@ function sourceGrooveFactory(Source, HttpConfig, AudioClip, MediaType, GrooveAut
 
             var url = this.getRequestUrl('search', {term: params.term});
 
-            return Source.queueRequest(HttpConfig.get(url))
+            return this.queueRequest(HttpConfig.get(url))
                 .then(getTracks)
                 .then(results => {
                     //Parse each track in the list

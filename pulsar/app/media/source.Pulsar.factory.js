@@ -47,7 +47,7 @@
                             url = Path.media[type] + fileName;
 
                         //ensure the track exists before loading it
-                        return Source.queueRequest(new HttpConfig({
+                        return this.queueRequest(new HttpConfig({
                             method: 'HEAD',
                             url: url
                         })).then(()=>{

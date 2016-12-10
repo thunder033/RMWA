@@ -19,9 +19,10 @@ function mediaWidgetDirective(){
         link: function(){
 
         },
-        controller: ['$scope', 'media.PlayQueue', 'media.Playlist', 'media.const.Type', 'media.Library', function ($scope, PlayQueue, Playlist, MediaType, MediaLibrary) {
+        controller: ['$scope', 'media.PlayQueue', 'media.Playlist', 'media.const.Type', 'media.Library', 'media.Source', function ($scope, PlayQueue, Playlist, MediaType, MediaLibrary, Source) {
 
             $scope.playlist = new Playlist();
+            $scope.sources = Source.getSources();
 
             //Retrieve initial set of songs from the media library
             MediaLibrary.isReady()
@@ -31,12 +32,12 @@ function mediaWidgetDirective(){
             $scope.queueOptions = [
                 {value: PlayQueue.PlayNext, name: 'Play Next', icon: ''},
                 {value: PlayQueue.PlayNow, name: 'Play Now', icon: ''},
-                {value: PlayQueue.QueueEnd, name: 'Add to Queue', icon: ''},
+                {value: PlayQueue.QueueEnd, name: 'Add to Queue', icon: ''}
             ];
 
             $scope.model = {
                 queueMode: PlayQueue.PlayNext,
-                search: '',
+                search: ''
             };
 
             /**
