@@ -27,6 +27,10 @@ class IPlayable {
         throw new Error('not implemented');
     }
 
+    getDuration() {
+        throw new Error('not implemented');
+    }
+
     /**
      * @returns {IPromise<AudioBuffer>|Promise} an audio buffer to play
      */

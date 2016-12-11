@@ -52,6 +52,7 @@
              * @param {string} [params.artist='Unknown']
              * @param {string} [params.deepLink='']
              * @param {string} [params.album='']
+             * @param {number} [params.duration] The length of the clip in seconds
              * @constructor
              */
             constructor(params) {
@@ -66,6 +67,7 @@
                     this.clip = null;
                     this.buffer = null;
                     this.source = params.source;
+                    this.duration = params.duration;
 
                     this.rank = params.sourceRank || 0;
 
@@ -78,6 +80,14 @@
                 else {
                     throw new ReferenceError('Cached Clips not yet supported');
                 }
+            }
+
+            getDuration(){
+                if(!this.duration && this.buffer !== null){
+                    return this.buffer.duration;
+                }
+                
+                return this.duration || NaN;
             }
 
             /**

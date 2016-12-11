@@ -46,6 +46,12 @@ function playlistFactory(MediaState, IPlayable){
             this._it = this._queue.getIterator();
         }
 
+        getDuration(){
+            return this._queue.asArray().reduce((duration, clip) => {
+                return duration + (clip.getDuration() || 0);
+            }, 0);
+        }
+
         getName() {
             return 'Playlist';
         }

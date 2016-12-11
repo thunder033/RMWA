@@ -3,6 +3,7 @@
         <li class="clearfix" ng-class="[clip.state, {playing: isPlaying(clip.id)}]" ng-repeat="clip in clipList" ng-click="playClip(clip)">
             <img class="source-icon" ng-src="{{clip.source.getIcon()}}" title="Source: {{clip.source.getName()}}" alt="{{clip.source.getName()}}">
             <span class="track-title"><span ng-bind="clip.name"></span></span>
+            <span class="track-length" ng-if="clip.getDuration()">{{ clip.getDuration() | secondsToDate | date:'m:ss' }}</span>
             <loader-icon ng-if="clip.state === 'Buffering'"></loader-icon>
         </li>
     </ul>

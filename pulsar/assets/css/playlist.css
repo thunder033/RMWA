@@ -21,6 +21,18 @@
     background: #555;
 }
 
+.playlist li .track-title {
+    display: inline-block;
+    width: 16em;
+    padding: .2em;
+    vertical-align: top;
+}
+
+.playlist li .track-length {
+    display: inline-block;
+    padding: .2em;
+}
+
 .playlist li.playing {
     font-weight: bold;
     color: #ccffcc;

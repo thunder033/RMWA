@@ -39,6 +39,17 @@ function sourceGrooveFactory(Source, HttpConfig, AudioClip, MediaType, GrooveAut
         return artists.map(artist => artist.Artist.Name).join(', ');
     }
 
+    /**
+     * Convert a time string to a duration in seconds
+     * @param {string} time
+     * @returns {number}
+     */
+    function getSeconds(time){
+        return time.split(':')
+            .reverse()
+            .reduce((dur, unit, i)=>dur + (unit || 0) * (i * 60 | 1), 0);
+    }
+
     class Groove extends Source {
 
         constructor(){
@@ -102,6 +113,7 @@ function sourceGrooveFactory(Source, HttpConfig, AudioClip, MediaType, GrooveAut
                             artist: getArtistString(track.Artists),
                             deepLink: track.Link,
                             album: track.Album.Name,
+                            duration: getSeconds(track.Duration),
                             uri: `${this.apiUrl}/tracks/${track.Id}/stream`
                         });
                     });

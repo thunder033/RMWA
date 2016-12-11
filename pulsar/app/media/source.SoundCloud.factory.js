@@ -33,6 +33,14 @@ function sourceSoundCloudFactory(Source, HttpConfig, MediaType, AudioClip, Path)
                 return parseInt(a.playback_count) > parseInt(b.playback_count) ? -1 : 1;
             }
 
+            function getUser(track)
+            {
+                if(track && track.user && track.user.username){
+                    return track.user.username;
+                }
+
+                return '';
+            }
             return this.queueRequest(HttpConfig.get(url))
                 .then(results => {
                     //Parse each track in the list
@@ -43,6 +51,9 @@ function sourceSoundCloudFactory(Source, HttpConfig, MediaType, AudioClip, Path)
                             sourceId: track.id,
                             name: track.title,
                             type: MediaType.Song,
+                            artist: getUser(track),
+                            deepLink: track.permalink_url,
+                            duration: parseInt(track.duration / 1000),
                             uri: track.stream_url
                         });
                     });
