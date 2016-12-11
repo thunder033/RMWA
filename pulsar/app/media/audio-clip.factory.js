@@ -91,6 +91,25 @@
             }
 
             /**
+             * Returns a string with the artist and album
+             */
+            getInfo(){
+                var info = '';
+                info += this.artist ? this.artist : '';
+                info += this.artist && this.album ? ' - ' : '';
+                info += this.album ? this.album : '';
+                return info;
+            }
+
+            /**
+             * Return the location of the original source content
+             * @returns {string|string|*}
+             */
+            getDeepLink(){
+                return this.deepLink;
+            }
+
+            /**
              * The relative importance of the track, 0 - 10, where 0 is better
              * @returns {number}
              */

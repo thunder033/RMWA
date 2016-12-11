@@ -27,7 +27,17 @@ class IPlayable {
         throw new Error('not implemented');
     }
 
+    /**
+     * Get the duration of the item in seconds
+     */
     getDuration() {
+        throw new Error('not implemented');
+    }
+
+    /**
+     * Get info about the item such as artist and album
+     */
+    getInfo() {
         throw new Error('not implemented');
     }
 

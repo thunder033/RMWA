@@ -58,7 +58,7 @@
 
 .audio-player .ap-seek-back {
     position: relative;
-    top: 4em;
+    top: 3.9em;
     margin-right: -1.75em;
     float: left;
     z-index: 5;
@@ -102,9 +102,22 @@
     100% { transform: translate(-100%, 0); }
 }
 
-.timestamp {
+.ap-clip-info {
+    font-size: .9em;
+    display: block;
+    height: 1em;
+}
+
+.ap-deep-link {
+    font-size: .9em;
+}
+
+.ap-timestamp {
     font-size: .9em;
     font-family: "Droid Sans Mono", "Courier New",  monospace ;
+    padding: .2em;
+    float: right;
+    margin-right: 1em;
 }
 
 .play-button.stopped:hover,

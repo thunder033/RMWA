@@ -56,6 +56,10 @@ function playlistFactory(MediaState, IPlayable){
             return 'Playlist';
         }
 
+        getInfo() {
+            return '';
+        }
+
         /**
          * Adds a new track to the end of the list
          * @param clip

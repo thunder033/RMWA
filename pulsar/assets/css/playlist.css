@@ -33,6 +33,12 @@
     padding: .2em;
 }
 
+.playlist .track-info {
+    display: block;
+    font-size: .8em;
+    padding-left: .3em;
+}
+
 .playlist li.playing {
     font-weight: bold;
     color: #ccffcc;
