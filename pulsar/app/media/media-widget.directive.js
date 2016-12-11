@@ -40,6 +40,11 @@ function mediaWidgetDirective(){
                 search: ''
             };
 
+            $scope.toggleActive = function(source){
+                source.toggleActive();
+                $scope.search();
+            };
+
             /**
              * Add a clip to the play queue the the user-selected queue mode
              * @param clip

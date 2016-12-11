@@ -9,14 +9,13 @@
 }
 
 .mw-search-input {
-    padding: .4em;
+    padding: .4em 7em .4em .4em;
     width: 100%;
     box-sizing: border-box;
     background: transparent;
     border: 0;
     font-size: inherit;
     z-index: 4;
-    margin-right: 4.5em;
 }
 
 .mw-search-icon {
@@ -53,14 +52,14 @@
 
 .mw-source {
     display: inline-block;
-    padding: .15em .15em 0 0;
+    padding: .2em .15em 0 0;
     position: relative;
     cursor: pointer;
     transition: transform .3s;
 }
 
 .mw-source:hover {
-    transform: scale(1.05, 1.05);
+    transform: scale(1.08, 1.08);
     transition: transform .3s;
 }
 

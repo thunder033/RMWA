@@ -15,10 +15,10 @@ html, body {
 .cp-logo {
     position: fixed;
     transform: translate(12.5em, 0);
-    margin: -4em 0 0 -11em;
+    margin: -3em 0 0 -11em;
     top: 50%;
     left: 50%;
-    height: 8em;
+    height: 6em;
     width: 22em;
     text-align: center;
     opacity: 0;
@@ -36,6 +36,7 @@ html, body {
     display: inline-block;
     vertical-align: baseline;
     margin-left: .03em;
+    text-shadow: 0 0 1px #555;
 }
 
 .cp-logo img {
@@ -48,6 +49,7 @@ html, body {
     top: .15em;
     border-radius: .3em;
     border: .2em #ddd solid;
+    box-shadow: 0 0 1px #555;
 }
 
 .control-panel h4 .fa {

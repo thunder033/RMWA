@@ -12,8 +12,8 @@
             <div class="mw-source"
                  ng-repeat="source in sources"
                  ng-class="[{inactive: !source.isActive()}]"
-                 ng-click="source.toggleActive()"
-                 title="{{source.getName()}}">
+                 ng-click="toggleActive(source)"
+                 title="{{source.getName()}} [{{source.isActive() ? 'Active' : 'Inactive'}}]">
                 <span ng-if="source.isWorking()" class="mw-working fa fa-circle-o-notch fa-spin"></span>
                 <img ng-src="{{source.getIcon()}}" alt="{{source.getName()}}">
             </div>
