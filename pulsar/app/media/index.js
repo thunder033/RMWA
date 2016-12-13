@@ -25,7 +25,7 @@ require('./playlist.directive');
 
 require('./media-library.svc');
 require('./source.factory');
-require('./source.Pulsar.factory');
+require('./source.Flare.factory.js');
 require('./source.SoundCloud.factory');
 require('./groove-auth.svc');
 require('./source.Groove.factory');

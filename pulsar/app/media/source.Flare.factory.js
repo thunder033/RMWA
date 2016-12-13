@@ -3,7 +3,7 @@
  */
 (()=>{
     'use strict';
-    angular.module('pulsar.media').factory('media.source.Pulsar', [
+    angular.module('pulsar.media').factory('media.source.Flare', [
         'media.Source',
         'mallet.AsyncRequest',
         'simple-request.HttpConfig',
@@ -14,16 +14,16 @@
         sourcePulsarFactory]);
 
     /**
-     * @returns {Pulsar}
+     * @returns {Flare}
      */
     function sourcePulsarFactory(Source, AsyncRequest, HttpConfig, AudioClip, MediaType, Path, $q){
 
         /**
          * @extends Source
          */
-        class Pulsar extends Source {
+        class Flare extends Source {
             constructor() {
-                super('Pulsar');
+                super('Flare');
             }
 
             /**
@@ -113,6 +113,6 @@
             }
         }
 
-        return new Pulsar();
+        return new Flare();
     }
 })();

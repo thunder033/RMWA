@@ -4,7 +4,7 @@
 angular.module('pulsar.media')
     .constant('media.const.Sources', Object.freeze({
         //{Source Name}: [enabled - true/false]
-        Pulsar: true,
+        Flare: true,
         SoundCloud: true,
         Groove: true
     }))
