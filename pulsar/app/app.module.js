@@ -20,13 +20,15 @@ var angular = require('angular'),
     audio = require('./audio'),
     media = require('./media'),
     flare = require('./flare'),
-    warp = require('./warp');
+    warp = require('./warp'),
+    home = require('./home');
 
 var app = angular.module('pulsar', [
     config.name,
     constants.name,
     shared.name,
     mallet.name,
+    home.name,
     flare.name,
     audio.name,
     warp.name,
@@ -37,9 +39,13 @@ var app = angular.module('pulsar', [
 ]).config(['$stateProvider', '$urlRouterProvider', function($stateProvider, $urlRouterProvider) {
     //message about error messages
     console.info('READMEEEEE: Any HEAD requests with status 404 are expected. Network errors cannot be suppressed through JavaScript.');
-    $urlRouterProvider.otherwise('/flare');
+    $urlRouterProvider.otherwise('/home');
 
-    $stateProvider.state('flare', {
+    $stateProvider.state('home', {
+        url: '/home',
+        templateUrl: 'views/home.html',
+        controller: 'home.HomeController'
+    }).state('flare', {
         url: '/flare',
         template: '<control-panel></control-panel><m-easel id="visualizer"></m-easel>',
         controller: 'flare.FlareController'

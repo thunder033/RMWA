@@ -12,7 +12,7 @@ html, body {
     box-sizing: border-box;
 }
 
-.cp-logo {
+.control-panel .ps-logo {
     position: fixed;
     transform: translate(12.5em, 0);
     margin: -3em 0 0 -11em;
@@ -25,12 +25,12 @@ html, body {
     transition: opacity .75s;
 }
 
-.cp-logo.visible {
+.ps-logo.visible {
     opacity: 1;
     transition: opacity .25s;
 }
 
-.cp-logo h2 {
+.ps-logo h2 {
     font-size: 6em;
     font-weight: bold;
     display: inline-block;
@@ -39,7 +39,7 @@ html, body {
     text-shadow: 0 0 1px #555;
 }
 
-.cp-logo img {
+.ps-logo img {
     vertical-align: baseline;
     height: 4.8em;
     width: 4.8em;

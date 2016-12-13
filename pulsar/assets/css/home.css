@@ -1,0 +1,34 @@
+.home {
+    text-align: center;
+    padding-top: 4em;
+}
+
+.home .ps-logo {
+    margin-bottom: 3rem;
+}
+
+.home a {
+    font-size: 4em;
+    font-weight: bold;
+    text-decoration: none;
+    color: #333;
+    background: #ddd;
+    padding: .25em;
+    border: 1px #777 solid;
+    border-radius: .1em;
+    transition: all .5s;
+    text-shadow: 0 0 1px #fff;
+    box-shadow: 1px 0 2px #555;
+}
+
+.home a:hover {
+    background: #fff;
+    transition: all .5s;
+}
+
+.home a img {
+    max-height: 1em;
+    margin-right: .25em;
+    vertical-align: top;
+}
+
