@@ -48,6 +48,31 @@
     text-align: right;
     border-left: 1px #999 solid;
     padding-left: .15em;
+    z-index: 2;
+}
+
+
+
+.mw-sources:before {
+    content: 'Click to toggle music sources:';
+    width: 0;
+    font-size: .8em;
+    color: #333;
+    vertical-align: top;
+    padding: .25em 0;
+    background: #ddd;
+    overflow: hidden;
+    transition: all .2s;
+    box-sizing: border-box;
+    display: inline-block;
+    opacity: 0;
+}
+
+.mw-sources:hover:before {
+    width: 6.5em;
+    padding-right: .5em;
+    opacity: 1;
+    transition: all .2s;
 }
 
 .mw-source {
