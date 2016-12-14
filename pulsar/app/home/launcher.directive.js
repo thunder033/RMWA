@@ -11,6 +11,9 @@ require('angular')
 function pulsarLauncherDirective(){
     return {
         restrict: 'E',
-        templateUrl: 'views/pulsarLauncher.html'
+        templateUrl: 'views/pulsar-launcher.html',
+        link: function () {
+            
+        }
     };
 }

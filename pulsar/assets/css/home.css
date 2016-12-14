@@ -23,6 +23,7 @@
 
 .home a:hover {
     background: #fff;
+    transform: scale(1.1, 1.1);
     transition: all .5s;
 }
 
@@ -32,3 +33,65 @@
     vertical-align: top;
 }
 
+.pulsar-launcher {
+    position: fixed;
+    top: .5em;
+    right: .5em;
+}
+
+.ps-icon {
+    background: #eee;
+    border: 1px #ddd solid;
+    height: 3em;
+    width: 3em;
+    border-radius: 1.5em;
+    padding: .5em;
+    box-sizing: border-box;
+    transition: all .2s ease-out .2s;
+}
+
+.pulsar-launcher:hover .ps-icon {
+    border-left: 5px #a00 solid;
+    border-top: 5px transparent solid;
+    border-bottom: 1px #b55 solid;
+    transform: rotate(135deg);
+    transition: all .2s ease-in 0s;
+    cursor: pointer;
+}
+
+.ps-menu {
+    box-sizing: border-box;
+    height: 0;
+    position: absolute;
+    top: 1.5em;
+    right: 0;
+    padding: 0;
+    border-right: 5px #aa0000 solid;
+    transition: all .2s ease-in 0s;
+    overflow: hidden;
+}
+
+.pulsar-launcher:hover .ps-menu {
+    height: 7em;
+    padding-top: 1.5em;
+    transition: all .2s ease-out .2s;
+}
+
+.ps-menu li {
+    width: 8em;
+    padding: .3em;
+    text-align: right;
+    background: #ddd;
+    margin-bottom: .2em;
+    position: relative;
+    transition: all .3s;
+    right: 0;
+    color: #333;
+}
+
+.ps-menu li:hover {
+    transform: scale(1.1);
+    right: 5%;
+    cursor: pointer;
+    transition: all .3s;
+}
