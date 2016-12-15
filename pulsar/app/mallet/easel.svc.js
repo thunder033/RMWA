@@ -11,6 +11,25 @@ require('angular').module('mallet').service('MEasel', [function () {
         get context() {
             return contexts[defaultKey];
         },
+
+        isWebGLSupported(){
+            try {
+                var canvas = document.createElement('canvas');
+                return !! window.WebGLRenderingContext && (canvas.getContext('webgl') ||  canvas.getContext('experimental-webgl'));
+            }
+            catch (e){
+                return false;
+            }
+        },
+
+        getWebGLContext(){
+            var canvas = document.createElement('canvas'),
+                gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+            canvas.id = 'web-gl-render-target';
+            contexts.webgl = gl;
+            return gl;
+        },
+
         createNewCanvas(contextKey, width, height){
             var canvas = document.createElement('canvas');
             canvas.width = width;

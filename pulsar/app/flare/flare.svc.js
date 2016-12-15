@@ -13,13 +13,26 @@
         'flare.FrequencyAnalyzer',
         'flare.FrequencyPinwheel',
         'MParticleEmitter2D',
+        '$document',
         Flare]);
 
-    function Flare(MScheduler, MEasel, Effects, FrequencyRanges, MColor, WaveformAnalyzer, FrequencyAnalyzer, FrequencyPinwheel, MParticleEmitter2D) {
+    function Flare(MScheduler, MEasel, Effects, FrequencyRanges, MColor, WaveformAnalyzer, FrequencyAnalyzer, FrequencyPinwheel, MParticleEmitter2D, $document) {
 
-        //pulse values - these don't strictly need priority queues, but they work
-        var radialPulses = new PriorityQueue(), //pulses generated from waveform - drawn as circles
+        /** @type {WebGLRenderingContext|CanvasRenderingContext2D} */
+        var gl = null;
+        var glPositionLoc = 0,
+
+            //pulse values - these don't strictly need priority queues, but they work
+            radialPulses = new PriorityQueue(), //pulses generated from waveform - drawn as circles
             linearPulses = []; //pulses generated from frequency - drawn as bulges across center
+
+        function compileShader(id, type) {
+            var shaderSource = document.getElementById(id).textContent,
+                shader = gl.createShader(type);
+            gl.shaderSource(shader, shaderSource);
+            gl.compileShader(shader);
+            return shader;
+        }
 
         var visualizer = {
             init(){
@@ -29,6 +42,32 @@
                 //Create a context to pre-render pinwheel arcs
                 var canvas = MEasel.context.canvas;
                 MEasel.createNewCanvas('arcRender', canvas.width / 2, canvas.height / 2);
+
+                gl = MEasel.getWebGLContext();
+                gl.viewport(0, 0, canvas.width, canvas.height);
+
+                var vertexShader = compileShader('2d-vertex-shader', gl.VERTEX_SHADER),
+                    fragShader = compileShader('fragment-shader', gl.FRAGMENT_SHADER),
+                    program = gl.createProgram();
+
+                gl.attachShader(program, vertexShader);
+                gl.attachShader(program, fragShader);
+                gl.linkProgram(program);
+
+                var success = gl.getProgramParameter(program, gl.LINK_STATUS);
+
+                if(success){
+                    gl.useProgram(program);
+
+                    glPositionLoc = gl.getAttribLocation(program, 'a_position');
+                    gl.enableVertexAttribArray(glPositionLoc);
+                    gl.vertexAttribPointer(glPositionLoc, 2, gl.FLOAT, false, 0, 0);
+                }
+                else {
+                    console.log(gl.getProgramInfoLog(program));
+                    gl.deleteProgram(program);
+                }
+
             },
             effects: [],
             waveform: WaveformAnalyzer.getMetrics(),
@@ -96,6 +135,13 @@
             }
 
             ctx.putImageData(imgData, 0, 0);
+
+            var buffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+
+            var verts  = new Float32Array([-1.0, -1.0, 1.0, -1.0, -1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0]);
+            gl.bufferData(gl.ARRAY_BUFFER, verts, gl.STATIC_DRAW);
+            gl.drawArrays(gl.TRIANGLES, 0, 0);
         }
 
         /**
