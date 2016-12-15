@@ -20,11 +20,12 @@ require('angular').module('mallet').service('MCamera', ['MalletMath', 'MEasel', 
     var light = MM.vec3(-1, -1, -1).normalize();
 
     this.toVertexBuffer = (verts) => {
-        var buffer = new Float32Array(verts.length * Mesh.vertSize);
+        var vertSize = Mesh.VERT_SIZE,
+            buffer = new Float32Array(verts.length * vertSize);
         verts.forEach((vert, i) => {
-            buffer[i * Mesh.vertSize] = vert.x;
-            buffer[i * Mesh.vertSize + 1] = vert.y;
-            buffer[i * Mesh.vertSize + 2] = vert.z;
+            buffer[i * vertSize]     = vert.x;
+            buffer[i * vertSize + 1] = vert.y;
+            buffer[i * vertSize + 2] = vert.z;
         });
     
         return buffer;
@@ -41,13 +42,21 @@ require('angular').module('mallet').service('MCamera', ['MalletMath', 'MEasel', 
      * @returns {*}
      */
     this.applyTransform = function (buffer, size, pos, scale, rot, origin) {
-        origin = origin || new MM.vec3(0);
+        origin = origin || MM.Vector3.Zero;
         var Cx = Math.cos(rot.x),
             Cy = Math.cos(rot.y),
             Cz = Math.cos(rot.z),
             Sx = Math.sin(rot.x),
             Sy = Math.sin(rot.y),
             Sz = Math.sin(rot.z),
+
+            scaleX = scale.x,
+            scaleY = scale.y,
+            scaleZ = scale.z,
+
+            offsetX =  (origin.x * size.x / 2) * scale.x,
+            offsetY =  (origin.y * size.y / 2) * scale.y,
+            offsetZ =  (origin.z * size.z / 2) * scale.z,
 
         /*
          * Euler rotation matrix
@@ -60,10 +69,10 @@ require('angular').module('mallet').service('MCamera', ['MalletMath', 'MEasel', 
             M21 = -Cy * Sz, M22a = Cx * Cz, M22b = - Sx * Sy * Sz, M23a = Sx * Cz, M23b = + Cx * Sy * Sz,
             M31 = Sy, M32 = -Sx * Cy, M33 = Cx * Cy;
 
-        for(var i = 0; i < buffer.length; i += Mesh.vertSize){
-            var x = (buffer[i]     - origin.x * size.x / 2) * scale.x,
-                y = (buffer[i + 1] - origin.y * size.y / 2) * scale.y,
-                z = (buffer[i + 2] - origin.z * size.z / 2) * scale.z;
+        for(var i = 0, len = buffer.length, s = Mesh.VERT_SIZE; i < len; i += s){
+            var x = buffer[i]     * scaleX - offsetX,
+                y = buffer[i + 1] * scaleY - offsetY,
+                z = buffer[i + 2] * scaleZ - offsetZ;
 
             //console.log(`${x} ${y} ${z}`);
 
@@ -84,11 +93,12 @@ require('angular').module('mallet').service('MCamera', ['MalletMath', 'MEasel', 
      */
     this.getCulledFaces = (buffer, normals, indices) => {
 
-        var culledFaces = new Int8Array(~~(indices.length / 3));
-        for(var i = 0; i < indices.length; i += 3) {
-            var v1 = indices[i] * Mesh.vertSize,
-                v2 = indices[i + 1] * Mesh.vertSize,
-                v3 = indices[i + 2] * Mesh.vertSize,
+        var culledFaces = new Int8Array(~~(indices.length / 3)),
+            vertSize = Mesh.VERT_SIZE;
+        for(var i = 0, len = indices.length; i < len; i += 3) {
+            var v1 = indices[i] * vertSize,
+                v2 = indices[i + 1] * vertSize,
+                v3 = indices[i + 2] * vertSize,
 
                 //Get the coordinates of each point in the tri
                 aX = buffer[v1], aY = buffer[v1 + 1], aZ = buffer[v1 + 2], //P1
@@ -172,7 +182,7 @@ require('angular').module('mallet').service('MCamera', ['MalletMath', 'MEasel', 
                 continue;
             }
 
-            var b = indices[i] * Mesh.vertSize,
+            var b = indices[i] * Mesh.VERT_SIZE,
             //Get the displacement of the vertex
                 dispX = buffer[b] - self.position.x,
             //negative because screen space is inverted

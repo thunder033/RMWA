@@ -109,12 +109,12 @@ require('angular').module('mallet') .factory('Geometry', ['MalletMath', function
         Object.seal(this);
     }
 
-    Mesh.vertSize = 3;
+    Mesh.VERT_SIZE = 3;
 
     Mesh.prototype.getVertexBuffer = function(){
-        var buffer = new Float32Array(this.verts.length * Mesh.vertSize);
+        var buffer = new Float32Array(this.verts.length * Mesh.VERT_SIZE);
         this.verts.forEach((vert, i) => {
-            var vertIndex = i * Mesh.vertSize;
+            var vertIndex = i * Mesh.VERT_SIZE;
             buffer[vertIndex] = vert.x;
             buffer[vertIndex + 1] = vert.y;
             buffer[vertIndex + 2] = vert.z;
