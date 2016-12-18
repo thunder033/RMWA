@@ -7,7 +7,7 @@
     margin-bottom: 3rem;
 }
 
-.home a {
+.home .apps a {
     font-size: 4em;
     font-weight: bold;
     text-decoration: none;
@@ -21,13 +21,13 @@
     box-shadow: 1px 0 2px #555;
 }
 
-.home a:hover {
+.home .apps a:hover {
     background: #fff;
     transform: scale(1.1, 1.1);
     transition: all .5s;
 }
 
-.home a img {
+.home .apps a img {
     max-height: 1em;
     margin-right: .25em;
     vertical-align: top;
@@ -72,14 +72,13 @@
 }
 
 .pulsar-launcher:hover .ps-menu {
-    height: 7em;
+    height: 8em;
     padding-top: 1.5em;
     transition: all .2s ease-out .2s;
 }
 
 .ps-menu li {
     width: 8em;
-    padding: .3em;
     text-align: right;
     background: #ddd;
     margin-bottom: .2em;
@@ -87,11 +86,22 @@
     transition: all .3s;
     right: 0;
     color: #333;
+    border-bottom-left-radius: .3em;
+    border-top-left-radius: .3em;
+    overflow: hidden;
 }
 
 .ps-menu li:hover {
     transform: scale(1.1);
-    right: 5%;
+    right: -5%;
     cursor: pointer;
     transition: all .3s;
+    width: 7.2em;
+}
+
+.ps-menu li a {
+    color: #333;
+    text-decoration: none;
+    display: block;
+    padding: .5em;
 }

@@ -12,13 +12,18 @@ require('angular')
         'warp.LevelLoader',
         '$sce',
         '$timeout',
+        'media.Playlist',
         hudDirective
     ]);
 
-function hudDirective(WarpState, MScheduler, AudioPlayer, Scoring, LevelLoader, $sce, $timeout){
+function hudDirective(WarpState, MScheduler, AudioPlayer, Scoring, LevelLoader, $sce, $timeout, Playlist){
     return {
         restrict: 'E',
         templateUrl: 'views/warp-hud.html',
+        replace: true,
+        controller: ['$scope', function($scope){
+            $scope.playlist = new Playlist();
+        }],
         link: function(scope){
             scope.warpState = WarpState;
             scope.player = AudioPlayer;

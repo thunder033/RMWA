@@ -46,7 +46,7 @@ require('angular').module('mallet').directive('mEasel', ['MEasel','MScheduler', 
                     Scheduler.draw(() => {
                         ctx.fillStyle = '#fff';
                         ctx.fillText('FPS: ' + (~~Scheduler.FPS), 25, 25);
-                    });
+                    }, 1);
                 }
             });
         }
