@@ -43,8 +43,10 @@ function Log(StateMachine){
     }
     
     function logOut(args, level, func){
-        var stack = Error().stack;
-        
+        var stack = Error().stack,
+            trace = getTrace(stack);
+
+        args[0] = `${trace} ${args[0]}`;
         for(var i = 0, l = loggers.length; i < l; i++){
             loggers[i][func].apply(loggers[i], args);
         }
@@ -56,7 +58,7 @@ function Log(StateMachine){
         }
         
         logOut(Array.prototype.slice.call(arguments), logState.Error, 'error');
-    }
+    };
     
     this.warn = () => {
         if(level < logState.Warning){
@@ -64,7 +66,7 @@ function Log(StateMachine){
         }
         
         logOut(Array.prototype.slice.call(arguments), logState.Warning, 'warn');
-    }
+    };
     
     this.out = () => {
         if(level < logState.Info){
@@ -72,7 +74,7 @@ function Log(StateMachine){
         }
         
         logOut(Array.prototype.slice.call(arguments), logState.Info, 'info');
-    }
+    };
     
     this.debug = () => {
         if(level < logState.Debug){
@@ -80,5 +82,5 @@ function Log(StateMachine){
         }
         
         logOut(Array.prototype.slice.call(arguments), logState.Debug, 'debug');
-    }
+    };
 }

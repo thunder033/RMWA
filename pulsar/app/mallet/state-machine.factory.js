@@ -13,7 +13,8 @@ function stateMachineFactory(){
     /**
      * Invokes callbacks for events listening for the given state
      * @param {number} state
-     * @param {Function[]} listeners
+     * @param {number} prevState
+     * @param {Object[]|Array} listeners
      */
     function invokeStateListeners(state, prevState, listeners) {
         for(var i = 0, l = listeners.length; i < l; i++){
@@ -37,9 +38,11 @@ function stateMachineFactory(){
                 _state: { //The current state of the state machine
                     value: 0,
                     writable: true
-                }, 
+                },
+                /** @type {Object[]|Array<} */
                 _stateListeners: { //listeners to excute on specific states
                     value: []
+                }
             });
             
             states.forEach((state, i) => {
