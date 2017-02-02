@@ -21,7 +21,7 @@
             <span class="finalScore">Final Score: {{ scoring.score }}</span>
         </div>
 
-        <playlist ng-if="!warpState.is(warpState.Loading)" playlist="playlist" action-override="playClip"></playlist>
+        <ps-media-widget ng-if="!warpState.is(warpState.Loading)" queue="playQueue" action-override="0"></ps-media-widget>
 
     </div>
 

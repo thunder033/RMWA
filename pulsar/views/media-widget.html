@@ -20,8 +20,8 @@
         </div>
     </div>
 
-    <label class="cp-control-title">Queue Action</label>
-    <div class="mw-queue-options">
+    <label class="cp-control-title" ng-if="!hasActionOverride()">Queue Action</label>
+    <div class="mw-queue-options" ng-if="!hasActionOverride()">
         <div class="mw-queue-option" ng-repeat="option in queueOptions track by $index" ng-class="{'selected': option.value === model.queueMode}">
             <label>
                 <input type="radio" ng-value="option.value" ng-model="model.queueMode" name="mw-queue-mode">

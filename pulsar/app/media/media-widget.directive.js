@@ -14,7 +14,8 @@ function mediaWidgetDirective(){
         templateUrl: 'views/media-widget.html',
         replace: true,
         scope: {
-            queue: '='
+            queue: '=',
+            actionOverride: '='
         },
         link: function(){
 
@@ -36,8 +37,12 @@ function mediaWidgetDirective(){
             ];
 
             $scope.model = {
-                queueMode: PlayQueue.PlayNext,
+                queueMode: $scope.actionOverride || PlayQueue.PlayNext,
                 search: ''
+            };
+
+            $scope.hasActionOverride = () => {
+                return typeof $scope.actionOverride === 'number';
             };
 
             $scope.toggleActive = function(source){

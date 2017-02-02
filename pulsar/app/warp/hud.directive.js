@@ -13,16 +13,25 @@ require('angular')
         '$sce',
         '$timeout',
         'media.Playlist',
+        'media.PlayQueue',
         hudDirective
     ]);
 
-function hudDirective(WarpState, MScheduler, AudioPlayer, Scoring, LevelLoader, $sce, $timeout, Playlist){
+function hudDirective(WarpState, MScheduler, AudioPlayer, Scoring, LevelLoader, $sce, $timeout, Playlist, PlayQueue){
     return {
         restrict: 'E',
         templateUrl: 'views/warp-hud.html',
         replace: true,
         controller: ['$scope', function($scope){
+            $scope.playQueue = new PlayQueue(AudioPlayer);
             $scope.playlist = new Playlist();
+
+            $scope.playQueue.addEventListener('itemAdded', e => {
+                e.item.getBuffer().then(()=>{
+                    MScheduler.resume();
+                    LevelLoader.playClip(e.item);
+                });
+            });
         }],
         link: function(scope){
             scope.warpState = WarpState;
@@ -35,11 +44,6 @@ function hudDirective(WarpState, MScheduler, AudioPlayer, Scoring, LevelLoader, 
 
             scope.resume = () => {
                 MScheduler.resume();
-            };
-
-            scope.playClip = clip => {
-                MScheduler.resume();
-                LevelLoader.playClip(clip);
             };
 
             scope.toggleMute = () => {

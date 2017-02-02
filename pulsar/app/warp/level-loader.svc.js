@@ -32,7 +32,7 @@
 
         this.playClip = function(clip){
 
-            if(clip.state !== MediaStates.Ready){
+            if(clip.getState() !== MediaStates.Buffered){
                 return;
             }
 
