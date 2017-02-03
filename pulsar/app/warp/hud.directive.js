@@ -26,8 +26,11 @@ function hudDirective(WarpState, MScheduler, AudioPlayer, Scoring, LevelLoader, 
             $scope.playQueue = new PlayQueue(AudioPlayer);
             $scope.playlist = new Playlist();
 
+            // We need to intercept the clip from the usual audio player/queue pipeline so it can be loaded into warp
             $scope.playQueue.addEventListener('itemAdded', e => {
-                e.item.getBuffer().then(()=>{
+                // This should immediately dequeue the added item
+                const playable = $scope.playQueue.getNext();
+                playable.getBuffer().then(()=>{
                     MScheduler.resume();
                     LevelLoader.playClip(e.item);
                 });
