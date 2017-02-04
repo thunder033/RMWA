@@ -15,10 +15,8 @@ function mediaWidgetDirective(){
         replace: true,
         scope: {
             queue: '=',
-            actionOverride: '='
-        },
-        link: function(){
-
+            actionOverride: '=',
+            player: '='
         },
         controller: ['$scope', 'media.PlayQueue', 'media.Playlist', 'media.const.Type', 'media.Library', 'media.Source', function ($scope, PlayQueue, Playlist, MediaType, MediaLibrary, Source) {
 
@@ -49,6 +47,11 @@ function mediaWidgetDirective(){
                 source.toggleActive();
                 $scope.search();
             };
+
+            $scope.playUserStream = function(){
+                $scope.player.playUserStream();
+            };
+
 
             /**
              * Add a clip to the play queue the the user-selected queue mode
