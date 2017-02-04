@@ -2,11 +2,18 @@
     <span class="score">{{scoring.score | number: 0}}</span>
     <span class="multiplier">{{scoring.multiplier | number: 1}}</span>
     <span class="song-title" ng-bind="player.playing.name"></span>
-    <button ng-click="toggleMute()" class="volume-btn" ng-bind-html="toTrusted(muted ? '&#128263;' : '&#128266;')"></button>
+    <!--<button ng-click="toggleMute()" class="volume-btn" ng-bind-html="toTrusted(muted ? '&#128263;' : '&#128266;')"></button>-->
 
     <div ng-if="!warpState.is(warpState.Playing)" class="menu">
-        <h1>Warp</h1>
-        <button ng-if="warpState.is(warpState.Paused)" ng-click="resume()">Resume</button>
+        <div class="clearfix">
+            <ap-volume class="pull-right" player="player"></ap-volume>
+            <div class="ps-logo pull-left">
+                <img src="assets/images/warp-icon.png" alt="Warp Logo">
+                <h2>Warp</h2>
+            </div>
+        </div>
+
+        <button class="menu-btn" ng-if="warpState.is(warpState.Paused)" ng-click="resume()">Resume</button>
         <loader-icon ng-if="warpState.is(warpState.Loading)"></loader-icon>
 
         <ul class="notes" ng-if="warpState.is(warpState.Loading)">
@@ -25,4 +32,5 @@
 
     </div>
 
+    <pulsar-launcher></pulsar-launcher>
 </div>

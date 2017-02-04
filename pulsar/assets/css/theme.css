@@ -35,6 +35,14 @@ h4 {
     border-top: 1px #555 solid;
 }
 
+.pull-left {
+    float: left;
+}
+
+.pull-right {
+    float: right;
+}
+
 .clearfix:after {
     visibility: hidden;
     display: block;
