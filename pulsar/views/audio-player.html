@@ -6,6 +6,9 @@
 
     <button class="cp-button play-button" ng-class="player.state.toLowerCase()" ng-click="player.togglePlaying()">
         <loader-icon ng-if="player.state === 'Loading'"></loader-icon>
+        <span ng-if="player.state === 'Streaming'">
+            <span class="fa fa-microphone fa-2x"></span>
+        </span>
     </button>
     <span class="clip-title" ng-class="{marquee: marqueeClipTitle}"><span ng-bind="player.playing.name"></span></span><br>
     <span class="ap-clip-info">
@@ -23,5 +26,5 @@
         <span class="fa fa-step-forward"></span>
     </button>
     
-    <ap-volume player="player"></ap-volume>
+    <ap-volume player="player" ng-if="player.state !== 'Streaming'"></ap-volume>
 </div>

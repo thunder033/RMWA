@@ -23,6 +23,7 @@ var EventTarget = require('eventtarget');
         var states = Object.freeze({
             Loading: 'Loading',
             Playing: 'Playing',
+            Streaming: 'Streaming',
             Paused: 'Paused',
             Stopped: 'Stopped',
             Error: 'Error'
@@ -44,6 +45,7 @@ var EventTarget = require('eventtarget');
 
             userStream = null,
             playableStream = null,
+            cachedOutputGain = 0,
 
             state = states.Loading,
 
@@ -93,10 +95,6 @@ var EventTarget = require('eventtarget');
                 type: 'Stream',
                 artist: '--'
             });
-
-            return navigator.mediaDevices.getUserMedia({audio: true}).then(stream => {
-                userStream = stream;
-            });
         };
 
         /**
@@ -145,6 +143,10 @@ var EventTarget = require('eventtarget');
          * @param {number} [startTime=0]
          */
         this.playClip = (clip, startTime) => {
+            if(!clip){
+                return;
+            }
+
             return self.stop().then(()=>{
                 playing = clip;
                 state = states.Loading;
@@ -166,7 +168,7 @@ var EventTarget = require('eventtarget');
                 gainNode.gain.cancelScheduledValues(audioCtx.currentTime);
                 gainNode.gain.value = 1;
                 sourceNode.connect(gainNode);
-                state = states.Playing;
+                state = states.Streaming;
                 sourceNode.onended = () => this.dispatchEvent(new Event('ended'));
                 this.dispatchEvent(new Event('play'));
                 trackStart = getNow();
@@ -175,9 +177,14 @@ var EventTarget = require('eventtarget');
         };
 
         this.playUserStream = () => {
-           this.playStream(userStream);
-            outputGainNode.gain.value = 0;
-            playing = playableStream;
+            return navigator.mediaDevices.getUserMedia({audio: true}).then(stream => {
+                userStream = stream;
+                this.playStream(userStream);
+                cachedOutputGain = outputGainNode.gain.value;
+                outputGainNode.gain.value = 0;
+                playing = playableStream;
+            });
+
         };
 
         /**
@@ -205,7 +212,7 @@ var EventTarget = require('eventtarget');
          * @param {number} [pct=0] song position from 0 to 1
          */
         this.seekTo = (pct) => {
-            if(playing){
+            if(playing && state !== states.Streaming){
                 var time = trackLength * (pct || 0);
                 self.playBuffer(sourceNode.buffer, time).then(()=>{
                     trackStart = getNow() - time * 1000;
@@ -227,6 +234,11 @@ var EventTarget = require('eventtarget');
                     sourceNode.onended = null;
                     if(state === states.Playing || state === states.Paused){
                         sourceNode.stop(0);
+                    }
+                    else if(state === states.Streaming) {
+                        sourceNode.disconnect();
+                        outputGainNode.gain.value = cachedOutputGain;
+                        userStream = null;
                     }
                 }
 

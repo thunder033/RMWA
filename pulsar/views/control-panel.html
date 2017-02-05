@@ -18,7 +18,7 @@
         <play-queue audio-player="player" queue="playQueue"></play-queue>
     </div>
 
-    <div class="ps-logo" ng-class="{visible: player.state !== 'Playing'}">
+    <div class="ps-logo" ng-class="{visible: player.state !== 'Playing' && player.state !== 'Streaming'}">
         <img src="assets/images/flare-logo.png" alt="Pulsar Logo">
         <h2>Flare</h2>
     </div>
