@@ -8,13 +8,43 @@ require('angular').module('pulsar.flare').controller('ControlPanelCtrl', [
     'audio.Player',
     'media.PlayQueue',
     '$timeout',
+    '$element',
+    'MEasel',
     ControlPanelCtrl]);
 
-function ControlPanelCtrl($scope, MediaLibrary, AudioPlayer, PlayQueue, $timeout){
+function ControlPanelCtrl($scope, MediaLibrary, AudioPlayer, PlayQueue, $timeout, $element, MEasel){
 
     MediaLibrary.isReady().then(()=>{
         AudioPlayer.stop();
     });
+
+    $scope.expanded = true;
+    $scope.toggleExpanded = () => {
+        // This is kind of atrocious, but no time!
+        //TODO: replace this mess with broadcast events
+        const visualizer = document.querySelector('#visualizer');
+
+        if($scope.expanded) {
+            $element.addClass('collapsed');
+            $element.removeClass('expanded');
+
+            visualizer.className = 'expanded';
+        }
+        else {
+            $element.addClass('expanded');
+            $element.removeClass('collapsed');
+
+            visualizer.className = 'collapsed';
+        }
+
+        $scope.expanded = !$scope.expanded;
+
+        //Resize the canvases
+        const baseCanvas =  MEasel.context.canvas;
+        MEasel.resizeCanvas(baseCanvas, MEasel.context);
+        MEasel.createNewCanvas('quarterRender', baseCanvas.width / 2, baseCanvas.height / 2);
+
+    };
 
     $scope.playQueueAdded = ''; //The title of the last added song
     $scope.notifcationEvent = null; //Handle to the timeout event (hiding the notification)

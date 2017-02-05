@@ -1,4 +1,8 @@
 <div class="control-panel" ps-accordion>
+    <button class="cp-button cp-button-round-sm cp-expand-ctrl" ng-click="toggleExpanded()">
+        <span class="fa" ng-class="expanded ? 'fa-angle-double-left' : 'fa-angle-double-right'"></span>
+    </button>
+
     <audio-player player="player" queue="playQueue"></audio-player>
 
     <div ps-accordion-tab>

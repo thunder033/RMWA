@@ -68,6 +68,8 @@ function psAccordionTabDirective(){
 }
 
 function PsAccordionTabCtrl($scope, $element){
+    $element.addClass('ps-accordion-tab');
+
     this.expand = function(){
         $scope.expand($scope, $element);
         $element.removeClass('collapsed');
