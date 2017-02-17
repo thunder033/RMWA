@@ -54,7 +54,8 @@ var EventTarget = require('eventtarget');
             trackStart = 0;
 
         function getNow() {
-            return (new Date()).getTime();
+            return ~~window.performance.now();
+            //return (new Date()).getTime();
         }
 
         function getPlaybackTime(){
