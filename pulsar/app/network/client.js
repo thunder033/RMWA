@@ -3,8 +3,8 @@
  */
 
 const MDT = require('../mallet/mallet.dependency-tree').MDT;
-const IOEvent = require('event-types').IOEvent;
-const MatchEvent = require('event-types').MatchEvent;
+const IOEvent = require('pulsar-lib').EventTypes.IOEvent;
+const MatchEvent = require('pulsar-lib').EventTypes.MatchEvent;
 
 module.exports = {clientFactory,
 resolve: ADT => [

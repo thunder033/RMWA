@@ -4,7 +4,7 @@
  */
 'use strict';
 
-const IOEvent = require('event-types').IOEvent;
+const IOEvent = require('pulsar-lib').EventTypes.IOEvent;
 
 module.exports = {userFactory,
 resolve: ADT => [

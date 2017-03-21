@@ -3,7 +3,7 @@
  * @author Greg Rozmarynowycz <greg@thunderlab.net>
  */
 
-const IOEvent = require('event-types').IOEvent;
+const IOEvent = require('pulsar-lib').EventTypes.IOEvent;
 
 module.exports = {connectionFactory,
 resolve: ADT => [

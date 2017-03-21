@@ -3,7 +3,7 @@
  * Created by gjr8050 on 2/24/2017.
  */
 
-const IOEvent = require('event-types').IOEvent;
+const IOEvent = require('pulsar-lib').EventTypes.IOEvent;
 
 module.exports = {socketFactory,
 resolve: ADT => [

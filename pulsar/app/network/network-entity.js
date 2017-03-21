@@ -3,7 +3,7 @@
  * @author Greg Rozmarynowycz <greg@thunderlab.net>
  */
 const MDT = require('../mallet/mallet.dependency-tree').MDT;
-const IOEvent = require('event-types').IOEvent;
+const IOEvent = require('pulsar-lib').EventTypes.IOEvent;
 const EventTarget = require('eventtarget');
 
 module.exports = {networkEntityFactory,

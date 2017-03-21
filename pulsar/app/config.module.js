@@ -2,11 +2,11 @@
 /**
  * Created by Greg on 12/10/2016.
  */
-var config = require('angular')
+const config = require('angular')
     .module('config', []);
 
 config.constant('config.Env', (()=>{
-    var host = location.href;
+    const host = location.href;
     if(host.indexOf('localhost') > -1){
         return 'dev';
     }

@@ -2,7 +2,7 @@
  * TODO: [Description]
  * @author Greg Rozmarynowycz <greg@thunderlab.net>
  */
-const IOEvent = require('event-types').IOEvent;
+const IOEvent = require('pulsar-lib').EventTypes.IOEvent;
 
 module.exports = {roomFactory,
 resolve: ADT => [

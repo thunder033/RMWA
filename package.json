@@ -26,7 +26,8 @@
     "angular-ui-router": "^0.3.1",
     "checklist-model": "^0.10.0",
     "eventtarget": "^0.1.0",
-    "modular-adal-angular": "^1.0.4"
+    "modular-adal-angular": "^1.0.4",
+    "pulsar-lib": "git+https://github.com/thunder033/pulsar-lib.git"
   },
   "devDependencies": {
     "chai": "^3.5.0",
