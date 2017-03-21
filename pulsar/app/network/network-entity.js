@@ -7,12 +7,12 @@ const IOEvent = require('pulsar-lib').EventTypes.IOEvent;
 const EventTarget = require('eventtarget');
 
 module.exports = {networkEntityFactory,
-resolve: ADT => [
-    ADT.network.Connection,
-    ADT.ng.$q,
-    ADT.ng.$rootScope,
-    MDT.Log,
-    networkEntityFactory]};
+    resolve: ADT => [
+        ADT.network.Connection,
+        ADT.ng.$q,
+        ADT.ng.$rootScope,
+        MDT.Log,
+        networkEntityFactory]};
 
 function networkEntityFactory(Connection, $q, $rootScope, Log) {
     /**
@@ -21,8 +21,11 @@ function networkEntityFactory(Connection, $q, $rootScope, Log) {
     class NetworkEntity extends EventTarget {
 
         constructor(id) {
+            if (!id) {
+                throw new ReferenceError('NetworkEntity must be constructed with an ID');
+            }
             super();
-            this.id = id;
+            this.id = id.id || id;
             this.syncTime = ~~performance.now();
             NetworkEntity.putEntity(this.getType(), this);
         }
@@ -43,8 +46,19 @@ function networkEntityFactory(Connection, $q, $rootScope, Log) {
             $rootScope.$evalAsync();
         }
 
+        requestSync() {
+            const serverType = NetworkEntity.getLookupType(this.getType().name).name.replace('Client', '');
+            const request = Connection.getSocket()
+                .request(IOEvent.syncNetworkEntity, {type: serverType, id: this.getId()})
+                .then(NetworkEntity.reconstruct);
+            NetworkEntity.pendingRequests.set(this.getId(), request);
+
+            return request;
+        }
+
         static putEntity(type, entity) {
             const lookupType = NetworkEntity.getLookupType(type.name);
+            Log.verbose(`Put entity ${lookupType.name} ${entity.getId()}`);
             NetworkEntity.entities.get(lookupType.name).set(entity.getId(), entity);
         }
 
@@ -63,6 +77,7 @@ function networkEntityFactory(Connection, $q, $rootScope, Log) {
             NetworkEntity.lookupTypes.set(type.name, baseType);
             Log.debug(`Register NetworkEntity type ${type.name} [as ${baseType.name}]`);
             if (baseType === type) {
+                Log.verbose(`Create NetworkEntity index ${type.name}`);
                 NetworkEntity.entities.set(type.name, new Map());
             }
         }
@@ -83,7 +98,7 @@ function networkEntityFactory(Connection, $q, $rootScope, Log) {
         /**
          * Retrieve a network entity constructor based on name
          * @param typeName
-         * @returns {undefined|V|V}
+         * @returns {V}
          */
         static getLookupType(typeName) {
             let resolvedType = typeName;
@@ -130,18 +145,20 @@ function networkEntityFactory(Connection, $q, $rootScope, Log) {
 
         /**
          * Indicates if the entity identified by the registered type and name exists locally
-         * @param type {any}
+         * @param type {Function}
          * @param id {string}
          * @return {boolean}
          */
         static localEntityExists(type, id) {
+            Log.verbose(`check ${type.name} ${id} exists`);
             try {
                 return NetworkEntity.entities.get(type.name).has(id);
             } catch (e) {
                 if (NetworkEntity.getLookupType(type.name)) {
                     throw new Error(`Could not complete look up: ${e.message || e}`);
                 } else {
-                    return false;
+                    throw e;
+                    // return false;
                 }
             }
         }
@@ -172,6 +189,7 @@ function networkEntityFactory(Connection, $q, $rootScope, Log) {
         static reconstruct(data) {
             const type = NetworkEntity.getLookupType(data.type);
             let entity = null;
+            Log.verbose(`Resolved ${data.type} to ${type.name}`);
             if (NetworkEntity.localEntityExists(type, data.id) === true) {
                 entity = NetworkEntity.entities.get(type.name).get(data.id);
             } else {
