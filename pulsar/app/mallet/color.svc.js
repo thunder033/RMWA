@@ -19,10 +19,10 @@ require('angular').module('mallet').service('MColor', [function(){
 
         /**
          * Generate an HSLA color string from the provided values
-         * @param hue
-         * @param saturation
-         * @param lightness
-         * @param alpha
+         * @param hue {number}: 0 - 255
+         * @param saturation {string}: percentage 0% - 100%
+         * @param lightness {string}: percentage 0% - 100%
+         * @param alpha {number}: 0 - 1
          * @returns {string}
          */
         hsla(hue, saturation, lightness, alpha) {
