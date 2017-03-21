@@ -3,12 +3,13 @@
  */
 (()=>{
     'use strict';
+    const MDT = require('../mallet/mallet.dependency-tree').MDT;
     angular.module('pulsar.warp').service('warp.Level', [
-        'MScheduler',
+        MDT.Scheduler,
         'warp.State',
         'flare.WaveformAnalyzer',
         'warp.Bar',
-        'MalletMath',
+        MDT.Math,
         Level]);
 
     /**

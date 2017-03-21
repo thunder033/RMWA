@@ -2,17 +2,18 @@
  * Created by Greg on 11/27/2016.
  */
 'use strict';
+const MDT = require('../mallet/mallet.dependency-tree').MDT;
 require('angular')
     .module('pulsar.warp')
     .service('warp.WarpFieldDraw', [
-        'MScheduler',
+        MDT.Scheduler,
         'warp.Level',
-        'MalletMath',
+        MDT.Math,
         'warp.State',
-        'MCamera',
-        'Geometry',
+        MDT.Camera,
+        MDT.Geometry,
         'warp.Bar',
-        'MEasel',
+        MDT.Easel,
         '$timeout',
         WarpFieldDraw
     ]);

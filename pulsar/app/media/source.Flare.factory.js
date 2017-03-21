@@ -3,9 +3,10 @@
  */
 (()=>{
     'use strict';
+    const MDT = require('../mallet/mallet.dependency-tree').MDT;
     angular.module('pulsar.media').factory('media.source.Flare', [
         'media.Source',
-        'mallet.AsyncRequest',
+        MDT.AsyncRequest,
         'simple-request.HttpConfig',
         'media.AudioClip',
         'media.const.Type',

@@ -2,6 +2,7 @@
 /**
  * @author Greg Rozmarynowycz <greg@thunderlab.net>
  */
+const MDT = require('../mallet/mallet.dependency-tree').MDT;
 require('angular').module('pulsar.flare').controller('ControlPanelCtrl', [
     '$scope',
     'media.Library',
@@ -9,7 +10,7 @@ require('angular').module('pulsar.flare').controller('ControlPanelCtrl', [
     'media.PlayQueue',
     '$timeout',
     '$element',
-    'MEasel',
+    MDT.Easel,
     ControlPanelCtrl]);
 
 function ControlPanelCtrl($scope, MediaLibrary, AudioPlayer, PlayQueue, $timeout, $element, MEasel){

@@ -1,18 +1,19 @@
 /**
  * Created by Greg on 9/18/2016.
  */
+const MDT = require('../mallet/mallet.dependency-tree').MDT;
 (()=>{
     'use strict';
     require('angular').module('pulsar.flare').service('Flare', [
-        'MScheduler',
-        'MEasel',
+        MDT.Scheduler,
+        MDT.Easel,
         'flare.const.Effects',
         'audio.const.FrequencyRanges',
-        'MColor',
+        MDT.Color,
         'flare.WaveformAnalyzer',
         'flare.FrequencyAnalyzer',
         'flare.FrequencyPinwheel',
-        'MParticleEmitter2D',
+        MDT.ParticleEmitter2D,
         Flare]);
 
     function Flare(MScheduler, MEasel, Effects, FrequencyRanges, MColor, WaveformAnalyzer, FrequencyAnalyzer, FrequencyPinwheel, MParticleEmitter2D) {

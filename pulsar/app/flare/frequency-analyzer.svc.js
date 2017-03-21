@@ -2,13 +2,13 @@
  * Created by gjr8050 on 10/19/2016.
  */
 'use strict';
-
+const MDT = require('../mallet/mallet.dependency-tree').MDT;
 (()=>{
     /**
      * Performs analysis on frequency data each frame to generate metrics
      */
     require('angular').module('pulsar.flare').service('flare.FrequencyAnalyzer', [
-        'MScheduler',
+        MDT.Scheduler,
         'audio.RealtimeData',
         'audio.const.FrequencyRanges',
         'audio.const.MaxFrequency',

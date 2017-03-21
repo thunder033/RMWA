@@ -3,15 +3,16 @@
  */
 (()=>{
     'use strict';
+    const MDT = require('../mallet/mallet.dependency-tree').MDT;
     angular.module('pulsar.warp').service('warp.ShipEffects', [
         'warp.Ship',
-        'MParticle',
-        'MScheduler',
-        'MalletMath',
-        'Geometry',
-        'MEasel',
+        MDT.ParticleEmitter,
+        MDT.Scheduler,
+        MDT.Math,
+        MDT.Geometry,
+        MDT.Easel,
         'audio.AudioFx',
-        'MColor',
+        MDT.Color,
         ShipEffects]);
 
     function ShipEffects(Ship, MParticle, MScheduler, MM, Geometry, MEasel, AudioFx, MColor) {

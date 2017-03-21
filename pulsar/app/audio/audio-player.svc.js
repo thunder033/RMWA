@@ -2,11 +2,12 @@
  * Created by gjr8050 on 9/16/2016.
  */
 'use strict';
-var EventTarget = require('eventtarget');
+const EventTarget = require('eventtarget');
+const MDT = require('../mallet/mallet.dependency-tree').MDT;
 
 (()=>{
     require('angular').module('pulsar.audio').service('audio.Player', [
-        'mallet.const.SampleCount',
+        MDT.const.SampleCount,
         '$timeout',
         'media.AudioClip',
         Player]);

@@ -2,13 +2,14 @@
  * Created by gjr8050 on 10/19/2016.
  */
 'use strict';
+const MDT = require('../mallet/mallet.dependency-tree').MDT;
 (()=>{
     /**
      * Provides access to audio data and processing utilities
      */
     require('angular').module('pulsar.audio').service('audio.RealtimeData', [
-        'MScheduler',
-        'mallet.const.SampleCount',
+        MDT.Scheduler,
+        MDT.const.SampleCount,
         'audio.Player',
         '$q',
         RealtimeData]);

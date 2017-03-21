@@ -2,11 +2,12 @@
  * Created by Greg on 10/29/2016.
  */
 'use strict';
+const MDT = require('../mallet/mallet.dependency-tree').MDT;
 require('angular')
     .module('pulsar.warp')
     .directive('warpHud', [
         'warp.State',
-        'MScheduler',
+        MDT.Scheduler,
         'audio.Player',
         'warp.Scoring',
         'warp.LevelLoader',

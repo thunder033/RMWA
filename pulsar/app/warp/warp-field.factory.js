@@ -3,10 +3,11 @@
  */
 (()=>{
     'use strict';
+    const MDT = require('../mallet/mallet.dependency-tree').MDT;
     angular.module('pulsar.warp').factory('warp.WarpField', [
-        'mallet.Thread',
+        MDT.Thread,
         'audio.DataUtils',
-        'mallet.const.SampleCount',
+        MDT.const.SampleCount,
         'config.Path',
         Field]);
 

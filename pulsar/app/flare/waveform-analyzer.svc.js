@@ -1,9 +1,16 @@
 'use strict';
+const MDT = require('../mallet/mallet.dependency-tree').MDT;
 /**
  * Performs analysis on the waveform data each frame to derive metrics
  * @author Greg Rozmarynowycz <greg@thunderlab.net>
  */
-require('angular').module('pulsar.flare').service('flare.WaveformAnalyzer', ['MScheduler', 'audio.RealtimeData', 'mallet.const.SampleCount', function (MScheduler, AudioData, SampleCount) {
+require('angular').module('pulsar.flare').service('flare.WaveformAnalyzer', [
+    MDT.Scheduler,
+    'audio.RealtimeData',
+    MDT.const.SampleCount,
+    WaveformAnalazyer]);
+
+function WaveformAnalazyer(MScheduler, AudioData, SampleCount) {
     var results = {};
 
     /**
@@ -51,4 +58,4 @@ require('angular').module('pulsar.flare').service('flare.WaveformAnalyzer', ['MS
             return results;
         }
     };
-}]);
+}

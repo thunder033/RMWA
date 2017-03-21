@@ -1,9 +1,8 @@
 /**
  * Created by Greg on 10/28/2016.
  */
-const MDT = require('./mallet.dependency-tree').MDT;
-
 'use strict';
+const MDT = require('./mallet.dependency-tree').MDT;
 require('angular').module('mallet').service(MDT.Keyboard, [
     MDT.const.Keys,
     Keyboard]);

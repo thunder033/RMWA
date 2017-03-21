@@ -1,6 +1,8 @@
 /**
  * Created by Greg on 11/25/2016.
  */
+const MDT = require('../mallet/mallet.dependency-tree').MDT;
+
 (()=>{
     'use strict';
 
@@ -8,7 +10,7 @@
      * @module audio.DataUtils
      */
     require('angular').module('pulsar.audio').service('audio.DataUtils', [
-        'mallet.const.SampleCount',
+        MDT.const.SampleCount,
         '$q',
         DataUtils]);
 

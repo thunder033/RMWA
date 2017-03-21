@@ -3,13 +3,13 @@
  */
 (()=>{
     'use strict';
-
+    const MDT = require('../mallet/mallet.dependency-tree').MDT;
     require('angular').module('pulsar.warp').controller('warp.GameController', [
-        'mallet.state',
+        MDT.State,
         'warp.State',
-        'MScheduler',
-        'MKeyboard',
-        'mallet.const.MKeys',
+        MDT.Scheduler,
+        MDT.Keyboard,
+        MDT.const.Keys,
         'audio.Player',
         'media.Library',
         'warp.WarpFieldDraw',

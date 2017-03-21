@@ -2,7 +2,7 @@
  * Created by gjr8050 on 9/14/2016.
  */
 'use strict';
-
+const MDT = require('./mallet/mallet.dependency-tree').MDT;
 // misc local dependencies
 require('../assets/js/priorityQueue');
 require('../assets/js/load-error');
@@ -55,7 +55,7 @@ var app = angular.module('pulsar', [
         controller: 'warp.GameController'
     });
 
-}]).run(['MScheduler', '$rootScope', 'audio.Player', function(MScheduler, $rootScope, AudioPlayer){
+}]).run([MDT.Scheduler, '$rootScope', 'audio.Player', function(MScheduler, $rootScope, AudioPlayer){
     MScheduler.startMainLoop();
 
     $rootScope.$on('$stateChangeStart', ()=>{

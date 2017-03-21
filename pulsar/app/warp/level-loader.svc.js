@@ -3,10 +3,11 @@
  */
 (()=>{
     'use strict';
+    const MDT = require('../mallet/mallet.dependency-tree').MDT;
     angular.module('pulsar.warp').service('warp.LevelLoader', [
         'warp.Level',
         'warp.State',
-        'mallet.state',
+        MDT.State,
         'media.const.State',
         'audio.Player',
         'warp.WarpFieldCache',

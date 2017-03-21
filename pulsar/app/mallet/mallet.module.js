@@ -5,7 +5,7 @@
 var math = require('./math.svc'),
     config = require('../config.module'),
     constants = require('./mallet.constants'),
-    simpleRequest = require('../network/simple-request');
+    simpleRequest = require('../shared/simple-request');
 
 /**
  * Library for interactive web apps

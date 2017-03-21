@@ -3,17 +3,17 @@
  */
 (()=>{
     'use strict';
-
+    const MDT = require('../mallet/mallet.dependency-tree').MDT;
     /**
      * Controls behavior of the ship and handles scoring
      */
     angular.module('pulsar.warp').service('warp.Ship', [
-        'MScheduler',
-        'MCamera',
-        'MalletMath',
-        'MKeyboard',
-        'mallet.const.MKeys',
-        'Geometry',
+        MDT.Scheduler,
+        MDT.Camera,
+        MDT.Math,
+        MDT.Keyboard,
+        MDT.const.Keys,
+        MDT.Geometry,
         Ship]);
 
     function Ship(MScheduler, MCamera, MM, MKeyboard, MKeys, Geometry){

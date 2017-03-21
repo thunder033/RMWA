@@ -2,15 +2,16 @@
  * Created by gjr8050 on 10/19/2016.
  */
 'use strict';
+const MDT = require('../mallet/mallet.dependency-tree').MDT;
 (()=>{
     /**
      * Provides functions to render the frequency pinwheel
      */
     require('angular').module('pulsar.flare').service('flare.FrequencyPinwheel', [
         'audio.RealtimeData',
-        'MEasel',
+        MDT.Easel,
         'flare.FrequencyAnalyzer',
-        'MColor',
+        MDT.Color,
         FrequencyPinwheel]);
 
     function FrequencyPinwheel(AudioData, MEasel, FrequencyAnalyzer, MColor){

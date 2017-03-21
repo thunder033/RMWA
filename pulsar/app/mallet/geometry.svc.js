@@ -1,9 +1,8 @@
 /**
  * Created by gjrwcs on 11/3/2016.
  */
-const MDT = require('./mallet.dependency-tree').MDT;
-
 'use strict';
+const MDT = require('./mallet.dependency-tree').MDT;
 require('angular').module('mallet') .factory(MDT.Geometry, [
     MDT.Math,
     Geometry]);
