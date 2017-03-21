@@ -1,8 +1,17 @@
 /**
  * Created by gjrwcs on 9/15/2016.
  */
+const MDT = require('./mallet.dependency-tree').MDT;
+
 'use strict';
-require('angular').module('mallet').directive('mEasel', ['MEasel','MScheduler', 'mallet.state', function(MEasel, Scheduler, MState){
+
+require('angular').module('mallet').directive('mEasel', [
+    MDT.Easel,
+    MDT.Scheduler,
+    MDT.State,
+    easelDirective]);
+
+function easelDirective(MEasel, Scheduler, MState){
 
     var canvas, ctx, scale = 1;
 
@@ -55,4 +64,4 @@ require('angular').module('mallet').directive('mEasel', ['MEasel','MScheduler', 
             });
         }
     };
-}]);
+}

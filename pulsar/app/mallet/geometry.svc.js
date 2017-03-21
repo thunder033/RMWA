@@ -1,8 +1,14 @@
 /**
  * Created by gjrwcs on 11/3/2016.
  */
+const MDT = require('./mallet.dependency-tree').MDT;
+
 'use strict';
-require('angular').module('mallet') .factory('Geometry', ['MalletMath', function(MM){
+require('angular').module('mallet') .factory(MDT.Geometry, [
+    MDT.Math,
+    Geometry]);
+
+function Geometry(MM){
 
     /**
      * Stores and manipulates _position, scale, and rotation data for an object
@@ -295,4 +301,4 @@ require('angular').module('mallet') .factory('Geometry', ['MalletMath', function
 
         meshes: meshes
     };
-}]);
+}

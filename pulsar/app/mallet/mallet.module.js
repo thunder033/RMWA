@@ -5,13 +5,13 @@
 var math = require('./math.svc'),
     config = require('../config.module'),
     constants = require('./mallet.constants'),
-    simpleRequest = require('../shared/simple-request');
+    simpleRequest = require('../network/simple-request');
 
 /**
  * Library for interactive web apps
  * @module mallet
  */
-var mallet = require('angular')
+const mallet = require('angular')
     .module('mallet', [
         config.name,
         constants.name,
@@ -19,13 +19,15 @@ var mallet = require('angular')
         simpleRequest.name]);
 
 //Core
+require('./state-machine.factory');
+require('./log.svc');
 require('./state.svc');
 require('./scheduler.svc');
 require('./thread.factory');
 require('./async-request.factory');
 
 //Input
-require('./keys.svc');
+require('./keyboard.svc.js');
 require('./mouse-utils.svc');
 
 //3D Rendering

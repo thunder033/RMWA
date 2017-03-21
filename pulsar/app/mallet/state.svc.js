@@ -1,7 +1,8 @@
 /**
  * Created by Greg on 10/29/2016.
  */
-'use strict';
+const MDT = require('./mallet.dependency-tree').MDT;
+
 /**
  * For now just handles maintain app state, might change in the future
  * @name MState
@@ -11,15 +12,20 @@
  * @property Suspended
  * @property Debug
  */
-require('angular').module('mallet').service('mallet.state', ['$location', function($location){
+require('angular').module('mallet').service(MDT.State, [
+    MDT.ng.$location,
+    MDT.Log,
+    State]);
 
-    var self = this,
-        stateListeners = [],
-        appState = 0;
+function State($location, Log) {
+    const self = this;
+    const stateListeners = [];
+    let appState = 0;
 
-    //Define states - this is probably getting clever code, but is possible setup
-    //for a state machine provider
-    ['Running','Loading','Suspended','Debug'].forEach((state, i) => {
+    // Define states - this is probably getting clever code, but is possible setup
+    // for a state machine provider
+    ['Running', 'Loading', 'Suspended', 'Debug'].forEach((state, i) => {
+        /* eslint no-restricted-properties: "off" */
         Object.defineProperty(self, state, {value: Math.pow(2, i), enumerable: true});
     });
 
@@ -28,8 +34,8 @@ require('angular').module('mallet').service('mallet.state', ['$location', functi
      * @param state
      */
     function invokeStateListeners(state) {
-        stateListeners.forEach(listener => {
-            if((listener.state | state) === state){
+        stateListeners.forEach((listener) => {
+            if ((listener.state | state) === state){
                 listener.callback();
             }
         });
@@ -40,13 +46,13 @@ require('angular').module('mallet').service('mallet.state', ['$location', functi
      * @param state
      * @returns {boolean}
      */
-    this.is = state => {
-        return (state | appState) === appState;
-    };
+    this.is = state => (state | appState) === appState;
 
-    this.getState = () => {
-        return appState;
-    };
+    /**
+     * Returns the current state
+     * @returns {number}
+     */
+    this.getState = () => appState;
 
     /**
      * Creates an event listener for the given state
@@ -54,13 +60,10 @@ require('angular').module('mallet').service('mallet.state', ['$location', functi
      * @param callback
      */
     this.onState = (state, callback) => {
-        stateListeners.push({
-            state: state,
-            callback: callback
-        });
+        stateListeners.push({callback, state});
     };
 
-    function deactivate(state){
+    function deactivate(state) {
         appState ^= appState & state;
     }
 
@@ -68,18 +71,20 @@ require('angular').module('mallet').service('mallet.state', ['$location', functi
      * Activates the given state; some states will automatically deactive others
      * @param state
      */
-    this.setState = state => {
+    this.setState = (state) => {
         appState |= state;
-        switch(state){
+        switch (state) {
             case self.Suspended:
                 deactivate(self.Running | self.Loading);
                 break;
             case self.Running:
                 deactivate(self.Suspended | self.Loading);
                 break;
+            default:
+                break;
         }
 
-        console.log('set state: ' + state + ' => ' + appState);
+        Log.out(`set state: ${state} => ${appState}`);
         invokeStateListeners(state);
     };
 
@@ -96,9 +101,9 @@ require('angular').module('mallet').service('mallet.state', ['$location', functi
      * Deactivate the given state
      * @param state
      */
-    this.removeState = state => {
+    this.removeState = (state) => {
         deactivate(state);
     };
 
     self.clearState();
-}]);
+}

@@ -1,8 +1,21 @@
 /**
  * Created by Greg on 10/28/2016.
  */
+const MDT = require('./mallet.dependency-tree').MDT;
+
 'use strict';
-require('angular').module('mallet').service('MKeyboard', ['mallet.const.MKeys', function(MKeys){
+require('angular').module('mallet').service(MDT.Keyboard, [
+    MDT.const.Keys,
+    Keyboard]);
+
+/**
+ * @method onKeyDown
+ * @method isKeyDown
+ * @method onKeyUp
+ * @param MKeys
+ * @constructor
+ */
+function Keyboard(MKeys){
     var keyState = [],
         keyDownEvents = [],
         keyUpEvents = [];
@@ -37,4 +50,4 @@ require('angular').module('mallet').service('MKeyboard', ['mallet.const.MKeys', 
     this.onKeyUp = (key, callback) => {
         keyUpEvents.push({key: key, callback: callback});
     };
-}]);
+}

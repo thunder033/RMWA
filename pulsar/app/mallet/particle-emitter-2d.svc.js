@@ -5,7 +5,16 @@
  * on the screen. It provides an interface to change how particles are emitted and when.
  */
 'use strict';
-require('angular').module('mallet').service('MParticleEmitter2D', ['MScheduler','MEasel','mallet.const.ScaleFactor', 'MalletMath', function(Scheduler, Easel, ScaleFactor, MM){
+const MDT = require('./mallet.dependency-tree').MDT;
+
+require('angular').module('mallet').service(MDT.ParticleEmitter2D, [
+    MDT.Scheduler,
+    MDT.Easel,
+    MDT.const.ScaleFactor,
+    MDT.Math,
+    ParticleEmitter2D]);
+
+function ParticleEmitter2D(Scheduler, Easel, ScaleFactor, MM){
 
     /**
      * Maintains the properties of a single particle
@@ -163,4 +172,4 @@ require('angular').module('mallet').service('MParticleEmitter2D', ['MScheduler',
     }, 100);
 
     return emitter;
-}]);
+}
