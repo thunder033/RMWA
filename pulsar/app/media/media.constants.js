@@ -32,5 +32,6 @@ angular.module('pulsar.media')
     .constant('media.const.Type', Object.freeze({
         'Song': 'Song',
         'Effect': 'Effect',
+        'Stream': 'Stream',
         'ReverbImpulse' : 'ReverbImpulse'
     }));

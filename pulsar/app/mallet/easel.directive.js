@@ -19,7 +19,11 @@ require('angular').module('mallet').directive('mEasel', ['MEasel','MScheduler', 
             canvas.style.background = '#000';
             ctx = canvas.getContext(attr.context || '2d');
 
-            window.addEventListener('resize', ()=>MEasel.resizeCanvas(canvas, ctx));
+            window.addEventListener('resize', ()=>{
+                MEasel.resizeCanvas(canvas, ctx);
+                const baseCanvas =  MEasel.context.canvas;
+                MEasel.createNewCanvas('quarterRender', baseCanvas.width / 2, baseCanvas.height / 2);
+            });
             MEasel.resizeCanvas(canvas, ctx);
             MEasel.setActiveContext(ctx);
 

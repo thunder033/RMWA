@@ -117,7 +117,7 @@
     font-family: "Droid Sans Mono", "Courier New",  monospace ;
     padding: .2em;
     float: right;
-    margin-right: 1em;
+    margin: 0 1em 0 -2em;
 }
 
 .play-button.stopped:hover,

@@ -18,7 +18,7 @@
     margin-top: .5em;
 }
 
-.menu button {
+.menu .menu-btn {
     background: #fff;
     color: #333;
     padding: .3em .5em;
@@ -28,7 +28,7 @@
     font-size: 1.1em;
 }
 
-.menu button:hover {
+.menu .menu-btn:hover {
     background: #ddd;
     cursor: pointer;
 }
@@ -62,19 +62,4 @@
 
 .multiplier:before {
     content: 'x';
-}
-
-.hud .volume-btn {
-    position: fixed;
-    top: 1em;
-    right: 1em;
-    color: #fff;
-    background: rgba(100,100,100,.6);
-    padding: .5em;
-    border-radius: .5em;
-    border: 0;
-}
-
-.hud .volume-btn:hover {
-    background: rgba(130,130,130,.6);;
 }

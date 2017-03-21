@@ -13,7 +13,7 @@
             templateUrl: 'views/control-panel.html',
             link: function(scope){
                 scope.reverbEffects = [];
-
+                scope.player = AudioPlayer;
                 scope.visualizer = Visualizer;
                 scope.effects = Effects;
 

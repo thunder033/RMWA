@@ -8,6 +8,7 @@ var EventTarget = require('eventtarget');
     require('angular').module('pulsar.audio').service('audio.Player', [
         'mallet.const.SampleCount',
         '$timeout',
+        'media.AudioClip',
         Player]);
 
     /**
@@ -15,13 +16,14 @@ var EventTarget = require('eventtarget');
      * @constructor
      * @extends EventTarget
      */
-    function Player(SampleCount, $timeout){
+    function Player(SampleCount, $timeout, AudioClip){
 
         EventTarget.call(this);
 
         var states = Object.freeze({
             Loading: 'Loading',
             Playing: 'Playing',
+            Streaming: 'Streaming',
             Paused: 'Paused',
             Stopped: 'Stopped',
             Error: 'Error'
@@ -41,6 +43,10 @@ var EventTarget = require('eventtarget');
             gainNode = null, // Master Gain node (affects visualization)
             outputGainNode = null, //Output gain (affects only volume)
 
+            userStream = null,
+            playableStream = null,
+            cachedOutputGain = 0,
+
             state = states.Loading,
 
             trackLength = 0,
@@ -48,7 +54,8 @@ var EventTarget = require('eventtarget');
             trackStart = 0;
 
         function getNow() {
-            return (new Date()).getTime();
+            return ~~window.performance.now();
+            //return (new Date()).getTime();
         }
 
         function getPlaybackTime(){
@@ -81,6 +88,14 @@ var EventTarget = require('eventtarget');
             convolverNode = self.createConvolverNode(audioCtx);
 
             this.addEventListener('ended', ()=>{this.stop();});
+
+            playableStream = new AudioClip({
+                name: 'Local Audio',
+                duration: NaN,
+                source: null,
+                type: 'Stream',
+                artist: '--'
+            });
         };
 
         /**
@@ -129,6 +144,10 @@ var EventTarget = require('eventtarget');
          * @param {number} [startTime=0]
          */
         this.playClip = (clip, startTime) => {
+            if(!clip){
+                return;
+            }
+
             return self.stop().then(()=>{
                 playing = clip;
                 state = states.Loading;
@@ -142,6 +161,31 @@ var EventTarget = require('eventtarget');
                     }, 200);
                 });
             });
+        };
+
+        this.playStream = (stream) => {
+            return self.stop().then(()=>{
+                sourceNode = audioCtx.createMediaStreamSource(stream);
+                gainNode.gain.cancelScheduledValues(audioCtx.currentTime);
+                gainNode.gain.value = 1;
+                sourceNode.connect(gainNode);
+                state = states.Streaming;
+                sourceNode.onended = () => this.dispatchEvent(new Event('ended'));
+                this.dispatchEvent(new Event('play'));
+                trackStart = getNow();
+                trackLength = 0;
+            });
+        };
+
+        this.playUserStream = () => {
+            return navigator.mediaDevices.getUserMedia({audio: true}).then(stream => {
+                userStream = stream;
+                this.playStream(userStream);
+                cachedOutputGain = outputGainNode.gain.value;
+                outputGainNode.gain.value = 0;
+                playing = playableStream;
+            });
+
         };
 
         /**
@@ -169,7 +213,7 @@ var EventTarget = require('eventtarget');
          * @param {number} [pct=0] song position from 0 to 1
          */
         this.seekTo = (pct) => {
-            if(playing){
+            if(playing && state !== states.Streaming){
                 var time = trackLength * (pct || 0);
                 self.playBuffer(sourceNode.buffer, time).then(()=>{
                     trackStart = getNow() - time * 1000;
@@ -191,6 +235,11 @@ var EventTarget = require('eventtarget');
                     sourceNode.onended = null;
                     if(state === states.Playing || state === states.Paused){
                         sourceNode.stop(0);
+                    }
+                    else if(state === states.Streaming) {
+                        sourceNode.disconnect();
+                        outputGainNode.gain.value = cachedOutputGain;
+                        userStream = null;
                     }
                 }
 

@@ -23,7 +23,9 @@ require('angular').module('pulsar.flare').directive('audioPlayer', [function(){
             };
             
             scope.seekBack = function(){
-                scope.player.playClip(scope.player.playing);
+                if(scope.player.state !== 'Streaming'){
+                    scope.player.playClip(scope.player.playing);
+                }
             };
             
             function getMouse(e){

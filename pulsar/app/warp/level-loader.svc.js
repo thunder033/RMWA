@@ -17,7 +17,7 @@
     function LevelLoader(Level, State, MState, MediaStates, AudioPlayer, FieldCache, $q, WarpField) {
 
         function getWarpField(clip) {
-            var cachedField = FieldCache.retrieve(clip);
+            const cachedField = FieldCache.retrieve(clip);
             if(cachedField){
                 return $q.when(cachedField);
             }
