@@ -3,6 +3,7 @@
  */
 'use strict';
 const MDT = require('./mallet/mallet.dependency-tree').MDT;
+const ADT = require('./app.dependency-tree').ADT;
 // misc local dependencies
 require('../assets/js/priorityQueue');
 require('../assets/js/load-error');
@@ -11,7 +12,7 @@ require('../assets/js/load-error');
 var angular = require('angular'),
 
     mallet = require('./mallet'),
-    simpleRequest = require('./shared/simple-request'),
+    simpleRequest = require('./network/simple-request'),
 
     //Pulsar modules
     config = require('./config.module'),
@@ -36,7 +37,7 @@ var app = angular.module('pulsar', [
     simpleRequest.name,
     require('checklist-model'),
     require('angular-ui-router')
-]).config(['$stateProvider', '$urlRouterProvider', function($stateProvider, $urlRouterProvider) {
+]).config([ADT.ng.$stateProvider, ADT.ng.$urlRouterProvider, function($stateProvider, $urlRouterProvider) {
     //message about error messages
     console.info('READMEEEEE: Any HEAD requests with status 404 are expected. Network errors cannot be suppressed through JavaScript.');
     $urlRouterProvider.otherwise('/home');
@@ -55,7 +56,7 @@ var app = angular.module('pulsar', [
         controller: 'warp.GameController'
     });
 
-}]).run([MDT.Scheduler, '$rootScope', 'audio.Player', function(MScheduler, $rootScope, AudioPlayer){
+}]).run([MDT.Scheduler, ADT.ng.$rootScope, 'audio.Player', function(MScheduler, $rootScope, AudioPlayer){
     MScheduler.startMainLoop();
 
     $rootScope.$on('$stateChangeStart', ()=>{

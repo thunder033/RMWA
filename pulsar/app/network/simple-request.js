@@ -7,11 +7,42 @@
  * Utility for making AJAX requests
  * @module simple-request
  */
-var simpleRequest = require('angular').module('simple-request', []);
+const simpleRequest = require('angular').module('simple-request', []);
 
 simpleRequest
     .service('simple-request.SimpleHttp', ['$http', '$q', SimpleHttp])
-    .factory('simple-request.HttpConfig', [httpConfigFactory]);
+    .factory('simple-request.HttpConfig', [httpConfigFactory])
+    .service('simple-request.SimpleSocket', ['$q', SimpleSocket]);
+
+/**
+ * Utilities for working with web sockets
+ * @param $q
+ * @constructor
+ */
+function SimpleSocket($q) {
+
+    /**
+     *
+     * @param socket
+     * @param event
+     * @param message
+     * @returns {Promise}
+     */
+    this.request = function(socket, event, message) {
+        return $q((resolve, reject) => {
+            const id = (Math.random() * 100000) % 100000;
+            socket.emit(event, {_req_id: id, data: {message}});
+
+            const timeout = setTimeout(()=>reject('Request Timed Out'), 3000);
+            const responseKey = `${event}-${id}`;
+            socket.on(responseKey, (data)=>{
+                clearTimeout(timeout);
+                socket.off(responseKey);
+                resolve(data);
+            });
+        });
+    };
+}
 
 /**
  * @returns {HttpConfig}

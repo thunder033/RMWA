@@ -14,7 +14,7 @@ self.document = {
         return {
             pathname: '',
             setAttribute: function () {}
-        }
+        };
     }
 };
 
@@ -27,7 +27,7 @@ self.angular = angular;
 
 // Load simple request
 // for some reason this has to be a single string???
-var simpleRequest = require('../../../app/shared/simple-request');
+var simpleRequest = require('../../../app/network/simple-request');
 //self.importScripts(`${appPath}shared/simple-request.js`);
 
 // Create stub app
