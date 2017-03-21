@@ -12,7 +12,9 @@ var browserify = {
     options: {
         alias: {
             'angular': './scripts/angular.min.proxy.js',
-            'angular-ui-router': './node_modules/angular-ui-router/release/angular-ui-router.min.js'
+            'angular-ui-router': './node_modules/angular-ui-router/release/angular-ui-router.min.js',
+            'event-types': './node_modules/pulsar-lib/dist/src/event-types',
+            'game-params': './node_modules/pulsar-lib/dist/src/game-params',
         }
     }
 };

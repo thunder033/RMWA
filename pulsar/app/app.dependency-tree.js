@@ -17,7 +17,8 @@ const ADT = {
         $stateProvider: '$stateProvider',
         $locationProvider: '$locationProvider',
         $urlRouterProvider: '$urlRouterProvider',
-    }
+    },
+    config: 'config'
 };
 
 /** @type MDT **/

@@ -8,7 +8,8 @@
     "build": "grunt build-prod",
     "preversion": "npm test",
     "version": "npm run build",
-    "postversion": "git push && git push --tags"
+    "postversion": "git push && git push --tags",
+    "updateApi": "npm i git+https://github.com/thunder033/pulsar-lib.git"
   },
   "repository": {
     "type": "git",
@@ -30,6 +31,8 @@
     "pulsar-lib": "git+https://github.com/thunder033/pulsar-lib.git"
   },
   "devDependencies": {
+    "angular-q-spread": "^1.1.0",
+    "angular-socket-io": "^0.7.0",
     "chai": "^3.5.0",
     "grunt": "^1.0.1",
     "grunt-browserify": "^5.0.0",
@@ -44,6 +47,7 @@
     "jshint-stylish": "^2.2.1",
     "mocha": "^3.1.2",
     "request": "^2.79.0",
+    "socket.io-client": "^1.7.3",
     "uglify-js": "git+https://github.com/mishoo/UglifyJS2.git#harmony"
   }
 }
