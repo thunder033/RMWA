@@ -4,6 +4,7 @@
  */
 const MDT = require('../mallet/mallet.dependency-tree').MDT;
 const GameEvent = require('event-types').GameEvent;
+const Track = require('game-params').Track;
 
 module.exports = {FluxCtrl,
 resolve: ADT => [
@@ -12,12 +13,44 @@ resolve: ADT => [
     MDT.Camera,
     MDT.Geometry,
     MDT.Math,
-    MDT.Easel,
     MDT.Keyboard,
     MDT.const.Keys,
     FluxCtrl]};
 
-function FluxCtrl($scope, MScheduler, MCamera, Geometry, MM, MEasel, Keyboard, Keys) {
+/**
+ *
+ * @param $scope
+ * @param MScheduler
+ * @param Camera {Camera}
+ * @param Geometry
+ * @param MM
+ * @param Keyboard
+ * @param Keys
+ * @constructor
+ */
+function FluxCtrl($scope, MScheduler, Camera, Geometry, MM, Keyboard, Keys) {
+    const meshes = Geometry.meshes;
+    const mLanePadding = 0.01; //padding on edge of each lane
+
+    const tLane = new Geometry.Transform()
+        .scaleBy(Track.LANE_WIDTH - mLanePadding, 1, 60)
+        .translate(0, -0.1, -37);
+    tLane.origin.z = -0.5;
+    const grey = MM.vec3(225,225,225);
+
+    function drawLanes(camera) {
+        tLane.position.x = Track.POSITION_X + Track.LANE_WIDTH / 2;
+        for(let i = 0; i < Track.NUM_LANES; i++) {
+            camera.render(meshes.XZQuad, tLane, grey);
+            tLane.position.x += Track.LANE_WIDTH;
+        }
+        camera.present(); //Draw the background
+    }
+
+    function drawBars() {
+
+    }
+
     function init() {
         const tCube = new Geometry.Transform();
         tCube.scale.scale(0.5);
@@ -59,13 +92,15 @@ function FluxCtrl($scope, MScheduler, MCamera, Geometry, MM, MEasel, Keyboard, K
             $scope.updateTime = clientShip.getUpdateTime();
 
             MScheduler.draw(() => {
-                players.forEach(player => MCamera.render(
+                drawLanes(Camera);
+
+                players.forEach(player => Camera.render(
                     Geometry.meshes.Ship,
                     player.getShip().getTransform(),
                     player.getColor()));
 
-                MCamera.render(Geometry.meshes.Cube, [tCube], MM.vec3(255, 0, 0));
-                MCamera.present();
+                Camera.render(Geometry.meshes.Cube, [tCube], MM.vec3(255, 0, 0));
+                Camera.present();
             });
         });
     }

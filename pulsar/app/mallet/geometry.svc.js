@@ -91,8 +91,7 @@ function Geometry(MM){
     Transform.prototype.rotateBy = function (x, y, z) {
         if(x instanceof MM.Vector3){
             this.scale.scale(x);
-        }
-        else {
+        } else {
             this.rotation.x += x;
             this.rotation.y += typeof y === 'number' ? y : x;
             this.rotation.z += typeof z === 'number' ? z : x;
@@ -111,15 +110,20 @@ function Geometry(MM){
         this.indices = indices;
         this.size = Mesh.getSize(verts);
         this.normals = Mesh.buildNormals(this.verts, this.indices) || [];
+        this.buffer = Mesh.buildVertexBuffer(this.verts);
         Object.seal(this);
     }
 
     Mesh.VERT_SIZE = 3;
 
     Mesh.prototype.getVertexBuffer = function(){
-        var buffer = new Float32Array(this.verts.length * Mesh.VERT_SIZE);
-        this.verts.forEach((vert, i) => {
-            var vertIndex = i * Mesh.VERT_SIZE;
+        return this.buffer.slice();
+    };
+
+    Mesh.buildVertexBuffer = function(verts) {
+        const buffer = new Float32Array(verts.length * Mesh.VERT_SIZE);
+        verts.forEach((vert, i) => {
+            const vertIndex = i * Mesh.VERT_SIZE;
             buffer[vertIndex] = vert.x;
             buffer[vertIndex + 1] = vert.y;
             buffer[vertIndex + 2] = vert.z;
@@ -136,25 +140,29 @@ function Geometry(MM){
      */
     Mesh.buildNormals = function(verts, indices){
         if(indices.length % 3 !== 0){
-            return;
+            return null;
         }
 
-        var faceNormals = new Array(Math.floor(indices.length / 3));
-        for(var i = 0; i < indices.length; i += 3){
-            var a = verts[indices[i]], b = verts[indices[i + 1]], c = verts[indices[i + 2]];
-            var ab = MM.Vector3.subtract(b, a),
-                ac = MM.Vector3.subtract(c, a),
-                normal = ab.cross(ac).normalize();
-                //unitNormal = normal.unit(),
-                //toCircumcenter = (normal.cross(ab).scale(ac.len2()) + ac.cross(normal).scale(ab.len2())),
-                //circumcenter = MM.Vector3.add(a, toCircumcenter);
-                //aAB = Math.acos(a.normalize().dot(b.normalize())) * Math.sign(a.cross(b).dot(normal)),
-                //aAC = Math.acos(a.normalize().dot(c.normalize())) * Math.sign(a.cross(c).dot(normal));
-                //angle = Math.acos(ab.normalize().dot(ac.normalize())) * Math.sign(ab.cross(ac).dot(unitNormal));
+        const faceNormals = new Array(Math.floor(indices.length / 3));
+        for(let i = 0; i < indices.length; i += 3){
+            const a = verts[indices[i]];
+            const b = verts[indices[i + 1]];
+            const c = verts[indices[i + 2]];
 
-            var faceIndex = i / 3;
+            const ab = MM.Vector3.subtract(b, a);
+            const ac = MM.Vector3.subtract(c, a);
+            const normal = ab.cross(ac).normalize();
+
+            // const unitNormal = normal.unit();
+            // const toCircumcenter = (normal.cross(ab).scale(ac.len2()) + ac.cross(normal).scale(ab.len2()));
+            // const circumcenter = MM.Vector3.add(a, toCircumcenter);
+            // const aAB = Math.acos(a.normalize().dot(b.normalize())) * Math.sign(a.cross(b).dot(normal));
+            // const aAC = Math.acos(a.normalize().dot(c.normalize())) * Math.sign(a.cross(c).dot(normal));
+            // const angle = Math.acos(ab.normalize().dot(ac.normalize())) * Math.sign(ab.cross(ac).dot(unitNormal));
+
+            const faceIndex = i / 3;
             faceNormals[faceIndex] = normal;
-            //console.log(`Face ${faceIndex}: ${angle} ${normal} ${unitNormal}`);
+             // console.log(`Face ${faceIndex}: ${angle} ${normal} ${unitNormal}`);
         }
 
         return faceNormals;
@@ -169,8 +177,8 @@ function Geometry(MM){
             return;
         }
 
-        var min = verts[0].clone();
-        var max = verts[0].clone();
+        let min = verts[0].clone();
+        let max = verts[0].clone();
 
         verts.forEach(v => {
             if(v.x < min.x) {
@@ -197,7 +205,7 @@ function Geometry(MM){
         return MM.Vector3.subtract(max, min);
     };
 
-    var meshes = {
+    const meshes = {
         XYQuad: new Mesh([
                 MM.vec3(-0.5, -0.5, 0),
                 MM.vec3(-0.5, +0.5, 0),

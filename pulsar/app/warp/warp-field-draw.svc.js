@@ -25,13 +25,11 @@ function WarpFieldDraw(MScheduler, WarpLevel, MM, WarpState, MCamera, Geometry, 
         Transform = Geometry.Transform;
 
     var mLaneWidth = 0.20, //width of each lane
-        mLanePadding = 0.01, //padding on edge of each lane
+        mLanePadding = 0.01; //padding on edge of each lane
 
-        tLane = new Transform();
-    tLane.scale.x = mLaneWidth - mLanePadding;
-    tLane.scale.z = 60;
-    tLane.position.z = -37;
-    tLane.position.y = -0.1;
+    const tLane = new Transform()
+        .scaleBy(mLaneWidth - mLanePadding, 1, 60)
+        .translate(0, -0.1, -37);
     tLane.origin.z = -0.5;
 
     var tZero = new Transform();
