@@ -79,10 +79,12 @@ function FluxCtrl($scope, MScheduler, Camera, Geometry, MM, Keyboard, Keys) {
         Keyboard.onKeyDown(Keys.Left, () => clientShip.strafe(-1));
         Keyboard.onKeyDown(Keys.Right, () => clientShip.strafe(1));
 
+        const cameraSpeed = 0.005;
+
         Keyboard.onKeyUp(Keys.Left, sendKeysReleased);
         Keyboard.onKeyUp(Keys.Right, sendKeysReleased);
 
-        MScheduler.schedule(() => {
+        MScheduler.schedule((dt) => {
             const rot = (~~performance.now()) / 200;
             tCube.rotation.x = rot;
             tCube.rotation.y = rot;
@@ -90,6 +92,13 @@ function FluxCtrl($scope, MScheduler, Camera, Geometry, MM, Keyboard, Keys) {
             $scope.posX = clientShip.getTransform().position.x.toFixed(3);
             $scope.lossPct = ~~(clientShip.getDataLoss() * 100);
             $scope.updateTime = clientShip.getUpdateTime();
+
+            if (Keyboard.isKeyDown(87 /*W*/)) { Camera.timeTranslate(MM.vec3(0, cameraSpeed, 0), dt); }
+            if (Keyboard.isKeyDown(65 /*A*/)) { Camera.timeTranslate(MM.vec3(-cameraSpeed, 0, 0), dt); }
+            if (Keyboard.isKeyDown(83 /*S*/)) { Camera.timeTranslate(MM.vec3(0, -cameraSpeed, 0), dt); }
+            if (Keyboard.isKeyDown(68 /*D*/)) { Camera.timeTranslate(MM.vec3(cameraSpeed, 0, 0), dt); }
+            if (Keyboard.isKeyDown(69 /*E*/)) { Camera.timeTranslate(MM.vec3(0, 0, cameraSpeed), dt); }
+            if (Keyboard.isKeyDown(67 /*C*/)) { Camera.timeTranslate(MM.vec3(0, 0, -cameraSpeed), dt); }
 
             MScheduler.draw(() => {
                 drawLanes(Camera);

@@ -26,8 +26,10 @@ function Camera(MM, MEasel, Geometry, Color, MScheduler, MState) {
         return Math.atan(1 / focalLength);
     };
 
+    const tCamera = new Geometry.Transform()
+        .translate(0, 0.2, 10);
     // position of the camera in 3d space
-    this.position = MM.vec3(0, 0.2, 10);
+    this.forward = MM.vec3(0, 0, 1).normalize();
     const light = MM.vec3(-1, -1, -1).normalize();
 
     this.toVertexBuffer = (verts) => {
@@ -41,6 +43,8 @@ function Camera(MM, MEasel, Geometry, Color, MScheduler, MState) {
     
         return buffer;
     };
+
+    this.timeTranslate = tCamera.timeTranslate.bind(tCamera);
 
     /**
      *
@@ -122,9 +126,9 @@ function Camera(MM, MEasel, Geometry, Color, MScheduler, MState) {
                 centroidZ = (aZ + bZ + cZ) / 3,
                 
                 // Calculate to triangle vector
-                toTriX = self.position.x - centroidX,
-                toTriY = self.position.y - centroidY,
-                toTriZ = self.position.z - centroidZ;
+                toTriX = tCamera.position.x - centroidX,
+                toTriY = tCamera.position.y - centroidY,
+                toTriZ = tCamera.position.z - centroidZ;
 
             // Not sure if we need to normalize or not, but doesn't appear so...
             // toTriLen = Math.sqrt(toTriX * toTriX + toTriY * toTriY + toTriZ * toTriZ);
@@ -159,10 +163,10 @@ function Camera(MM, MEasel, Geometry, Color, MScheduler, MState) {
             screenCenter = MM.vec2(ctx.canvas.width / 2, viewport.y / 2); // center of the viewport
 
         // Get the displacement of the vertex
-        const dispX = buffer[0] - self.position.x,
+        const dispX = buffer[0] - tCamera.position.x,
             // negative because screen space is inverted
-            dispY = -(buffer[1] - self.position.y),
-            dispZ = self.position.z - buffer[2];
+            dispY = -(buffer[1] - tCamera.position.y),
+            dispZ = tCamera.position.z - buffer[2];
 
         // Transform the vertex into screen space
         const distance = Math.sqrt(dispX * dispX + dispY * dispY + dispZ * dispZ);
@@ -171,6 +175,17 @@ function Camera(MM, MEasel, Geometry, Color, MScheduler, MState) {
             screenY = dispY * fieldScale * viewport.y / self.renderRatio + screenCenter.y;
 
         return [screenX, screenY, fieldScale];
+    };
+
+    /**
+     * Determines if the given position is in front of the camera
+     * @param position
+     * @returns {boolean}
+     */
+    this.isVisible = function(position) {
+        const disp = MM.Vector3.subtract(tCamera.position, position);
+        // check if the object is in front of the camera
+        return disp.dot(self.forward) > 0;
     };
 
     this.projectBuffer = (buffer, culledFaces, normals, indices, drawQueue, color) => {
@@ -198,10 +213,10 @@ function Camera(MM, MEasel, Geometry, Color, MScheduler, MState) {
 
             const b = indices[i] * Mesh.VERT_SIZE,
             // Get the displacement of the vertex
-                dispX = buffer[b] - self.position.x,
+                dispX = buffer[b] - tCamera.position.x,
             // negative because screen space is inverted
-                dispY = -(buffer[b + 1] - self.position.y),
-                dispZ = self.position.z - buffer[b + 2];
+                dispY = -(buffer[b + 1] - tCamera.position.y),
+                dispZ = tCamera.position.z - buffer[b + 2];
 
             // Transform the vertex into screen space
             const distance = Math.sqrt(dispX * dispX + dispY * dispY + dispZ * dispZ);
@@ -322,7 +337,7 @@ function Camera(MM, MEasel, Geometry, Color, MScheduler, MState) {
 
             // Don't render things that are behind the camera
             // TODO: this needs to be changed be based off camera camera position/perspective
-            if (self.position.z - transforms[t].position.z < 0) {
+            if (!this.isVisible(transforms[t].position)) {
                 if (MState.is(MState.Debug)) { // TODO: add logging levels (this would be VERY verbose)
                     // console.warn('Mesh at ' + transforms[t].position + ' was skipped');
                 }
