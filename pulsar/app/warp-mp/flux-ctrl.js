@@ -86,9 +86,6 @@ function FluxCtrl($scope, MScheduler, Camera, Geometry, MM, Keyboard, Keys) {
 
         MScheduler.schedule((dt) => {
             const rot = (~~performance.now()) / 200;
-            tCube.rotation.x = rot;
-            tCube.rotation.y = rot;
-            tCube.rotation.z = rot;
             $scope.posX = clientShip.getTransform().position.x.toFixed(3);
             $scope.lossPct = ~~(clientShip.getDataLoss() * 100);
             $scope.updateTime = clientShip.getUpdateTime();

@@ -22,8 +22,13 @@ function Camera(MM, MEasel, Geometry, Color, MScheduler, MState) {
     this.renderRatio = 100;
 
     this.getLensAngle = () => {
-        const focalLength = 70;
-        return Math.atan(1 / focalLength);
+        return (1 / 2) * Math.PI;
+        // const focalLength = 70;
+        // return Math.atan(1 / focalLength);
+    };
+
+    this.getImageDistance = () => {
+        return 35;
     };
 
     const tCamera = new Geometry.Transform()
@@ -144,9 +149,9 @@ function Camera(MM, MEasel, Geometry, Color, MScheduler, MState) {
                 // Calculate the dot product of the displacement vector and the face normal
                 dot = toTriX * normalX + toTriY * normalY + toTriZ * normalZ;
 
-            // If the dot product is great than or equal to zero, the face will not be rendered
+            // If the dot product is greater than or equal to zero, the face will not be rendered
             // A 0 dot product means the faces is perpendicular and will not be seen
-            // A do product of great than one means the face is facing away from the camera
+            // A dot product of greater than one means the face is facing away from the camera
             const faceIndex = ~~(i / 3);
             culledFaces[faceIndex] = (dot >= 0) ? 0 : 1;
         }
@@ -157,7 +162,7 @@ function Camera(MM, MEasel, Geometry, Color, MScheduler, MState) {
 
     this.projectPoint = (buffer) => {
         /* eslint-disable */
-        const tanLensAngle = Math.tan(self.getLensAngle()),
+        const tanLensAngle = Math.tan(self.getLensAngle() / 2),
             ctx = MEasel.context,
             viewport = MM.vec2(ctx.canvas.height, ctx.canvas.height),
             screenCenter = MM.vec2(ctx.canvas.width / 2, viewport.y / 2); // center of the viewport
@@ -190,7 +195,7 @@ function Camera(MM, MEasel, Geometry, Color, MScheduler, MState) {
 
     this.projectBuffer = (buffer, culledFaces, normals, indices, drawQueue, color) => {
         /* eslint-disable */
-        const tanLensAngle = Math.tan(self.getLensAngle()),
+        const tanLensAngle = Math.tan(self.getLensAngle() / 2),
             ctx = MEasel.context,
             viewport = MM.vec2(ctx.canvas.height, ctx.canvas.height),
             screenCenter = MM.vec2(ctx.canvas.width / 2, viewport.y / 2); // center of the viewport
@@ -216,12 +221,13 @@ function Camera(MM, MEasel, Geometry, Color, MScheduler, MState) {
                 dispX = buffer[b] - tCamera.position.x,
             // negative because screen space is inverted
                 dispY = -(buffer[b + 1] - tCamera.position.y),
-                dispZ = tCamera.position.z - buffer[b + 2];
+                dispZ = buffer[b + 2] - tCamera.position.z;
 
             // Transform the vertex into screen space
             const distance = Math.sqrt(dispX * dispX + dispY * dispY + dispZ * dispZ);
             avgDist += distance / faceSize;
-            const fieldScale = Math.abs(1 / (distance / 5 * tanLensAngle));
+            // The size of the field of view at the distance of the point
+            const fieldScale = distance * Math.abs(1 / tanLensAngle);
             const screenX = dispX * fieldScale * viewport.x / self.renderRatio + screenCenter.x;
             const screenY = dispY * fieldScale * viewport.y / self.renderRatio + screenCenter.y;
 
@@ -232,7 +238,6 @@ function Camera(MM, MEasel, Geometry, Color, MScheduler, MState) {
             // Push the vertices into face buffer
             if ((i + 1) % faceSize === 0){
                 faceIndex = (i - (i % faceSize)) / faceSize;
-
 
                 const normalX = normals[faceIndex * 3],
                     normalY = normals[faceIndex * 3 + 1],
