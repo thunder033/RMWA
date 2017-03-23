@@ -52,8 +52,25 @@ function FluxCtrl($scope, MScheduler, Camera, Geometry, MM, Keyboard, Keys) {
     }
 
     function init() {
-        const tCube = new Geometry.Transform();
-        tCube.scale.scale(0.5);
+        const tCube = new Geometry.Transform()
+            .scaleBy(0.5)
+            .translate(0, 0, -5);
+
+        const tCube2 = new Geometry.Transform()
+            .scaleBy(0.5)
+            .translate(0, 0, -15);
+
+        const tCube3 = new Geometry.Transform()
+            .scaleBy(0.5)
+            .translate(0, -5, -5);
+
+        const tCube4 = new Geometry.Transform()
+            .scaleBy(0.5)
+            .translate(0, 5, -15);
+
+        const tCube5 = new Geometry.Transform()
+            .scaleBy(0.5, 0.5, 11)
+            .translate(0, 0.5, -10);
 
         const players = $scope.warpGame.getPlayers();
         let clientShip = null;
@@ -87,8 +104,10 @@ function FluxCtrl($scope, MScheduler, Camera, Geometry, MM, Keyboard, Keys) {
         MScheduler.schedule((dt) => {
             const rot = (~~performance.now()) / 200;
             $scope.posX = clientShip.getTransform().position.x.toFixed(3);
-            $scope.lossPct = ~~(clientShip.getDataLoss() * 100);
+            // $scope.lossPct = ~~(clientShip.getDataLoss() * 100);
             $scope.updateTime = clientShip.getUpdateTime();
+            $scope.tCamera = Camera.getPos().toString();
+            $scope.hasBadZ  = Camera.hasBadZ();
 
             if (Keyboard.isKeyDown(87 /*W*/)) { Camera.timeTranslate(MM.vec3(0, cameraSpeed, 0), dt); }
             if (Keyboard.isKeyDown(65 /*A*/)) { Camera.timeTranslate(MM.vec3(-cameraSpeed, 0, 0), dt); }
@@ -98,7 +117,7 @@ function FluxCtrl($scope, MScheduler, Camera, Geometry, MM, Keyboard, Keys) {
             if (Keyboard.isKeyDown(67 /*C*/)) { Camera.timeTranslate(MM.vec3(0, 0, -cameraSpeed), dt); }
 
             MScheduler.draw(() => {
-                drawLanes(Camera);
+                // drawLanes(Camera);
 
                 players.forEach(player => Camera.render(
                     Geometry.meshes.Ship,
@@ -106,6 +125,10 @@ function FluxCtrl($scope, MScheduler, Camera, Geometry, MM, Keyboard, Keys) {
                     player.getColor()));
 
                 Camera.render(Geometry.meshes.Cube, [tCube], MM.vec3(255, 0, 0));
+                Camera.render(Geometry.meshes.Cube, [tCube2], MM.vec3(0, 255, 0));
+                Camera.render(Geometry.meshes.Cube, [tCube3], MM.vec3(255, 255, 0));
+                Camera.render(Geometry.meshes.Cube, [tCube4], MM.vec3(0, 255, 255));
+                Camera.render(Geometry.meshes.Cube, [tCube5], MM.vec3(255, 0, 255));
                 Camera.present();
             });
         });

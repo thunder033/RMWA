@@ -7,9 +7,13 @@
     </div>
 
     <div ng-controller="game.WarpCtrl" class="warp-wrapper" ng-show="state === states.PLAYING">
-        <span ng-bind="posX"></span><span> </span>
-        <span ng-bind="lossPct + '%'"></span>
-        <span ng-bind="updateTime"></span>
+        <div class="debug-stats">
+            <span ng-bind="posX"></span><span> </span>
+            <!--<span ng-bind="lossPct + '%'"></span>-->
+            <span ng-bind="updateTime"></span><br>
+            <span ng-bind="tCamera"></span> <span style="color: red" ng-if="hasBadZ">Bad Z</span>
+        </div>
+
         <m-easel id="game"></m-easel>
     </div>
 

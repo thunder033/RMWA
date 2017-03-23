@@ -5,10 +5,11 @@
   "main": "index.js",
   "scripts": {
     "test": "./node_modules/.bin/mocha --reporter spec pulsar/test/*.js",
-    "build": "grunt build-prod",
+    "build": "grunt build-dev",
     "preversion": "npm test",
     "version": "npm run build",
     "postversion": "git push && git push --tags",
+    "watch": "grunt watch",
     "updateApi": "npm i git+https://github.com/thunder033/pulsar-lib.git"
   },
   "repository": {
@@ -23,7 +24,7 @@
   "homepage": "https://github.com/thunder033/RMWA#readme",
   "dependencies": {
     "angular": "1.5.8",
-    "angular-cookies": "^1.6.0",
+    "angular-cookies": "1.6.0",
     "angular-ui-router": "^0.3.1",
     "checklist-model": "^0.10.0",
     "eventtarget": "^0.1.0",

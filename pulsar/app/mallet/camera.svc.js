@@ -21,6 +21,8 @@ function Camera(MM, MEasel, Geometry, Color, MScheduler, MState) {
 
     this.renderRatio = 100;
 
+    let hasBadZ = false;
+
     this.getLensAngle = () => {
         return (1 / 2) * Math.PI;
         // const focalLength = 70;
@@ -32,10 +34,18 @@ function Camera(MM, MEasel, Geometry, Color, MScheduler, MState) {
     };
 
     const tCamera = new Geometry.Transform()
-        .translate(0, 0.2, 10);
+        .translate(0, 0, 0);
     // position of the camera in 3d space
     this.forward = MM.vec3(0, 0, 1).normalize();
     const light = MM.vec3(-1, -1, -1).normalize();
+
+    this.getPos = () => {
+        return tCamera.position;
+    };
+
+    this.hasBadZ = () => {
+        return hasBadZ;
+    };
 
     this.toVertexBuffer = (verts) => {
         const vertSize = Mesh.VERT_SIZE;
@@ -173,11 +183,12 @@ function Camera(MM, MEasel, Geometry, Color, MScheduler, MState) {
             dispY = -(buffer[1] - tCamera.position.y),
             dispZ = tCamera.position.z - buffer[2];
 
+        // TODO PROJECT POINT
         // Transform the vertex into screen space
         const distance = Math.sqrt(dispX * dispX + dispY * dispY + dispZ * dispZ);
         const fieldScale = Math.abs(1 / (distance / 5 * tanLensAngle)),
-            screenX = dispX * fieldScale * viewport.x / self.renderRatio + screenCenter.x,
-            screenY = dispY * fieldScale * viewport.y / self.renderRatio + screenCenter.y;
+            screenX = (dispX * fieldScale * viewport.x) + screenCenter.x,
+            screenY = (dispY * fieldScale * viewport.y) + screenCenter.y;
 
         return [screenX, screenY, fieldScale];
     };
@@ -210,26 +221,32 @@ function Camera(MM, MEasel, Geometry, Color, MScheduler, MState) {
         let avgDist = 0;
         const faceSize = 3;
 
+        const cBuffer = this.applyTransform(buffer, MM.Vector3.One, MM.Vector3.scale(tCamera.position, -1), MM.Vector3.One, MM.Vector3.Zero, MM.Vector3.Zero);
+
         for (let i = 0, l = indices.length; i < l; i ++) {
             // If the face is facing away from the camera, don't render it
             if (culledFaces[(i - (i % faceSize)) / faceSize] === 0) {
-                continue;
+                // continue;
             }
 
-            const b = indices[i] * Mesh.VERT_SIZE,
+            const b = indices[i] * Mesh.VERT_SIZE;
             // Get the displacement of the vertex
-                dispX = buffer[b] - tCamera.position.x,
+            const dispX = cBuffer[b];
             // negative because screen space is inverted
-                dispY = -(buffer[b + 1] - tCamera.position.y),
-                dispZ = buffer[b + 2] - tCamera.position.z;
+            const dispY = -cBuffer[b + 1];
+            const dispZ = cBuffer[b + 2];
 
             // Transform the vertex into screen space
             const distance = Math.sqrt(dispX * dispX + dispY * dispY + dispZ * dispZ);
             avgDist += distance / faceSize;
             // The size of the field of view at the distance of the point
-            const fieldScale = distance * Math.abs(1 / tanLensAngle);
-            const screenX = dispX * fieldScale * viewport.x / self.renderRatio + screenCenter.x;
-            const screenY = dispY * fieldScale * viewport.y / self.renderRatio + screenCenter.y;
+            const fieldScale = Math.abs(1 / tanLensAngle);
+
+            hasBadZ = hasBadZ || dispZ > 0;
+
+            const n = 1 / (-dispZ);
+            const screenX = (dispX * n * fieldScale) * viewport.x + screenCenter.x;
+            const screenY = (dispY * n * fieldScale) * viewport.y + screenCenter.y;
 
             // Insert the screen coordinates into the screen buffer
             faceBuffer[faceBufferIndex++] = screenX;
@@ -278,7 +295,7 @@ function Camera(MM, MEasel, Geometry, Color, MScheduler, MState) {
         }
 
         ctx.closePath();
-        ctx.fill();
+        // ctx.fill();
         ctx.stroke();
     };
 
@@ -347,7 +364,7 @@ function Camera(MM, MEasel, Geometry, Color, MScheduler, MState) {
                     // console.warn('Mesh at ' + transforms[t].position + ' was skipped');
                 }
 
-                continue;
+                // continue;
             }
 
             // Get a transformed vertex buffer for the mesh
@@ -394,6 +411,7 @@ function Camera(MM, MEasel, Geometry, Color, MScheduler, MState) {
     };
 
     MScheduler.schedule(() => {
+        hasBadZ = false;
         MScheduler.draw(self.present, 0);
     });
 
