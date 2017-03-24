@@ -109,6 +109,8 @@ function LobbyCtrl(Connection, $scope, ClientMatch, Client, $state, $q, NetworkE
             console.log(rooms);
             rooms.map(id => NetworkEntity.getById(ClientRoom, id).then(addRoom));
         });
+
+        $scope.user = Connection.getUser();
     });
 
     $scope.authenticate = (username) => {
