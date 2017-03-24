@@ -13,9 +13,12 @@ resolve: ADT => [
     ADT.game.ClientMatch,
     ADT.network.Client,
     ADT.ng.$state,
+    ADT.ng.$q,
+    ADT.network.NetworkEntity,
+    ADT.network.ClientRoom,
     LobbyCtrl]};
 
-function LobbyCtrl(Connection, $scope, ClientMatch, Client, $state) {
+function LobbyCtrl(Connection, $scope, ClientMatch, Client, $state, $q, NetworkEntity, ClientRoom) {
 
     const status = {
         LOADING        : 0,
@@ -56,15 +59,24 @@ function LobbyCtrl(Connection, $scope, ClientMatch, Client, $state) {
         };
     }
 
-    Client.addEventListener(IOEvent.joinedRoom, (e) => {
-        console.log('joined room ', e.room.getName());
-        $scope.activeRoom = e.room;
-        $scope.rooms.push(e.room);
+    function addRoom(room, active) {
+        console.log('joined room ', room.getName());
+
+        if(active || $scope.activeRoom === null) {
+            $scope.activeRoom = room;
+        }
+
+        $scope.rooms.push(room);
+
         if($scope.activeRoom.getName() === 'lobby') {
             $scope.curStatus = status.READY;
         } else {
             $scope.curStatus = status.STAGING;
         }
+    }
+
+    Client.addEventListener(IOEvent.joinedRoom, (e) => {
+        addRoom(e.room, true);
     });
 
     Client.addEventListener(IOEvent.leftRoom, (e) => {
@@ -88,26 +100,34 @@ function LobbyCtrl(Connection, $scope, ClientMatch, Client, $state) {
     Connection.ready().then(() => {
         $scope.curStatus = status.READY;
 
-        Connection.getSocket().get().on(IOEvent.serverError, (err) => $scope.errorMessage = 'Error: ' + (err.message || err));
+        Connection.getSocket().get().on(IOEvent.serverError,
+            (err) => { $scope.errorMessage = `Error: ${err.message || err}`; });
+
+        Connection.getSocket().request('requestRooms').then((rooms) => {
+            $scope.rooms.length = 0;
+            $scope.activeRoom = null;
+            console.log(rooms);
+            rooms.map(id => NetworkEntity.getById(ClientRoom, id).then(addRoom));
+        });
     });
 
-    $scope.authenticate = function(username) {
-        if(username.length > 0) {
+    $scope.authenticate = (username) => {
+        if (username.length > 0) {
             Client.authenticate({name: username})
                 .then(assignScope('user'));
             $scope.curStatus = status.LOADING;
         }
     };
 
-    $scope.joinMatch = function(name) {
-        if(name && name.length > 0) {
-            Client.emit(MatchEvent.requestJoin, {name: name});
+    $scope.joinMatch = (name) => {
+        if (name && name.length > 0) {
+            Client.emit(MatchEvent.requestJoin, {name});
             $scope.curStatus = status.LOADING;
         }
     };
 
-    $scope.createMatch = function(matchName){
-        if(matchName && matchName.length > 0) {
+    $scope.createMatch = (matchName) => {
+        if (matchName && matchName.length > 0) {
             Client.emit(MatchEvent.requestMatch, {label: matchName});
             $scope.curStatus = status.LOADING;
         }
