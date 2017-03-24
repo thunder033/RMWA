@@ -18,7 +18,7 @@ function socketFactory($socket, $q, HttpConfig, Path) {
     class Socket {
 
         constructor(credentials) {
-            const io = require('socket.io-client')(Path.warpApi, {query: HttpConfig.getQueryString(credentials)});
+            const io = require('socket.io-client')(Path.warpApi, {query: HttpConfig.getQueryString(credentials), transports: ['websocket', 'jsonp-polling']});
             const ioSocket = io.connect();
 
             this.socket = $socket({ioSocket: ioSocket});
