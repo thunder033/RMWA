@@ -34,8 +34,8 @@ function FluxCtrl($scope, MScheduler, Camera, Geometry, MM, Keyboard, Keys) {
 
     const tLane = new Geometry.Transform()
         .scaleBy(Track.LANE_WIDTH - mLanePadding, 1, 60)
-        .translate(0, -0.1, -37);
-    tLane.origin.z = -0.5;
+        .translate(0, -0.1, 2.3);
+    tLane.origin.z = 1;
     const grey = MM.vec3(225,225,225);
 
     function drawLanes(camera) {
@@ -52,25 +52,35 @@ function FluxCtrl($scope, MScheduler, Camera, Geometry, MM, Keyboard, Keys) {
     }
 
     function init() {
-        const tCube = new Geometry.Transform()
-            .scaleBy(0.5)
-            .translate(0, 0, -5);
-
-        const tCube2 = new Geometry.Transform()
-            .scaleBy(0.5)
-            .translate(0, 0, -15);
-
-        const tCube3 = new Geometry.Transform()
-            .scaleBy(0.5)
-            .translate(0, -5, -5);
-
-        const tCube4 = new Geometry.Transform()
-            .scaleBy(0.5)
-            .translate(0, 5, -15);
-
-        const tCube5 = new Geometry.Transform()
-            .scaleBy(0.5, 0.5, 11)
-            .translate(0, 0.5, -10);
+        // const tCube = new Geometry.Transform()
+        //     .scaleBy(0.5)
+        //     .translate(0, 0, -5);
+        //
+        // const tCube2 = new Geometry.Transform()
+        //     .scaleBy(0.5)
+        //     .translate(0, 0, -15);
+        //
+        // const tCube3 = new Geometry.Transform()
+        //     .scaleBy(0.5)
+        //     .translate(0, -5, -5);
+        //
+        // const tCube4 = new Geometry.Transform()
+        //     .scaleBy(0.5)
+        //     .translate(0, 5, -15);
+        //
+        // const tCube5 = new Geometry.Transform()
+        //     .scaleBy(0.5, 0.5, 11)
+        //     .translate(0, 0.5, -10);
+        //
+        // const tLane = new Geometry.Transform()
+        //     .scaleBy(1.15, 1, 50)
+        //     .translate(0, 0, -5);
+        //
+        // const tCube6 = new Geometry.Transform()
+        //     .scaleBy(0.5)
+        //     .translate(0, 0.5, -50);
+        //
+        // tLane.origin.z  = 1;
 
         const players = $scope.warpGame.getPlayers();
         let clientShip = null;
@@ -103,7 +113,7 @@ function FluxCtrl($scope, MScheduler, Camera, Geometry, MM, Keyboard, Keys) {
 
         MScheduler.schedule((dt) => {
             const rot = (~~performance.now()) / 200;
-            $scope.posX = clientShip.getTransform().position.x.toFixed(3);
+            $scope.posX = clientShip.getTransform().position.toString();
             // $scope.lossPct = ~~(clientShip.getDataLoss() * 100);
             $scope.updateTime = clientShip.getUpdateTime();
             $scope.tCamera = Camera.getPos().toString();
@@ -117,18 +127,20 @@ function FluxCtrl($scope, MScheduler, Camera, Geometry, MM, Keyboard, Keys) {
             if (Keyboard.isKeyDown(67 /*C*/)) { Camera.timeTranslate(MM.vec3(0, 0, -cameraSpeed), dt); }
 
             MScheduler.draw(() => {
-                // drawLanes(Camera);
+                drawLanes(Camera);
 
                 players.forEach(player => Camera.render(
                     Geometry.meshes.Ship,
                     player.getShip().getTransform(),
                     player.getColor()));
 
-                Camera.render(Geometry.meshes.Cube, [tCube], MM.vec3(255, 0, 0));
-                Camera.render(Geometry.meshes.Cube, [tCube2], MM.vec3(0, 255, 0));
-                Camera.render(Geometry.meshes.Cube, [tCube3], MM.vec3(255, 255, 0));
-                Camera.render(Geometry.meshes.Cube, [tCube4], MM.vec3(0, 255, 255));
-                Camera.render(Geometry.meshes.Cube, [tCube5], MM.vec3(255, 0, 255));
+                // Camera.render(Geometry.meshes.Cube, [tCube], MM.vec3(255, 0, 0));
+                // Camera.render(Geometry.meshes.Cube, [tCube2], MM.vec3(0, 255, 0));
+                // Camera.render(Geometry.meshes.Cube, [tCube3], MM.vec3(255, 255, 0));
+                // Camera.render(Geometry.meshes.Cube, [tCube4], MM.vec3(0, 255, 255));
+                // Camera.render(Geometry.meshes.Cube, [tCube5], MM.vec3(255, 0, 255));
+                // Camera.render(Geometry.meshes.XZQuad, [tLane], MM.vec3(255, 125, 0));
+                // Camera.render(Geometry.meshes.Cube, [tCube6], MM.vec3(255, 255, 255));
                 Camera.present();
             });
         });

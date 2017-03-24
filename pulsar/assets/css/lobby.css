@@ -71,3 +71,31 @@
     color: #fff;
     z-index: 1000;
 }
+
+.start-overlay {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 25em;
+    height: 10em;
+    margin: -5em 0 0 -12.5em;
+    text-align: center;
+    z-index: 100;
+}
+
+.match-players {
+    font-size: 1.2em;
+    font-style: italic;
+}
+
+.match-players span.name {
+    font-weight: bold;
+    font-style: normal;
+}
+
+.end-button {
+    position: fixed;
+    top: 1em;
+    right: 1em;
+    z-index: 100;
+}

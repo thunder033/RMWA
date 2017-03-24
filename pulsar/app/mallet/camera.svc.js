@@ -24,7 +24,7 @@ function Camera(MM, MEasel, Geometry, Color, MScheduler, MState) {
     let hasBadZ = false;
 
     this.getLensAngle = () => {
-        return (1 / 2) * Math.PI;
+        return (3 / 5) * Math.PI;
         // const focalLength = 70;
         // return Math.atan(1 / focalLength);
     };
@@ -34,7 +34,8 @@ function Camera(MM, MEasel, Geometry, Color, MScheduler, MState) {
     };
 
     const tCamera = new Geometry.Transform()
-        .translate(0, 0, 0);
+        .translate(0, 0, 3)
+        .rotateBy(-Math.PI / 10, 0, 0);
     // position of the camera in 3d space
     this.forward = MM.vec3(0, 0, 1).normalize();
     const light = MM.vec3(-1, -1, -1).normalize();
@@ -221,32 +222,31 @@ function Camera(MM, MEasel, Geometry, Color, MScheduler, MState) {
         let avgDist = 0;
         const faceSize = 3;
 
-        const cBuffer = this.applyTransform(buffer, MM.Vector3.One, MM.Vector3.scale(tCamera.position, -1), MM.Vector3.One, MM.Vector3.Zero, MM.Vector3.Zero);
-
         for (let i = 0, l = indices.length; i < l; i ++) {
             // If the face is facing away from the camera, don't render it
             if (culledFaces[(i - (i % faceSize)) / faceSize] === 0) {
-                // continue;
+                continue;
             }
 
             const b = indices[i] * Mesh.VERT_SIZE;
             // Get the displacement of the vertex
-            const dispX = cBuffer[b];
-            // negative because screen space is inverted
-            const dispY = -cBuffer[b + 1];
-            const dispZ = cBuffer[b + 2];
+            const pX = buffer[b];
+            const pY = -buffer[b + 1]; // negative because screen space is inverted
+            const pZ = buffer[b + 2];
 
-            // Transform the vertex into screen space
-            const distance = Math.sqrt(dispX * dispX + dispY * dispY + dispZ * dispZ);
-            avgDist += distance / faceSize;
             // The size of the field of view at the distance of the point
             const fieldScale = Math.abs(1 / tanLensAngle);
+            const n = 1 / (-pZ);
 
-            hasBadZ = hasBadZ || dispZ > 0;
+            if(n < 0) { // final fail-out for stuff behind the camera
+                // i += (2 - (i % 3));
+                // continue;
+            }
 
-            const n = 1 / (-dispZ);
-            const screenX = (dispX * n * fieldScale) * viewport.x + screenCenter.x;
-            const screenY = (dispY * n * fieldScale) * viewport.y + screenCenter.y;
+            const screenX = (pX * n * fieldScale) * viewport.x + screenCenter.x;
+            const screenY = (pY * n * fieldScale) * viewport.y + screenCenter.y;
+
+            avgDist += (-pZ) / faceSize;
 
             // Insert the screen coordinates into the screen buffer
             faceBuffer[faceBufferIndex++] = screenX;
@@ -295,7 +295,7 @@ function Camera(MM, MEasel, Geometry, Color, MScheduler, MState) {
         }
 
         ctx.closePath();
-        // ctx.fill();
+        ctx.fill();
         ctx.stroke();
     };
 
@@ -376,6 +376,14 @@ function Camera(MM, MEasel, Geometry, Color, MScheduler, MState) {
                 transforms[t].rotation,
                 transforms[t].origin);
 
+            this.applyTransform(
+                buffer,
+                vOne,
+                MM.Vector3.scale(tCamera.position, -1),
+                vOne,
+                tCamera.rotation,
+                vZero);
+
             // Generate a buffer of the transformed face normals
             const normalsBuffer = self.applyTransform(
                 self.toVertexBuffer(mesh.normals),
@@ -383,6 +391,14 @@ function Camera(MM, MEasel, Geometry, Color, MScheduler, MState) {
                 vZero,
                 vOne,
                 transforms[t].rotation,
+                vZero);
+
+            this.applyTransform(
+                normalsBuffer,
+                vZero,
+                vZero,
+                vOne,
+                tCamera.rotation,
                 vZero);
 
             // Determine which faces will be cull (don't render back faces)
