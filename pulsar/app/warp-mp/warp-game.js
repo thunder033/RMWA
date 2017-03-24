@@ -6,14 +6,14 @@ module.exports = {warpGameFactory,
 resolve: ADT => [
     ADT.game.Player,
     ADT.network.NetworkEntity,
-    ADT.game.ClientMatch,
     ADT.game.ClientShip,
     ADT.network.User,
     ADT.ng.$q,
     ADT.network.ClientRoom,
+    ADT.game.WarpField,
     warpGameFactory]};
 
-function warpGameFactory(Player, NetworkEntity, ClientMatch, ClientShip, User, $q, ClientRoom) {
+function warpGameFactory(Player, NetworkEntity, ClientShip, User, $q, ClientRoom, WarpField) {
     const utf8Decoder = new TextDecoder('utf-8');
     function createPlayers(buffer, match) {
         const players = [];
@@ -51,6 +51,7 @@ function warpGameFactory(Player, NetworkEntity, ClientMatch, ClientShip, User, $
             super(params.id);
             this.match = null;
             this.players = [];
+            this.warpField = null;
         }
 
         /**
@@ -58,7 +59,11 @@ function warpGameFactory(Player, NetworkEntity, ClientMatch, ClientShip, User, $
          * @returns {*}
          */
         sync(params) {
-            return NetworkEntity.getById(ClientRoom, params.matchId).then((match) => {
+            const getMatch = NetworkEntity.getById(ClientRoom, params.matchId);
+            const getWarpField = NetworkEntity.getById(WarpField, params.warpFieldId);
+
+            return $q.all([getMatch, getWarpField]).spread((match, warpField) => {
+                this.warpField = warpField;
                 this.match = match;
                 return createPlayers(params.shipIds, match).then((players) => { this.players = players; });
             }).finally(() => {
@@ -66,6 +71,10 @@ function warpGameFactory(Player, NetworkEntity, ClientMatch, ClientShip, User, $
                 delete params.shipIds;
                 super.sync(params);
             });
+        }
+
+        getWarpField() {
+            return this.warpField;
         }
 
         getPlayers() {

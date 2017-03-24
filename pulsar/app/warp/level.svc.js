@@ -55,10 +55,7 @@
             return (self.warpField[self.sliceIndex + relativeIndex] || {}).loudness || 0;
         };
 
-        /**
-         * Update the various properties of the game level
-         */
-        MScheduler.schedule((dt) => {
+        this.update = (dt) => {
             if(State.current !== State.Playing) {
                 return;
             }
@@ -101,6 +98,11 @@
             if(self.sliceIndex > self.warpField.length){
                 State.current = State.LevelComplete;
             }
-        });
+        };
+
+        /**
+         * Update the various properties of the game level
+         */
+        MScheduler.schedule((dt) => this.update(dt));
     }
 })();

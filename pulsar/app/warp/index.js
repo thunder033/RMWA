@@ -8,6 +8,15 @@
  */
 var warp = require('angular').module('pulsar.warp', []);
 
+const ADT = require('../app.dependency-tree.js').ADT;
+
+ADT.warp = {
+    Level: 'warp.Level',
+    WarpField: 'warp.WarpField',
+    Bar: 'warp.Bar',
+    State: 'warp.State',
+};
+
 require('./bar.factory');
 require('./game.controller');
 require('./hud.directive');

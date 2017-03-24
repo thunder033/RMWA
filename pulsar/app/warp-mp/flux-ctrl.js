@@ -15,6 +15,9 @@ resolve: ADT => [
     MDT.Math,
     MDT.Keyboard,
     MDT.const.Keys,
+    ADT.warp.Level,
+    ADT.warp.Bar,
+    ADT.warp.State,
     FluxCtrl]};
 
 /**
@@ -26,9 +29,12 @@ resolve: ADT => [
  * @param MM
  * @param Keyboard
  * @param Keys
+ * @param Level {Level}
+ * @param Bar
+ * @param State
  * @constructor
  */
-function FluxCtrl($scope, MScheduler, Camera, Geometry, MM, Keyboard, Keys) {
+function FluxCtrl($scope, MScheduler, Camera, Geometry, MM, Keyboard, Keys, Level, Bar, State) {
     const meshes = Geometry.meshes;
     const mLanePadding = 0.01; //padding on edge of each lane
 
@@ -47,8 +53,95 @@ function FluxCtrl($scope, MScheduler, Camera, Geometry, MM, Keyboard, Keys) {
         camera.present(); //Draw the background
     }
 
-    function drawBars() {
+    function processCameraInput(dt) {
+        const cameraSpeed = 0.005;
 
+        if (Keyboard.isKeyDown(87 /*W*/)) { Camera.timeTranslate(MM.vec3(0, cameraSpeed, 0), dt); }
+        if (Keyboard.isKeyDown(65 /*A*/)) { Camera.timeTranslate(MM.vec3(-cameraSpeed, 0, 0), dt); }
+        if (Keyboard.isKeyDown(83 /*S*/)) { Camera.timeTranslate(MM.vec3(0, -cameraSpeed, 0), dt); }
+        if (Keyboard.isKeyDown(68 /*D*/)) { Camera.timeTranslate(MM.vec3(cameraSpeed, 0, 0), dt); }
+        if (Keyboard.isKeyDown(69 /*E*/)) { Camera.timeTranslate(MM.vec3(0, 0, cameraSpeed), dt); }
+        if (Keyboard.isKeyDown(67 /*C*/)) { Camera.timeTranslate(MM.vec3(0, 0, -cameraSpeed), dt); }
+    }
+
+    function getStartOffset(barBuffer){
+        let startOffset = 6;
+        const sliceOffset = 3;
+        for(let i = 0; i < sliceOffset; i++){
+            startOffset += barBuffer[i].speed * Bar.scale.z + Bar.margin;
+        }
+
+        return startOffset;
+    }
+
+    function getItems(indices, items){
+        return indices.map(i => items[i]);
+    }
+
+    const gems = new Array(Level.barsVisible);
+    for(let g = 0; g < gems.length; g++){
+        gems[g] = new Geometry.Transform();
+        //gems[g].position.y = -.5;
+        gems[g].rotation.y = Math.PI / 4;
+        gems[g].rotation.x = Math.PI / 4;
+        gems[g].scale = MM.vec3(0.175);
+    }
+
+    function drawGems(dt, tt) {
+
+        //make the first bar yellow
+        //ctx.fillStyle = '#ff0';
+        let color = MM.vec3(100,255,255);
+
+        let drawOffset = 0; // getStartOffset(Level.barQueue); //this spaces the bars correctly across the screen, based on how far above the plane the camera is
+
+        const blackGems = [];
+        for(let i = 0; i < Level.barsVisible; i++){
+            if(i + 10 > Level.barsVisible){
+                const sliceValue = 1 - (Level.barsVisible - i) / 10;
+                color = MM.vec3(100 + sliceValue * 110, 255 - sliceValue * 45, 255 - sliceValue * 45);
+            }
+
+            const depth = Bar.scale.z * 1; // Level.barQueue[i].speed;
+            const zOffset = drawOffset - Level.barOffset;
+
+            const sliceGems = (Level.warpField[Level.sliceIndex + i] || {}).gems || [];
+            gems[i].scale.set(0);
+
+            if((Level.sliceIndex + i) % 2 === 0){
+                for(let l = 0; l < Track.NUM_LANES; l++){
+                    if(sliceGems[l] === 0 || sliceGems[l] === 2){
+                        continue;
+                    }
+
+                    const gemXPos = Track.POSITION_X + Track.LANE_WIDTH / 2 + Track.LANE_WIDTH * l;
+                    gems[i].position.set(gemXPos, 0.1, zOffset);
+                    if(sliceGems[l] === 1){
+                        gems[i].scale.set(0.15);
+                        gems[i].rotation.set(0, tt / 1000, 0);
+                    } else if(sliceGems[l] === 3){
+                        blackGems.push(i);
+                        gems[i].rotation.set(
+                            tt / 666,
+                            tt / 666,
+                            Math.PI / 4);
+                    }
+                }
+            }
+
+            drawOffset -= depth + Bar.margin; //add the width the current bar (each bar has a different width)
+        }
+
+
+        const green = MM.vec3(0,225,40);
+        Camera.render(meshes.Cube, gems, green);
+
+        const darkGrey = MM.vec3(25);
+        const transforms = getItems(blackGems, gems);
+        transforms.forEach(t => t.scale.set(0.3));
+        Camera.render(meshes.Spike, transforms, darkGrey);
+
+        Camera.present(); //Draw the gems
     }
 
     function init() {
@@ -93,6 +186,12 @@ function FluxCtrl($scope, MScheduler, Camera, Geometry, MM, Keyboard, Keys) {
             return player.getShip();
         });
 
+        Level.reset();
+        Level.load($scope.warpGame.getWarpField());
+        MScheduler.schedule(Level.update);
+        console.log(State);
+        State.current = State.Playing;
+
         console.log(ships);
         console.log(clientShip);
         $scope.posX = 0;
@@ -106,25 +205,16 @@ function FluxCtrl($scope, MScheduler, Camera, Geometry, MM, Keyboard, Keys) {
         Keyboard.onKeyDown(Keys.Left, () => clientShip.strafe(-1));
         Keyboard.onKeyDown(Keys.Right, () => clientShip.strafe(1));
 
-        const cameraSpeed = 0.005;
-
         Keyboard.onKeyUp(Keys.Left, sendKeysReleased);
         Keyboard.onKeyUp(Keys.Right, sendKeysReleased);
 
-        MScheduler.schedule((dt) => {
-            const rot = (~~performance.now()) / 200;
+        MScheduler.schedule((dt, tt) => {
             $scope.posX = clientShip.getTransform().position.toString();
-            // $scope.lossPct = ~~(clientShip.getDataLoss() * 100);
             $scope.updateTime = clientShip.getUpdateTime();
             $scope.tCamera = Camera.getPos().toString();
-            $scope.hasBadZ  = Camera.hasBadZ();
+            $scope.sliceIndex = Level.sliceIndex;
 
-            if (Keyboard.isKeyDown(87 /*W*/)) { Camera.timeTranslate(MM.vec3(0, cameraSpeed, 0), dt); }
-            if (Keyboard.isKeyDown(65 /*A*/)) { Camera.timeTranslate(MM.vec3(-cameraSpeed, 0, 0), dt); }
-            if (Keyboard.isKeyDown(83 /*S*/)) { Camera.timeTranslate(MM.vec3(0, -cameraSpeed, 0), dt); }
-            if (Keyboard.isKeyDown(68 /*D*/)) { Camera.timeTranslate(MM.vec3(cameraSpeed, 0, 0), dt); }
-            if (Keyboard.isKeyDown(69 /*E*/)) { Camera.timeTranslate(MM.vec3(0, 0, cameraSpeed), dt); }
-            if (Keyboard.isKeyDown(67 /*C*/)) { Camera.timeTranslate(MM.vec3(0, 0, -cameraSpeed), dt); }
+            processCameraInput(dt);
 
             MScheduler.draw(() => {
                 drawLanes(Camera);
@@ -142,11 +232,13 @@ function FluxCtrl($scope, MScheduler, Camera, Geometry, MM, Keyboard, Keys) {
                 // Camera.render(Geometry.meshes.XZQuad, [tLane], MM.vec3(255, 125, 0));
                 // Camera.render(Geometry.meshes.Cube, [tCube6], MM.vec3(255, 255, 255));
                 Camera.present();
+                drawGems(dt, tt);
             });
         });
     }
 
     $scope.$on('$destroy', () => {
+        State.current = State.Paused;
         MScheduler.reset();
     });
 
