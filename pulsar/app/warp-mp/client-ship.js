@@ -7,6 +7,7 @@ const MDT = require('../mallet/mallet.dependency-tree').MDT;
 const Track = require('game-params').Track;
 const ShipEngine = require('game-params').ShipEngine;
 const DataFormat = require('game-params').DataFormat;
+const EntityTypes = require('entity-types').EntityTypes;
 
 module.exports = {shipFactory,
 resolve: ADT => [
@@ -127,7 +128,7 @@ function shipFactory(NetworkEntity, Connection, Geometry, Scheduler, MM, Clock) 
         }
     }
 
-    NetworkEntity.registerType(ClientShip);
+    NetworkEntity.registerType(ClientShip, EntityTypes.Ship);
 
     Connection.ready().then((socket) => {
         socket.get().on(GameEvent.shipSync, onShipSync);

@@ -5,6 +5,7 @@
 'use strict';
 
 const IOEvent = require('pulsar-lib').EventTypes.IOEvent;
+const EntityTypes = require('entity-types').EntityTypes;
 
 module.exports = {userFactory,
 resolve: ADT => [
@@ -28,7 +29,7 @@ function userFactory(NetworkEntity, Connection) {
         }
     }
 
-    NetworkEntity.registerType(ClientClient);
+    NetworkEntity.registerType(ClientClient, EntityTypes.Client);
     Connection.addEventListener(IOEvent.joinServer, (e) => {
         // Assign a local user entity to the client connection on join
         Connection.deferReady(NetworkEntity.getById(ClientClient, e.userId).then((user) => {

@@ -47,7 +47,8 @@ function networkEntityFactory(Connection, $q, $rootScope, Log) {
         }
 
         requestSync() {
-            const serverType = NetworkEntity.getLookupType(this.getType().name).name.replace('Client', '');
+            const typeName = NetworkEntity.getName(this.getType());
+            const serverType = NetworkEntity.getName(NetworkEntity.getLookupType(typeName));
             const request = Connection.getSocket()
                 .request(IOEvent.syncNetworkEntity, {type: serverType, id: this.getId()})
                 .then(NetworkEntity.reconstruct);
@@ -57,12 +58,16 @@ function networkEntityFactory(Connection, $q, $rootScope, Log) {
         }
 
         static putEntity(type, entity) {
-            const lookupType = NetworkEntity.getLookupType(type.name);
-            Log.verbose(`Put entity ${lookupType.name} ${entity.getId()}`);
-            NetworkEntity.entities.get(lookupType.name).set(entity.getId(), entity);
+            const lookupType = NetworkEntity.getLookupType(NetworkEntity.getName(type));
+            Log.verbose(`Put entity ${NetworkEntity.getName(lookupType)} ${entity.getId()}`);
+            NetworkEntity.entities.get(NetworkEntity.getName(lookupType)).set(entity.getId(), entity);
         }
 
-        static registerType(type) {
+        static getName(type) {
+            return this.typeNames.get(type);
+        }
+
+        static registerType(type, name) {
             let baseType = type;
 
             // determine if the new type is derived from an existing type
@@ -73,12 +78,13 @@ function networkEntityFactory(Connection, $q, $rootScope, Log) {
                 }
             });
 
-            NetworkEntity.constructorTypes.set(type.name, type);
-            NetworkEntity.lookupTypes.set(type.name, baseType);
-            Log.debug(`Register NetworkEntity type ${type.name} [as ${baseType.name}]`);
+            NetworkEntity.typeNames.set(type, name);
+            NetworkEntity.constructorTypes.set(name, type);
+            NetworkEntity.lookupTypes.set(name, baseType);
+            Log.debug(`Register NetworkEntity type ${NetworkEntity.getName(type)} [as ${NetworkEntity.getName(baseType)}]`);
             if (baseType === type) {
-                Log.verbose(`Create NetworkEntity index ${type.name}`);
-                NetworkEntity.entities.set(type.name, new Map());
+                Log.verbose(`Create NetworkEntity index ${NetworkEntity.getName(type)}`);
+                NetworkEntity.entities.set(name, new Map());
             }
         }
 
@@ -124,18 +130,19 @@ function networkEntityFactory(Connection, $q, $rootScope, Log) {
                 throw new Error('Network entities must be identified by both type and name');
             }
 
-            const lookupType = NetworkEntity.getLookupType(type.name);
+            const lookupType = NetworkEntity.getLookupType(NetworkEntity.getName(type));
+            const typeName = NetworkEntity.getName(lookupType);
 
             if (NetworkEntity.localEntityExists(lookupType, id) === true) {
                 // console.log('use local copy ', id);
-                return $q.when(NetworkEntity.entities.get(lookupType.name).get(id));
-            } else if (NetworkEntity.pendingRequests.has(type.name + id)) {
+                return $q.when(NetworkEntity.entities.get(typeName).get(id));
+            } else if (NetworkEntity.pendingRequests.has(typeName + id)) {
                 Log.debug('use pending ', id);
-                return NetworkEntity.pendingRequests.get(type.name + id);
+                return NetworkEntity.pendingRequests.get(typeName + id);
             }
 
-            Log.debug(`request ${type.name} ${id}`);
-            const serverType = type.name.replace('Client', '');
+            const serverType = NetworkEntity.getName(type);
+            Log.debug(`request ${serverType} ${id}`);
             const request = Connection.getSocket()
                 .request(IOEvent.syncNetworkEntity, {type: serverType, id})
                 .then(NetworkEntity.reconstruct);
@@ -150,11 +157,12 @@ function networkEntityFactory(Connection, $q, $rootScope, Log) {
          * @return {boolean}
          */
         static localEntityExists(type, id) {
-            Log.verbose(`check ${type.name} ${id} exists`);
+            const typeName = NetworkEntity.getName(type);
+            Log.verbose(`check ${typeName} ${id} exists`);
             try {
-                return NetworkEntity.entities.get(type.name).has(id);
+                return NetworkEntity.entities.get(typeName).has(id);
             } catch (e) {
-                if (NetworkEntity.getLookupType(type.name)) {
+                if (NetworkEntity.getLookupType(typeName)) {
                     throw new Error(`Could not complete look up: ${e.message || e}`);
                 } else {
                     throw e;
@@ -188,10 +196,11 @@ function networkEntityFactory(Connection, $q, $rootScope, Log) {
          */
         static reconstruct(data) {
             const type = NetworkEntity.getLookupType(data.type);
+            const typeName = NetworkEntity.getName(type);
             let entity = null;
-            Log.verbose(`Resolved ${data.type} to ${type.name}`);
+            Log.verbose(`Resolved ${data.type} to ${typeName}`);
             if (NetworkEntity.localEntityExists(type, data.id) === true) {
-                entity = NetworkEntity.entities.get(type.name).get(data.id);
+                entity = NetworkEntity.entities.get(typeName).get(data.id);
             } else {
                 Log.debug('construct ', data.id);
                 const ctorType = NetworkEntity.getConstructorType(data.type);
@@ -199,8 +208,9 @@ function networkEntityFactory(Connection, $q, $rootScope, Log) {
                 entity = new ctorType(data.params);
             }
 
-            if (NetworkEntity.pendingRequests.has(type.name + entity.id)) {
-                NetworkEntity.pendingRequests.delete(type.name + entity.id);
+
+            if (NetworkEntity.pendingRequests.has(typeName + entity.id)) {
+                NetworkEntity.pendingRequests.delete(typeName + entity.id);
             }
 
             return $q.when(entity.sync(data.params)).then(() => entity);
@@ -211,6 +221,7 @@ function networkEntityFactory(Connection, $q, $rootScope, Log) {
     NetworkEntity.constructorTypes = new Map(); // Types to use when reconstructing entities
     NetworkEntity.entities         = new Map(); // Collection of all synced entities
     NetworkEntity.pendingRequests  = new Map(); // Map of pending sync requests
+    NetworkEntity.typeNames        = new Map(); // Type names are minified so we have to look up references
 
     // noinspection JSAnnotator
     NetworkEntity.ID_LENGTH = 36;

@@ -3,6 +3,7 @@
  * @author Greg Rozmarynowycz <greg@thunderlab.net>
  */
 const MDT = require('../mallet/mallet.dependency-tree').MDT;
+const EntityTypes = require('entity-types').EntityTypes;
 
 module.exports = {playerFactory,
 resolve: ADT => [
@@ -56,7 +57,7 @@ function playerFactory(NetworkEntity, Color) {
         }
     }
 
-    NetworkEntity.registerType(Player);
+    NetworkEntity.registerType(Player, EntityTypes.Player);
 
     return Player;
 }

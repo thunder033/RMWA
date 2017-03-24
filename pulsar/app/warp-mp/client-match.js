@@ -4,6 +4,7 @@
  */
 
 const MatchEvent = require('event-types').MatchEvent;
+const EntityTypes = require('entity-types').EntityTypes;
 
 module.exports = {matchFactory,
 resolve: ADT => [
@@ -114,7 +115,7 @@ function matchFactory(Connection, ClientRoom, User, NetworkEntity, $rootScope) {
         matches.get(data.matchId).onEnd();
     }
 
-    NetworkEntity.registerType(ClientMatch);
+    NetworkEntity.registerType(ClientMatch, EntityTypes.Match);
     Connection.ready().then((socket) => {
         socket.get().on(MatchEvent.matchCreated, data => addMatch(data.matchId));
         socket.get().on(MatchEvent.matchListUpdate, parseMatchIds);
