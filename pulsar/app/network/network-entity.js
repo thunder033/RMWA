@@ -24,6 +24,11 @@ function networkEntityFactory(Connection, $q, $rootScope, Log) {
      */
     class NetworkEntity extends EventTarget {
 
+        /**
+         *
+         * @param id {string}
+         * @param [format] {Map}
+         */
         constructor(id, format = null) {
             if (!id) {
                 throw new ReferenceError('NetworkEntity must be constructed with an ID');
