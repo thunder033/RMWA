@@ -2,7 +2,7 @@
  * @author Greg Rozmarynowycz <greg@thunderlab.net>
  */
 
-const EntityTypes = require('entity-types').EntityTypes;
+const EntityType = require('entity-types').EntityType;
 
 module.exports = {warpFieldFactory,
 resolve: ADT => [
@@ -32,7 +32,7 @@ function warpFieldFactory(NetworkEntity) {
         }
     }
 
-    NetworkEntity.registerType(WarpField, EntityTypes.WarpField);
+    NetworkEntity.registerType(WarpField, EntityType.WarpField);
 
     return WarpField;
 }

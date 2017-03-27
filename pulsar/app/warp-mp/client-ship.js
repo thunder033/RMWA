@@ -7,7 +7,7 @@ const MDT = require('../mallet/mallet.dependency-tree').MDT;
 const Track = require('game-params').Track;
 const ShipEngine = require('game-params').ShipEngine;
 const DataFormat = require('game-params').DataFormat;
-const EntityTypes = require('entity-types').EntityTypes;
+const EntityType = require('entity-types').EntityType;
 
 module.exports = {shipFactory,
 resolve: ADT => [
@@ -30,21 +30,13 @@ resolve: ADT => [
  * @returns {ClientShip}
  */
 function shipFactory(NetworkEntity, Connection, Geometry, Scheduler, MM, Clock) {
-    const utf8Decoder = new TextDecoder('utf-8');
-
-    const timestampOffset = DataFormat.SHIP.get('timestamp');
-    const positionOffset = DataFormat.SHIP.get('positionX');
-
-    let syncCount = 0;
-    let tossCount = 0;
-
     function lerp(a, disp, p) {
         return MM.Vector3.scale(disp, p).add(a);
     }
 
     class ClientShip extends NetworkEntity {
-        constructor(params) {
-            super(params);
+        constructor(params, id) {
+            super(id, DataFormat.SHIP);
 
             this.disp = MM.vec3(0);
 
@@ -61,6 +53,13 @@ function shipFactory(NetworkEntity, Connection, Geometry, Scheduler, MM, Clock) 
             this.lerpPct = 0;
             this.color = MM.vec3(255, 255, 255);
 
+            Object.defineProperty(this, 'positionX', {
+                writeable: true,
+                set(value) {
+                    this.tPrev.position.x = this.tDest.position.x;
+                    this.tDest.position.x = value;},
+            });
+
             Scheduler.schedule(this.update.bind(this));
         }
 
@@ -68,44 +67,24 @@ function shipFactory(NetworkEntity, Connection, Geometry, Scheduler, MM, Clock) 
             return this.color;
         }
 
-        sync(bufferView) {
-            if (bufferView instanceof DataView) {
-                const timeStamp = bufferView.getFloat64(timestampOffset);
-                syncCount++;
+        sync(buffer, bufferString) {
+            super.sync(buffer, bufferString);
 
-                if (timeStamp <= this.updateTS) {
-                    tossCount++;
-                    return;
-                }
+            this.disp = MM.Vector3.subtract(this.tDest.position, this.tPrev.position);
 
-                this.updateTS = timeStamp;
-                this.tPrev.position.x = this.tDest.position.x;
-                this.tDest.position.x = bufferView.getFloat32(positionOffset);
-                this.disp = MM.Vector3.subtract(this.tDest.position, this.tPrev.position);
+            const updateTime = Clock.getNow();
+            this.syncElapsed = updateTime - this.lastUpdate;
+            this.lastUpdate = updateTime;
 
-                const updateTime = Clock.getNow();
-                this.syncElapsed = updateTime - this.lastUpdate;
-                this.lastUpdate = updateTime;
-
-                this.lerpPct = 0;
-
-                super.sync({});
-            } else {
-                super.sync(bufferView);
-            }
+            this.lerpPct = 0;
         }
 
         getUpdateTime() {
-            return this.updateTS;
-        }
-
-        getDataLoss() {
-            return tossCount / syncCount;
+            return this.syncTime;
         }
 
         strafe(direction) {
             Connection.getSocket().get().emit(GameEvent.command, direction);
-            // this.disp.x = ShipEngine.MOVE_SPEED * direction;
         }
         
         update(dt) {
@@ -120,19 +99,7 @@ function shipFactory(NetworkEntity, Connection, Geometry, Scheduler, MM, Clock) 
         }
     }
 
-    function onShipSync(data) {
-        if (data instanceof ArrayBuffer) {
-            const view = new DataView(data);
-            const id = utf8Decoder.decode(view).substr(0, NetworkEntity.ID_LENGTH);
-            NetworkEntity.getById(ClientShip, id).then(ship => ship.sync(view));
-        }
-    }
-
-    NetworkEntity.registerType(ClientShip, EntityTypes.Ship);
-
-    Connection.ready().then((socket) => {
-        socket.get().on(GameEvent.shipSync, onShipSync);
-    });
+    NetworkEntity.registerType(ClientShip, EntityType.Ship);
 
     return ClientShip;
 }

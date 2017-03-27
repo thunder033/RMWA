@@ -4,7 +4,11 @@
  */
 const MDT = require('../mallet/mallet.dependency-tree').MDT;
 const IOEvent = require('pulsar-lib').EventTypes.IOEvent;
+const DataType = require('game-params').DataType;
+const ByteSizes = require('game-params').ByteSizes;
 const EventTarget = require('eventtarget');
+
+console.log(ByteSizes);
 
 module.exports = {networkEntityFactory,
     resolve: ADT => [
@@ -20,13 +24,24 @@ function networkEntityFactory(Connection, $q, $rootScope, Log) {
      */
     class NetworkEntity extends EventTarget {
 
-        constructor(id) {
+        constructor(id, format = null) {
             if (!id) {
                 throw new ReferenceError('NetworkEntity must be constructed with an ID');
             }
             super();
             this.id = id.id || id;
-            this.syncTime = ~~performance.now();
+            this.syncTime = 0;
+            this.format = format;
+
+            Object.defineProperty(this, 'timestamp', {
+                writeable: true,
+                set(value) {this.syncTime = value;}
+            });
+
+            if (format instanceof Map) {
+                this.parseFieldSizes();
+            }
+
             NetworkEntity.putEntity(this.getType(), this);
         }
 
@@ -38,12 +53,44 @@ function networkEntityFactory(Connection, $q, $rootScope, Log) {
             return this.id;
         }
 
-        sync(params) {
-            Object.assign(this, params);
-            this.syncTime = ~~performance.now();
+        sync(params, bufferString) {
+            if(params instanceof ArrayBuffer) {
+                if(!(this.format instanceof Map)) {
+                    const type = NetworkEntity.getName(this.getType());
+                    throw new ReferenceError(`${type} cannot sync a binary response without a format set`);
+                }
 
-            Log.debug(`sync ${this.constructor.name} ${this.id} at ${this.syncTime}`);
-            $rootScope.$evalAsync();
+                const view = new DataView(params);
+
+                const tsReadMethod = NetworkEntity.readMethods.get(DataType.Double);
+                const timeStamp = view[tsReadMethod](NetworkEntity.entityOffset);
+
+                // throw out the update if it's older than anything we already got
+                if (timeStamp <= this.syncTime) {
+                    return;
+                }
+
+                let position = NetworkEntity.entityOffset;
+
+                this.format.forEach((type, field) => {
+                    const size = this.sizes[field];
+                    if(type === DataType.String) {
+                        this[field] = bufferString.substr(position, size);
+                    } else {
+                        const method = NetworkEntity.readMethods.get(type);
+                        this[field] = view[method](position);
+                    }
+                    position += size;
+                });
+
+                return view;
+            } else {
+                Object.assign(this, params);
+                this.syncTime = ~~performance.now();
+
+                Log.debug(`sync ${this.constructor.name} ${this.id} at ${this.syncTime}`);
+                $rootScope.$evalAsync();
+            }
         }
 
         requestSync() {
@@ -55,6 +102,22 @@ function networkEntityFactory(Connection, $q, $rootScope, Log) {
             NetworkEntity.pendingRequests.set(this.getId(), request);
 
             return request;
+        }
+
+        parseFieldSizes() {
+            const sizes = {};
+            this.format.forEach((type, field) => {
+                if (field.indexOf(':') > 0) {
+                    const [fieldName, size] = field.split(':');
+                    sizes[fieldName] = parseInt(size, 10);
+                    this.format.set(fieldName, type);
+                    this.format.delete(field);
+                } else {
+                    sizes[field] = ByteSizes.get(type);
+                }
+            });
+
+            this.sizes = sizes;
         }
 
         static putEntity(type, entity) {
@@ -195,17 +258,36 @@ function networkEntityFactory(Connection, $q, $rootScope, Log) {
          * @returns {Promise<NetworkEntity>}
          */
         static reconstruct(data) {
-            const type = NetworkEntity.getLookupType(data.type);
-            const typeName = NetworkEntity.getName(type);
+            let syncParams = null;
             let entity = null;
-            Log.verbose(`Resolved ${data.type} to ${typeName}`);
-            if (NetworkEntity.localEntityExists(type, data.id) === true) {
-                entity = NetworkEntity.entities.get(typeName).get(data.id);
+            let id = '';
+            let serverTypeCode;
+            let bufferString = '';
+
+            if(data instanceof ArrayBuffer) {
+                const view = new DataView(data);
+                bufferString = NetworkEntity.utf8Decoder.decode(view);
+
+                id = bufferString.substr(0, NetworkEntity.ID_LENGTH);
+                serverTypeCode = view.getInt8(NetworkEntity.ID_LENGTH);
+                syncParams = data;
             } else {
-                Log.debug('construct ', data.id);
-                const ctorType = NetworkEntity.getConstructorType(data.type);
+                id = data.id;
+                serverTypeCode = data.type;
+                syncParams = data.params;
+            }
+
+            const type = NetworkEntity.getLookupType(serverTypeCode);
+            const typeName = NetworkEntity.getName(type);
+
+            Log.verbose(`Resolved ${serverTypeCode} to ${typeName}`);
+            if (NetworkEntity.localEntityExists(type, id) === true) {
+                entity = NetworkEntity.entities.get(typeName).get(id);
+            } else {
+                Log.debug('construct ', id);
+                const ctorType = NetworkEntity.getConstructorType(serverTypeCode);
                 /* eslint new-cap: off */
-                entity = new ctorType(data.params);
+                entity = new ctorType(syncParams, id);
             }
 
 
@@ -213,7 +295,7 @@ function networkEntityFactory(Connection, $q, $rootScope, Log) {
                 NetworkEntity.pendingRequests.delete(typeName + entity.id);
             }
 
-            return $q.when(entity.sync(data.params)).then(() => entity);
+            return $q.when(entity.sync(syncParams, bufferString)).then(() => entity);
         }
     }
 
@@ -225,6 +307,17 @@ function networkEntityFactory(Connection, $q, $rootScope, Log) {
 
     // noinspection JSAnnotator
     NetworkEntity.ID_LENGTH = 36;
+
+    NetworkEntity.utf8Decoder = new TextDecoder('utf-8');
+    NetworkEntity.entityOffset = NetworkEntity.ID_LENGTH + ByteSizes.get(DataType.Int8);
+
+    NetworkEntity.readMethods = new Map([
+        [DataType.Float, 'getFloat32'],
+        [DataType.Double, 'getFloat64'],
+        [DataType.Int8, 'getInt8'],
+        [DataType.Int16, 'getInt16'],
+        [DataType.Int32, 'getInt32'],
+    ]);
 
     Connection.ready().then((socket) => {
         socket.get().on(IOEvent.syncNetworkEntity, NetworkEntity.reconstruct);

@@ -3,7 +3,7 @@
  * @author Greg Rozmarynowycz <greg@thunderlab.net>
  */
 const IOEvent = require('pulsar-lib').EventTypes.IOEvent;
-const EntityTypes = require('entity-types').EntityTypes;
+const EntityType = require('entity-types').EntityType;
 
 module.exports = {roomFactory,
 resolve: ADT => [
@@ -89,7 +89,7 @@ function roomFactory(Connection, NetworkEntity, User, $rootScope, $q) {
         }
     }
 
-    NetworkEntity.registerType(ClientRoom, EntityTypes.Room);
+    NetworkEntity.registerType(ClientRoom, EntityType.Room);
     Connection.ready().then((socket) => {
         socket.get().on(IOEvent.joinedRoom, (data) => {
             $q.all([
