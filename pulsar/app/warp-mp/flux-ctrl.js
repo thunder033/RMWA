@@ -199,6 +199,8 @@ function FluxCtrl($scope, MScheduler, Camera, Geometry, MM, Keyboard, Keys, Leve
         function sendKeysReleased() {
             if(!Keyboard.isKeyDown(Keys.Left) && !Keyboard.isKeyDown(Keys.Right)) {
                 clientShip.strafe(0);
+            } else {
+                clientShip.strafe(Keyboard.isKeyDown(Keys.Left) ? -1 : 1);
             }
         }
 
