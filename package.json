@@ -10,7 +10,7 @@
     "version": "npm run build",
     "postversion": "git push && git push --tags",
     "watch": "grunt watch",
-    "updateApi": "npm i git+https://github.com/thunder033/pulsar-lib.git"
+    "updateLib": ".\\scripts\\update_lib.bat"
   },
   "repository": {
     "type": "git",
@@ -29,7 +29,7 @@
     "checklist-model": "^0.10.0",
     "eventtarget": "^0.1.0",
     "modular-adal-angular": "^1.0.4",
-    "pulsar-lib": "git+https://github.com/thunder033/pulsar-lib.git"
+    "pulsar-lib": "git+https://github.com/thunder033/pulsar-lib.git#v1.0.9"
   },
   "devDependencies": {
     "angular-q-spread": "^1.1.0",
