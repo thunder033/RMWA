@@ -12,9 +12,10 @@ resolve: ADT => [
     ADT.ng.$q,
     ADT.network.ClientRoom,
     ADT.game.WarpField,
+    ADT.game.WarpDrive,
     warpGameFactory]};
 
-function warpGameFactory(Player, NetworkEntity, ClientShip, User, $q, ClientRoom, WarpField) {
+function warpGameFactory(Player, NetworkEntity, ClientShip, User, $q, ClientRoom, WarpField, WarpDrive) {
     const utf8Decoder = new TextDecoder('utf-8');
     function createPlayers(buffer, match) {
         const players = [];
@@ -53,6 +54,7 @@ function warpGameFactory(Player, NetworkEntity, ClientShip, User, $q, ClientRoom
             this.match = null;
             this.players = [];
             this.warpField = null;
+            this.warpDrive = null;
         }
 
         /**
@@ -62,16 +64,23 @@ function warpGameFactory(Player, NetworkEntity, ClientShip, User, $q, ClientRoom
         sync(params) {
             const getMatch = NetworkEntity.getById(ClientRoom, params.matchId);
             const getWarpField = NetworkEntity.getById(WarpField, params.warpFieldId);
+            const getWarpDrive = NetworkEntity.getById(WarpDrive, params.warpDriveId);
 
-            return $q.all([getMatch, getWarpField]).spread((match, warpField) => {
-                this.warpField = warpField;
+            return $q.all([getMatch, getWarpField, getWarpDrive]).spread((match, warpField, warpDrive) => {
                 this.match = match;
+                this.warpField = warpField;
+                this.warpDrive = warpDrive;
+                this.warpDrive.load(this.warpField);
                 return createPlayers(params.shipIds, match).then((players) => { this.players = players; });
             }).finally(() => {
                 delete params.matchId;
                 delete params.shipIds;
                 super.sync(params);
             });
+        }
+
+        getWarpDrive() {
+            return this.warpDrive;
         }
 
         getWarpField() {

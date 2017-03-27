@@ -43,6 +43,7 @@ function FluxCtrl($scope, MScheduler, Camera, Geometry, MM, Keyboard, Keys, Leve
         .translate(0, -0.1, 2.3);
     tLane.origin.z = 1;
     const grey = MM.vec3(225,225,225);
+    let warpDrive = null;
 
     function drawLanes(camera) {
         tLane.position.x = Track.POSITION_X + Track.LANE_WIDTH / 2;
@@ -93,6 +94,9 @@ function FluxCtrl($scope, MScheduler, Camera, Geometry, MM, Keyboard, Keys, Leve
         //ctx.fillStyle = '#ff0';
         let color = MM.vec3(100,255,255);
 
+        const barOffset = warpDrive.getBarOffset();
+        const sliceIndex = warpDrive.getSliceIndex();
+
         let drawOffset = 0; // getStartOffset(Level.barQueue); //this spaces the bars correctly across the screen, based on how far above the plane the camera is
 
         const blackGems = [];
@@ -103,9 +107,9 @@ function FluxCtrl($scope, MScheduler, Camera, Geometry, MM, Keyboard, Keys, Leve
             }
 
             const depth = Bar.scale.z * 1; // Level.barQueue[i].speed;
-            const zOffset = drawOffset - Level.barOffset;
+            const zOffset = drawOffset - barOffset;
 
-            const sliceGems = (Level.warpField[Level.sliceIndex + i] || {}).gems || [];
+            const sliceGems = (Level.warpField[sliceIndex + i] || {}).gems || [];
             gems[i].scale.set(0);
 
             if((Level.sliceIndex + i) % 2 === 0){
@@ -188,6 +192,8 @@ function FluxCtrl($scope, MScheduler, Camera, Geometry, MM, Keyboard, Keys, Leve
 
         Level.reset();
         Level.load($scope.warpGame.getWarpField());
+
+        warpDrive = $scope.warpGame.getWarpDrive();
         MScheduler.schedule(Level.update);
         console.log(State);
         State.current = State.Playing;
@@ -214,7 +220,7 @@ function FluxCtrl($scope, MScheduler, Camera, Geometry, MM, Keyboard, Keys, Leve
             $scope.posX = clientShip.getTransform().position.toString();
             $scope.updateTime = clientShip.getUpdateTime();
             $scope.tCamera = Camera.getPos().toString();
-            $scope.sliceIndex = Level.sliceIndex;
+            $scope.sliceIndex = warpDrive.getSliceIndex();
 
             processCameraInput(dt);
 

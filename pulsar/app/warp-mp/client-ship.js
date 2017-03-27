@@ -14,9 +14,8 @@ resolve: ADT => [
     ADT.network.NetworkEntity,
     ADT.network.Connection,
     MDT.Geometry,
-    MDT.Scheduler,
     MDT.Math,
-    ADT.network.Clock,
+    ADT.game.LerpedEntity,
     shipFactory]};
 
 /**
@@ -24,17 +23,12 @@ resolve: ADT => [
  * @param NetworkEntity
  * @param Connection
  * @param Geometry
- * @param Scheduler
  * @param MM
- * @param Clock {Clock}
+ * @param LerpedEntity
  * @returns {ClientShip}
  */
-function shipFactory(NetworkEntity, Connection, Geometry, Scheduler, MM, Clock) {
-    function lerp(a, disp, p) {
-        return MM.Vector3.scale(disp, p).add(a);
-    }
-
-    class ClientShip extends NetworkEntity {
+function shipFactory(NetworkEntity, Connection, Geometry, MM, LerpedEntity) {
+    class ClientShip extends LerpedEntity {
         constructor(params, id) {
             super(id, DataFormat.SHIP);
 
@@ -48,9 +42,6 @@ function shipFactory(NetworkEntity, Connection, Geometry, Scheduler, MM, Clock) 
                 .rotateBy(-Math.PI / 9, 0, 0);
 
             this.updateTS = 0;
-            this.lastUpdate = Clock.getNow();
-            this.syncElapsed = 0;
-            this.lerpPct = 0;
             this.color = MM.vec3(255, 255, 255);
 
             Object.defineProperty(this, 'positionX', {
@@ -59,8 +50,6 @@ function shipFactory(NetworkEntity, Connection, Geometry, Scheduler, MM, Clock) 
                     this.tPrev.position.x = this.tDest.position.x;
                     this.tDest.position.x = value;},
             });
-
-            Scheduler.schedule(this.update.bind(this));
         }
 
         getColor() {
@@ -69,14 +58,7 @@ function shipFactory(NetworkEntity, Connection, Geometry, Scheduler, MM, Clock) 
 
         sync(buffer, bufferString) {
             super.sync(buffer, bufferString);
-
             this.disp = MM.Vector3.subtract(this.tDest.position, this.tPrev.position);
-
-            const updateTime = Clock.getNow();
-            this.syncElapsed = updateTime - this.lastUpdate;
-            this.lastUpdate = updateTime;
-
-            this.lerpPct = 0;
         }
 
         getUpdateTime() {
@@ -88,8 +70,8 @@ function shipFactory(NetworkEntity, Connection, Geometry, Scheduler, MM, Clock) 
         }
         
         update(dt) {
-            this.lerpPct += this.syncElapsed > 0 ? dt / this.syncElapsed : 0;
-            this.tRender.position.set(lerp(this.tPrev.position, this.disp, this.lerpPct));
+            super.update(dt);
+            this.tRender.position.set(LerpedEntity.lerpVector(this.tPrev.position, this.disp, this.lerpPct));
             this.tRender.position.y = 0.2;
             this.tRender.position.z = 1.3;
         }
