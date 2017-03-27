@@ -58,7 +58,7 @@ function networkEntityFactory(Connection, $q, $rootScope, Log) {
             return this.id;
         }
 
-        sync(params, bufferString) {
+        sync(params, bufferString, storesValuesCB) {
             if(params instanceof ArrayBuffer) {
                 if(!(this.format instanceof Map)) {
                     const type = NetworkEntity.getName(this.getType());
@@ -75,6 +75,12 @@ function networkEntityFactory(Connection, $q, $rootScope, Log) {
                     return;
                 }
 
+                // allow the entity to store any values it will need after the update
+                if(storesValuesCB instanceof Function) {
+                    storesValuesCB();
+                }
+
+                // parse the buffer according the format set for this entity
                 let position = NetworkEntity.entityOffset;
 
                 this.format.forEach((type, field) => {
