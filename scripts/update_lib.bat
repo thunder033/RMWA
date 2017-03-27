@@ -1,1 +1,1 @@
-npm i git+https://github.com/thunder033/pulsar-lib.git#%1 --save
+npm i thunder033/pulsar-lib#%1 --save

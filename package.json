@@ -10,7 +10,8 @@
     "version": "npm run build",
     "postversion": "git push && git push --tags",
     "watch": "grunt watch",
-    "updateLib": ".\\scripts\\update_lib.bat"
+    "updateLib": ".\\scripts\\update_lib.bat",
+    "buildDev": "grunt build-dev"
   },
   "repository": {
     "type": "git",
@@ -29,7 +30,7 @@
     "checklist-model": "^0.10.0",
     "eventtarget": "^0.1.0",
     "modular-adal-angular": "^1.0.4",
-    "pulsar-lib": "git+https://github.com/thunder033/pulsar-lib.git#v1.0.9"
+    "pulsar-lib": "github:thunder033/pulsar-lib#v1.0.10"
   },
   "devDependencies": {
     "angular-q-spread": "^1.1.0",
@@ -49,6 +50,6 @@
     "mocha": "^3.1.2",
     "request": "^2.79.0",
     "socket.io-client": "^1.7.3",
-    "uglify-js": "git+https://github.com/mishoo/UglifyJS2.git#harmony"
+    "uglify-js": "github:mishoo/UglifyJS2#harmony"
   }
 }

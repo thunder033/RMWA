@@ -16,6 +16,15 @@ require('angular').module('mallet').service(MDT.Scheduler, [
  * @param MState
  * @param $rootScope
  * @param Log
+ *
+ * @method schedule
+ * @method suspend
+ * @method resume
+ * @method draw
+ * @method postProcess
+ * @method reset
+ * @method suspendOnBlur
+ *
  * @constructor
  */
 function Scheduler(MaxFrameRate, MState, $rootScope, Log) {
