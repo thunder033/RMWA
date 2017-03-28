@@ -10,9 +10,10 @@ module.exports =  {warpDriveFactory,
 resolve: ADT => [
     ADT.game.LerpedEntity,
     ADT.network.NetworkEntity,
+    ADT.warp.Bar,
     warpDriveFactory]};
 
-function warpDriveFactory(LerpedEntity, NetworkEntity) {
+function warpDriveFactory(LerpedEntity, NetworkEntity, Bar) {
 
     class WarpDrive extends LerpedEntity {
         constructor(params, id) {
@@ -39,6 +40,8 @@ function warpDriveFactory(LerpedEntity, NetworkEntity) {
         load(warpField) {
             this.warpField = warpField;
             this.level = warpField.getLevel();
+            this.velocity = (0.95 * Bar.scale.z + Bar.margin) / this.warpField.getTimeStep();
+            console.log(this.level);
         }
 
         sync(buffer, bufferString) {
@@ -54,8 +57,9 @@ function warpDriveFactory(LerpedEntity, NetworkEntity) {
 
             // were assuming there can only be a slice index change of 1
             if(this.sliceIndexDelta > 0) {
-                const switchTime = this.barOffset / this.level[this.sliceIndex].speed;
+                const switchTime = Math.abs(this.barOffset / this.velocity); //this.level[this.sliceIndex].speed;
                 this.sliceEndPct = (this.syncElapsed - switchTime) / this.syncElapsed;
+                console.log(this.level[this.sliceIndex]);
             }
         }
 
@@ -72,14 +76,14 @@ function warpDriveFactory(LerpedEntity, NetworkEntity) {
 
             if(this.lerpPct > this.sliceEndPct && this.curSliceIndex === this.prevSliceIndex) {
                 this.curSliceIndex = this.sliceIndex;
-                this.barOffset = 0;
+                this.curBarOffset = 0;
             }
 
             if(!this.level.length) {
                 return;
             }
 
-            this.curBarOffset = this.level[this.curSliceIndex].speed * dt;
+            this.curBarOffset -= this.velocity * dt;
         }
     }
 

@@ -201,7 +201,7 @@ function networkEntityFactory(Connection, $q, $rootScope, Log) {
          */
         static getById(type, id) {
             if (!type || typeof id !== 'string') {
-                throw new Error('Network entities must be identified by both type and name');
+                throw new Error('Network entities must be identified by both type and name.');
             }
 
             const lookupType = NetworkEntity.getLookupType(NetworkEntity.getName(type));

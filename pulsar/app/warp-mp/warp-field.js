@@ -26,6 +26,10 @@ function warpFieldFactory(NetworkEntity) {
             return this.level;
         }
 
+        getTimeStep() {
+            return this.timeStep;
+        }
+
         sync(params) {
             delete params.version;
             super.sync(params);

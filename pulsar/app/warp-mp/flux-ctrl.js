@@ -45,6 +45,10 @@ function FluxCtrl($scope, MScheduler, Camera, Geometry, MM, Keyboard, Keys, Leve
     const grey = MM.vec3(225,225,225);
     let warpDrive = null;
 
+    const tBar = new Geometry.Transform();
+    tBar.origin.set(-1, 0, 1);
+    const zRot = - Math.PI / 8;
+
     function drawLanes(camera) {
         tLane.position.x = Track.POSITION_X + Track.LANE_WIDTH / 2;
         for(let i = 0; i < Track.NUM_LANES; i++) {
@@ -97,7 +101,7 @@ function FluxCtrl($scope, MScheduler, Camera, Geometry, MM, Keyboard, Keys, Leve
         const barOffset = warpDrive.getBarOffset();
         const sliceIndex = warpDrive.getSliceIndex();
 
-        let drawOffset = 0; // getStartOffset(Level.barQueue); //this spaces the bars correctly across the screen, based on how far above the plane the camera is
+        let drawOffset = 2 * 0.95 * 0.9; // getStartOffset(Level.barQueue); //this spaces the bars correctly across the screen, based on how far above the plane the camera is
 
         const blackGems = [];
         for(let i = 0; i < Level.barsVisible; i++){
@@ -106,13 +110,24 @@ function FluxCtrl($scope, MScheduler, Camera, Geometry, MM, Keyboard, Keys, Leve
                 color = MM.vec3(100 + sliceValue * 110, 255 - sliceValue * 45, 255 - sliceValue * 45);
             }
 
-            const depth = Bar.scale.z * 1; // Level.barQueue[i].speed;
+            const depth = Bar.scale.z * 0.95; // Level.barQueue[i].speed;
             const zOffset = drawOffset - barOffset;
+
+            tBar.scale.x = Bar.scale.x * 2;
+            tBar.scale.z = depth;
+
+            tBar.position.set(Track.POSITION_X, 0, zOffset);
+            tBar.rotation.z = (-Math.PI) - zRot;
+            Camera.render(meshes.XZQuad, tBar, color);
+
+            tBar.position.set(Track.POSITION_X + Track.WIDTH, 0, zOffset);
+            tBar.rotation.z = zRot;
+            Camera.render(meshes.XZQuad, tBar, color);
 
             const sliceGems = (Level.warpField[sliceIndex + i] || {}).gems || [];
             gems[i].scale.set(0);
 
-            if((Level.sliceIndex + i) % 2 === 0){
+            if((sliceIndex + i) % 2 === 0){
                 for(let l = 0; l < Track.NUM_LANES; l++){
                     if(sliceGems[l] === 0 || sliceGems[l] === 2){
                         continue;
@@ -194,7 +209,6 @@ function FluxCtrl($scope, MScheduler, Camera, Geometry, MM, Keyboard, Keys, Leve
         Level.load($scope.warpGame.getWarpField());
 
         warpDrive = $scope.warpGame.getWarpDrive();
-        MScheduler.schedule(Level.update);
         console.log(State);
         State.current = State.Playing;
 
@@ -220,7 +234,7 @@ function FluxCtrl($scope, MScheduler, Camera, Geometry, MM, Keyboard, Keys, Leve
             $scope.posX = clientShip.getTransform().position.toString();
             $scope.updateTime = clientShip.getUpdateTime();
             $scope.tCamera = Camera.getPos().toString();
-            $scope.sliceIndex = warpDrive.getSliceIndex();
+            $scope.sliceIndex = warpDrive.getSliceIndex() + ' ' + warpDrive.getBarOffset().toFixed(2);
 
             processCameraInput(dt);
 
