@@ -29,7 +29,7 @@
     "checklist-model": "^0.10.0",
     "eventtarget": "^0.1.0",
     "modular-adal-angular": "^1.0.4",
-    "pulsar-lib": "git+https://github.com/thunder033/pulsar-lib.git#v1.03"
+    "pulsar-lib": "git+https://github.com/thunder033/pulsar-lib.git#v1.0.3"
   },
   "devDependencies": {
     "angular-q-spread": "^1.1.0",
