@@ -39,3 +39,7 @@ jspm_packages
 .idea
 */.idea
 *.zip
+*/dist
+*.tar
+.tmp
+songs/

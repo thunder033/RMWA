@@ -1,9 +1,0 @@
-<div class="audio-player clearfix">
-    <button class="play-button" ng-class="player.state.toLowerCase()" ng-click="player.togglePlaying()">
-        <loader-icon ng-if="player.state === 'LOADING'"></loader-icon>
-    </button>
-    <span class="clip-title" ng-bind="player.playing.name"></span><br>
-    <span class="timestamp">{{ player.playbackTime | secondsToDate | date:'m:ss' }} / {{ player.trackLength | secondsToDate | date:'m:ss' }}</span>
-
-    <span class="play-bar" ng-click="seek($event)"><span class="play-bar-progress" ng-style="{width: getPlaybarSize()}"></span></span>
-</div>
